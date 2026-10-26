@@ -8,8 +8,7 @@
     "node": ">=22 <27"
   },
   "scripts": {
-    "start": "node server.js",
-    "postinstall": "npm audit --omit=dev --audit-level=high || true"
+    "start": "node server.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -21,6 +20,6 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.15.0",
     "multer": "^2.5.0",
-    "sharp": "^0.34.1"
+    "sharp": "^0.35.3"
   }
 }
