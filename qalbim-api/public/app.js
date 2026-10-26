@@ -226,12 +226,12 @@ document.addEventListener('error',e=>{if(e.target.tagName==='IMG'&&e.target.src.
  const p=page();
  if(p==='letter')return letter();
  if(p==='invite')return invite();
+ if(p==='publicProfile')return publicProfile();
  if(!me)return auth();
  if(p==='admin')return adminPage();
  if(p==='chat')return chat();
  if(p==='chats')return chats();
  if(p==='profile')return profile();
- if(p==='publicProfile')return publicProfile();
  if(p==='pro')return proPage();
  if(p==='letters')return letters();
  if(p==='create')return studio();
