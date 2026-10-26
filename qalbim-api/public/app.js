@@ -21,7 +21,7 @@ function modal(html){host.hidden=false;host.innerHTML='<div class="modal" role="
 function closeModal(){host.hidden=true;host.innerHTML=''}
 function markNav(){document.querySelectorAll('[data-a]').forEach(n=>{if(!n.classList.contains('navitem'))return;let page=location.pathname,tab=new URLSearchParams(location.search).get('view'),x=n.dataset.a;n.classList.toggle('active',(x==='chats'&&page.includes('chat'))||(x==='letters'&&tab==='letters')||(x==='pro'&&tab==='pro')||(x==='profile'&&page.includes('profile'))||(x==='home'&&page==='/'&&!tab))})}
 async function refresh(){try{const v=await api('/api/me');me=v.user;partner=v.partner}catch(e){me=null;partner=null}}
-function page(){let p=location.pathname,tab=new URLSearchParams(location.search).get('view');if(p.startsWith('/l/'))return 'letter';if(p.startsWith('/invite/'))return 'invite';if(p.includes('admin'))return 'admin';if(p.includes('chats.html'))return 'chats';if(p.includes('chat.html'))return 'chat';if(p.includes('profile')||p.startsWith('/u/'))return 'profile';return tab||'home'}
+function page(){let p=location.pathname,tab=new URLSearchParams(location.search).get('view');if(p.startsWith('/l/'))return 'letter';if(p.startsWith('/invite/'))return 'invite';if(p.includes('admin'))return 'admin';if(p.includes('chats.html'))return 'chats';if(p.includes('chat.html'))return 'chat';if(p.startsWith('/u/'))return 'publicProfile';if(p.includes('profile'))return 'profile';return tab||'home'}
 function go(where){let routes={home:'/',letters:'/?view=letters',create:'/?view=create',pro:'/?view=pro',chats:'/chats.html',chat:'/chat.html',profile:'/profile.html',admin:'/admin.html'};location.href=routes[where]||where}
 function hero(txt,sub){return '<div class="hero"><div class="spark">💌</div><p class="eyebrow">Ikki qalb — bir hikoya</p><h1>'+txt+'</h1><p>'+sub+'</p></div>'}
 function auth(){
@@ -65,7 +65,7 @@ function studio(){
 function renderPhotos(){let el=$('attached');if(el)el.innerHTML=draftPhotos.map(x=>'<div><img class="thumb" src="'+media(x.id)+'" alt="surat"><div class="mini-tag">'+(x.private?'✦ Maxfiy':'Ochiq')+'</div></div>').join('')}
 function letters(){
  section('<h1 class="page-title">Mening maktublarim</h1><div class="row between"><p class="muted small">Yurakdan chiqqan so‘zlaringiz.</p>'+btn('create','+ Yangi','')+'</div><div id="lettersList" class="letterlist"><div class="muted">Yuklanmoqda...</div></div>');
- api('/api/letters/mine').then(d=>{$('lettersList').innerHTML=d.letters.length?d.letters.map(l=>'<div class="letteritem"><div class="row between"><span class="mini-tag">✉ '+esc(l.to)+'</span><span class="small muted">'+moneyDate(l.createdAt)+'</span></div><h3 style="margin:8px 0;font:600 19px Playfair Display,serif">'+esc(l.title)+'</h3><p class="muted small">'+esc(l.message.slice(0,100))+'</p><div class="row wrap">'+btn('openLetter:'+l.id,'Ko‘rish')+btn('copyLetter:'+l.id,'Havola')+btn('deleteLetter:'+l.id,'O‘chirish','danger')+'</div></div>').join(''):'<div class="card center">Hozircha maktub yo‘q. Birinchi maktubingizni yarating! 💌</div>'}).catch(err);
+ api('/api/letters/mine').then(d=>{$('lettersList').innerHTML=d.letters.length?d.letters.map(l=>'<div class="letteritem"><div class="row between"><span class="mini-tag">✉ '+esc(l.to)+'</span><span class="small muted">'+moneyDate(l.createdAt)+'</span></div><h3 style="margin:8px 0;font:600 19px Playfair Display,serif">'+esc(l.title)+'</h3><p class="muted small">'+esc(l.message.slice(0,100))+'</p><div class="row wrap">'+btn('openLetter:'+l.id,'Ko‘rish')+btn('editLetter:'+l.id,'Tahrirlash')+btn('copyLetter:'+l.id,'Havola')+btn('deleteLetter:'+l.id,'O‘chirish','danger')+'</div></div>').join(''):'<div class="card center">Hozircha maktub yo‘q. Birinchi maktubingizni yarating! 💌</div>'}).catch(err);
 }
 function letter(){
  const id=location.pathname.split('/').pop();section('<div class="center"><p class="eyebrow">Faqat sen uchun</p><h1 class="page-title">Sizga maktub bor 💌</h1><div class="envelope" id="envelope"><div class="base"></div><div class="flap"></div><div class="fold"></div><div class="seal">♥</div></div><p class="muted small" id="openHint">Konvertga bosing ♡</p></div><div id="letterBody" hidden></div>');
@@ -75,7 +75,7 @@ function showLetter(){
  if(!letterData)return;const l=letterData.letter;$('envelope').hidden=true;$('openHint').hidden=true;
  const html='<div class="paper" data-theme="'+l.theme+'"><span class="to">💌 '+esc(l.to)+' uchun</span><h2>'+esc(l.title)+'</h2><p>'+esc(l.message)+'</p><div class="from">Muhabbat bilan, '+esc(l.from)+' ♡</div></div>'+
  (l.photoIds.length?'<div class="card"><strong>Bizning xotiralarimiz ♡</strong><div class="photo-row">'+l.photoIds.map(id=>'<img class="paperphoto" src="'+media(id)+'" alt="Maktub surati">').join('')+'</div><div class="muted small">✦ Maxfiy rasmlar faqat Pro obunachilarga ochiq.</div></div>':'')+
- '<div class="card center"><p class="muted small">Bu maktub sizda qanday tuyg‘u uyg‘otdi?</p><div class="row wrap" style="justify-content:center">'+['❤️','🥹','😍','💌','🌹','😘'].map(e=>'<button class="reaction" data-a="react" data-emoji="'+e+'">'+e+' '+(letterData.reactions[e]||'')+'</button>').join('')+'</div><div class="divide"></div><button class="btn sm alt" data-a="copyCurrent">🔗 Havolani ulashish</button></div>';
+ '<div class="card center"><p class="muted small">Bu maktub sizda qanday tuyg‘u uyg‘otdi?</p><div class="row wrap" style="justify-content:center">'+['❤️','🥹','😍','💌','🌹','😘'].map(e=>'<button class="reaction" data-a="react" data-emoji="'+e+'">'+e+' '+(letterData.reactions[e]||'')+'</button>').join('')+'</div><div class="divide"></div><button class="btn sm alt" data-a="copyCurrent">🔗 Havolani ulashish</button> '+btn('reportCurrent','⚑ Shikoyat')+'</div>';
  $('letterBody').innerHTML=html;$('letterBody').hidden=false;
 }
 function pair(){
@@ -125,13 +125,17 @@ function games(kind){
  let values=data[kind]||data.quiz,question=values[Math.floor(Math.random()*values.length)];
  modal('<div class="center" style="padding:30px 12px"><div class="spark">💗</div><h2 class="card-title">'+esc(question)+'</h2><p class="muted small">Ikkitingiz javob berib ko‘ring ♡</p><button class="btn" data-a="game:'+kind+'">Yana bitta ✨</button></div>');
 }
+function publicProfile(){
+ const id=location.pathname.split('/').pop();section('<h1 class="page-title">♡ Foydalanuvchi profili</h1><div id="publicProfile" class="card center">Yuklanmoqda...</div>');
+ api('/api/users/'+encodeURIComponent(id)).then(d=>{let u=d.profile;$('publicProfile').innerHTML='<div class="row" style="justify-content:center">'+avatar(u.avatarId,u.name,true)+'</div><h2 class="card-title">'+esc(u.name)+'</h2><p class="muted">'+esc(u.bio||'Qalbim hamjamiyati a’zosi ♡')+'</p><p class="muted small">A’zo bo‘lgan sana: '+moneyDate(u.createdAt)+'</p>'}).catch(err);
+}
 function profile(){
  if(!me){auth();return}
  section('<h1 class="page-title">Mening profilim</h1><div class="card"><div class="profile">'+avatar(me.avatarId,me.name,true)+'<div><h2 style="margin:0 0 4px">'+esc(me.name)+'</h2><div class="small muted">'+esc(me.phone)+'</div>'+(isPro()?'<span class="pill">✦ PRO</span>':'')+'</div></div>'+
  '<form data-form="avatar"><label class="field"><span>Profil suratini almashtirish</span><input class="input" name="image" type="file" accept="image/jpeg,image/png,image/webp" required style="padding:9px"></label><button class="btn sm alt" type="submit">📷 Rasmni saqlash</button></form><div class="divide"></div>'+
  '<form data-form="profile"><label class="field"><span>Ism familiya</span><input class="input" name="name" required value="'+esc(me.name)+'"></label><label class="field"><span>Bio / siz haqingizda</span><textarea class="input" name="bio" maxlength="240" style="min-height:90px">'+esc(me.bio)+'</textarea></label><label class="field"><span>Standart chat muddati</span><select class="input" name="chatTtl">'+[['view','Ko‘rilgach chiqishda'],['6h','6 soat'],['12h','12 soat'],['18h','18 soat'],['24h','1 kun']].map(x=>'<option value="'+x[0]+'" '+(me.chatTtl===x[0]?'selected':'')+'>'+x[1]+'</option>').join('')+'</select></label><button class="btn block" type="submit">O‘zgarishlarni saqlash</button></form></div>'+
  '<div class="card"><h2 class="card-title">Xavfsizlik</h2><form data-form="password"><label class="field"><span>Eski parol</span><input class="input" type="password" name="oldPassword" required></label><label class="field"><span>Yangi parol (kamida 8 belgi)</span><input class="input" type="password" name="newPassword" required minlength="8"></label><button class="btn sm alt" type="submit">Parolni o‘zgartirish</button></form></div>'+
- '<div class="row wrap">'+btn('pair','💕 Juftlik')+(me.role==='admin'?btn('admin','⚙️ Admin'):'' )+btn('logout','Chiqish','danger')+'</div>');
+ '<div class="row wrap">'+btn('pair','💕 Juftlik')+btn('shareProfile','🔗 Profil havolasi')+(me.role==='admin'?btn('admin','⚙️ Admin'):'' )+btn('logout','Chiqish','danger')+'</div>');
 }
 function adminPage(){
  if(!me||me.role!=='admin'){section('<div class="notice">Faqat administrator uchun.</div>');return}
@@ -163,7 +167,14 @@ async function act(action,node){
  if(action.startsWith('openLetter:'))return go('/l/'+action.split(':')[1]);
  if(action.startsWith('copyLetter:'))return copy(location.origin+'/l/'+action.split(':')[1]);
  if(action==='copyCurrent')return copy(location.href);
+ if(action==='shareProfile')return copy(location.origin+'/u/'+me.id);
+ if(action==='reportCurrent'){if(!me)return notify('Shikoyat uchun tizimga kiring');modal('<form data-form="report"><input name="type" value="letter" type="hidden"><input name="target" value="'+esc(letterData.letter.id)+'" type="hidden"><label class="field"><span>Shikoyat sababi</span><textarea class="input" name="reason" minlength="10" placeholder="Kamida 10 belgi" required></textarea></label><button class="btn block" type="submit">Yuborish</button></form>');return}
  if(action==='react'){if(!me)return notify('Reaksiya uchun hisobga kiring');await api('/api/letters/'+letterData.letter.id+'/react',{method:'POST',body:{emoji:node.dataset.emoji}});notify('Reaksiya yuborildi ❤️');letterData.reactions[node.dataset.emoji]=(letterData.reactions[node.dataset.emoji]||0)+1;showLetter();return}
+ if(action.startsWith('editLetter:')){
+  let id=action.split(':')[1],v=await api('/api/letters/'+id),l=v.letter;
+  if(l.ownerId!==me.id)return notify('Faqat o‘z maktubingizni tahrirlang');
+  modal('<form data-form="letterEdit"><input name="id" type="hidden" value="'+esc(id)+'"><label class="field"><span>Kimga</span><input class="input" name="to" value="'+esc(l.to)+'" required></label><label class="field"><span>Kimdan</span><input class="input" name="from" value="'+esc(l.from)+'" required></label><label class="field"><span>Sarlavha</span><input class="input" name="title" value="'+esc(l.title)+'" required></label><label class="field"><span>Maktub matni</span><textarea name="message" class="input" required>'+esc(l.message)+'</textarea></label><label class="field"><span>Shablon (1–6)</span><select name="theme" class="input">'+[1,2,3,4,5,6].map(n=>'<option value="'+n+'" '+(n===l.theme?'selected':'')+'>'+n+'-shablon</option>').join('')+'</select></label><button type="submit" class="btn block">Saqlash</button></form>');return;
+ }
  if(action.startsWith('deleteLetter:')){if(!confirm('Maktub o‘chirilsinmi?'))return;await api('/api/letters/'+action.split(':')[1],{method:'DELETE'});return letters()}
  if(action==='invite'){let d=await api('/api/pairs/invite',{method:'POST',body:{}});let s=location.origin+'/invite/'+d.token;modal('<p class="muted">Sevgilingizga faqat shu maxsus havolani yuboring. Amal qilish muddati 72 soat.</p><textarea class="input" readonly>'+esc(s)+'</textarea><button class="btn block" data-a="copyInvite" data-link="'+esc(s)+'">🔗 Nusxalash</button>');return}
  if(action==='copyInvite')return copy(node.dataset.link);
@@ -194,6 +205,8 @@ document.addEventListener('submit',async e=>{
  if(t==='register'){await api('/api/auth/register',{method:'POST',body:{name:data.name,phone:data.phone,password:data.password,termsAccepted:!!data.terms,privacyAccepted:!!data.privacy}});return go('/')}
  if(t==='login'){await api('/api/auth/login',{method:'POST',body:{phone:data.phone,password:data.password}});return go('/')}
  if(t==='letter'){let d=await api('/api/letters',{method:'POST',body:{to:data.to,from:data.from,title:data.title,message:data.message,theme,photoIds:draftPhotos.map(x=>x.id)}});draftPhotos=[];notify('Maktub tayyor!');return go('/l/'+d.letter.id)}
+ if(t==='letterEdit'){await api('/api/letters/'+data.id,{method:'PATCH',body:{to:data.to,from:data.from,title:data.title,message:data.message,theme:Number(data.theme)}});closeModal();notify('Maktub yangilandi');return letters()}
+ if(t==='report'){await api('/api/reports',{method:'POST',body:{type:data.type,target:data.target,reason:data.reason}});closeModal();return notify('Shikoyat yuborildi')}
  if(t==='profile'){await api('/api/me',{method:'PATCH',body:{name:data.name,bio:data.bio,chatTtl:data.chatTtl}});await refresh();notify('Profil saqlandi');return profile()}
  if(t==='password'){await api('/api/me/password',{method:'POST',body:data});f.reset();return notify('Parol yangilandi')}
  if(t==='avatar'){let form=new FormData(f);form.append('kind','avatar');await api('/api/photos',{method:'POST',body:form});await refresh();notify('Surat saqlandi');return profile()}
@@ -218,6 +231,7 @@ document.addEventListener('error',e=>{if(e.target.tagName==='IMG'&&e.target.src.
  if(p==='chat')return chat();
  if(p==='chats')return chats();
  if(p==='profile')return profile();
+ if(p==='publicProfile')return publicProfile();
  if(p==='pro')return proPage();
  if(p==='letters')return letters();
  if(p==='create')return studio();
