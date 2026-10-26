@@ -58,7 +58,7 @@ app.get('/api/photos/:id',wrap(async(req,res)=>{
  if(!db)return bad(res,503,dbError);let id=oid(req.params.id),p=id?await c('photos').findOne({_id:id}):null;if(!p)return bad(res,404,'Rasm topilmadi');
  if(p.private){let u=null;try{let token=jwt.verify(req.cookies.qalbim_session||'',secret);u=await colUser().findOne({_id:oid(token.sub)})}catch(e){}
  if(!u||u.banned||(!u._id.equals(p.owner)&&!pro(u)))return bad(res,403,'Rasm faqat Pro foydalanuvchilarga ochiq')}
- res.set('Content-Type','image/webp');res.set('Cache-Control',p.private?'private, no-store':'public, max-age=300');res.send(p.buffer);
+ res.set('Content-Type','image/webp');res.set('Cache-Control',p.private?'private, no-store':'public, max-age=300');res.send(p.buffer.buffer||p.buffer);
 }));
 app.get('/api/letters/mine',auth,wrap(async(req,res)=>{let v=await c('letters').find({owner:req.user._id}).sort({createdAt:-1}).limit(60).toArray();res.json({letters:v.map(showLetter)})}));
 app.post('/api/letters',auth,wrap(async(req,res)=>{
