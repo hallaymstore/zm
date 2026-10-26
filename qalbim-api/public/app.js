@@ -178,7 +178,7 @@ async function act(action,node){
  if(action.startsWith('resolve:')){await api('/api/admin/reports/'+action.split(':')[1],{method:'PATCH',body:{status:'resolved'}});return adminPage()}
  }catch(e){err(e)}
 }
-document.addEventListener('click',e=>{let node=e.target.closest('[data-a]');if(node){e.preventDefault();act(node.dataset.a,node)}if(e.target===$('envelope'))showLetter()});
+document.addEventListener('click',e=>{let node=e.target.closest('[data-a]');if(node){e.preventDefault();act(node.dataset.a,node)}if(e.target.closest&&e.target.closest('#envelope'))showLetter()});
 document.addEventListener('change',async e=>{
  if(e.target.id==='letterPhoto'&&e.target.files.length){
   try{if(draftPhotos.length>=4){notify('Maksimal 4 ta surat');return}
@@ -205,7 +205,7 @@ document.addEventListener('submit',async e=>{
 });
 window.addEventListener('pagehide',leaveChat);
 window.addEventListener('beforeunload',leaveChat);
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&page()==='chat')leaveChat()});
+document.addEventListener('visibilitychange',()=>{if(page()!=='chat')return;if(document.visibilityState==='hidden')leaveChat();else if(!chatVisit){chatVisit=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+'a'+Math.random().toString(36).slice(2));loadMessages()}});
 document.addEventListener('error',e=>{if(e.target.tagName==='IMG'&&e.target.src.includes('/api/photos/')){e.target.replaceWith(Object.assign(document.createElement('span'),{textContent:'🔐 Pro rasm'}))}},true);
 (async function init(){
  try{config=await api('/api/config')}catch(e){}
