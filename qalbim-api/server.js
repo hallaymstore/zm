@@ -36,6 +36,7 @@ app.post('/api/auth/login',rate,ready,wrap(async(req,res)=>{
 }));
 app.post('/api/auth/logout',(req,res)=>{res.clearCookie('qalbim_session',{sameSite:'lax',secure:process.env.NODE_ENV==='production',path:'/'});res.json({ok:true})});
 app.get('/api/me',auth,wrap(async(req,res)=>{let x=req.user.partnerId?await colUser().findOne({_id:req.user.partnerId}):null;res.json({user:showUser(req.user),partner:x?{id:String(x._id),name:x.name,avatarId:x.avatarId||null}:null})}));
+app.get('/api/users/:id',ready,wrap(async(req,res)=>{let id=oid(req.params.id),u=id?await colUser().findOne({_id:id}):null;if(!u||u.banned)return bad(res,404,'Profil topilmadi');res.json({profile:{id:String(u._id),name:u.name,bio:u.bio||'',avatarId:u.avatarId||null,createdAt:u.createdAt}})}));
 app.patch('/api/me',auth,wrap(async(req,res)=>{
  let v={};if('name'in req.body){v.name=clean(req.body.name,80);if(v.name.length<3)return bad(res,400,'Ism juda qisqa')}
  if('bio'in req.body)v.bio=clean(req.body.bio,240);
@@ -166,7 +167,7 @@ app.get('/api/admin/config',auth,adm,wrap(async(req,res)=>{let v=await c('settin
 app.patch('/api/admin/config',auth,adm,wrap(async(req,res)=>{let s=clean(req.body.telegram,120);if(s&&!/^https:\/\/t\.me\/[a-zA-Z0-9_]{5,32}$/.test(s))return bad(res,400,'https://t.me/username formatida kiriting');await c('settings').updateOne({_id:'public'},{$set:{telegram:s}},{upsert:true});res.json({ok:true})}));
 
 const dir=path.join(__dirname,'public');app.use(express.static(dir,{extensions:['html']}));
-app.get(['/l/:id','/invite/:token','/'],(req,res)=>res.sendFile(path.join(dir,'index.html')));
+app.get(['/l/:id','/invite/:token','/u/:id','/'],(req,res)=>res.sendFile(path.join(dir,'index.html')));
 app.get('*',(req,res)=>res.sendFile(path.join(dir,'index.html')));
 app.use((e,req,res,next)=>{console.error('Server error:',e.message);bad(res,e.code==='LIMIT_FILE_SIZE'?413:500,e.code==='LIMIT_FILE_SIZE'?'Rasm 5 MB dan katta':'Server xatosi')});
 async function connect(){
