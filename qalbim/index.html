@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#17101c">
+  <meta name="description" content="Qalbim — sevgan insoningizga birgina havola bilan yuboriladigan noodatiy, jonli sevgi maktubi.">
+  <meta property="og:title" content="Senga aytadigan bir gapim bor ♡">
+  <meta property="og:description" content="Men senga kichkina bir maktub yozdim. Konvertni ochib ko‘r...">
+  <title>Qalbim ♡ — Senga bir maktub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+  <style>
+    :root { color-scheme: dark; font-family: 'DM Sans',system-ui,-apple-system,sans-serif; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body { background:#140f19; }
+    button, input, textarea { font:inherit; }
+    button { cursor:pointer; -webkit-tap-highlight-color:transparent; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible { outline:2px solid var(--highlight); outline-offset:3px; }
+    [hidden] { display:none !important; }
+    .app { --bg:#17101c; --bg-2:#291726; --highlight:#ffd7dc; --light:#fbeef0; --muted:#bcaeba; --pink:#e4a5b5; --paper:#fff8f4; --ink:#49323d; --soft-ink:#80636d; --envelope:#f7cad2; --envelope-edge:#e5aab8; --envelope-front:#efb7c2; position:relative; isolation:isolate; min-height:100dvh; color:var(--light); background: radial-gradient(ellipse 90% 45% at 50% 47%, #532d473f,transparent 78%), radial-gradient(ellipse 60% 37% at 14% 3%, #6e395b24, transparent 85%), linear-gradient(160deg,var(--bg),var(--bg-2) 73%,var(--bg)); overflow:hidden; transition:background .4s; }
+    .app[data-theme="peach"] { --bg:#21141a; --bg-2:#3b2428; --highlight:#ffe2bd; --light:#fff3e4; --muted:#dbc2bb; --pink:#edb49d; --paper:#fffaf1; --ink:#624a44; --soft-ink:#98786f; --envelope:#f5d5bd; --envelope-edge:#e8bea6; --envelope-front:#edc8af; }
+    .app[data-theme="night"] { --bg:#101728; --bg-2:#252443; --highlight:#e2dcff; --light:#f0edff; --muted:#b6b2cd; --pink:#c4b3fa; --paper:#f9f7ff; --ink:#3d3b65; --soft-ink:#79739c; --envelope:#d2c9f1; --envelope-edge:#bdb0e5; --envelope-front:#c3b7e8; }
+    .app::after {content:"";pointer-events:none;position:fixed;inset:0;opacity:.23;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' opacity='.13' filter='url(%23n)'/%3E%3C/svg%3E");z-index:-1; }
+    .shell {position:relative; display:flex; flex-direction:column; width:min(100%,430px); min-height:100dvh; margin:auto; padding:0 22px;}
+    .topbar {display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:max(18px,env(safe-area-inset-top));min-height:70px;}
+    .brand {display:flex;align-items:center;gap:9px;text-decoration:none;color:inherit;}
+    .brand-emblem {width:31px;height:31px;border:1px solid #ffe5eb4d;border-radius:11px;display:grid;place-items:center;color:var(--highlight);font-size:19px;line-height:1;transform:rotate(-8deg);background:#ffffff09;}
+    .brand strong {font-family:'Playfair Display',Georgia,serif;font-size:18px;font-weight:600;letter-spacing:-.6px;}
+    .brand i {font-style:normal;font-size:9px;color:var(--pink);vertical-align:top;margin-left:2px;}
+    .small-btn {border:1px solid #ffffff26;background:#ffffff0a;color:var(--light);border-radius:100px;min-height:34px;padding:0 12px;display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:700;white-space:nowrap;}
+    .small-btn svg,.btn svg {width:14px;height:14px;stroke:currentColor;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.8;}
+    .main {flex:1;display:flex;flex-direction:column;justify-content:center;padding:15px 0 0;}
+    .view {width:100%;}
+    .intro {text-align:center;}
+    .eyebrow {display:inline-flex;align-items:center;gap:8px;color:var(--pink);text-transform:uppercase;letter-spacing:2.2px;font-size:9px;font-weight:700;}
+    .eyebrow::before,.eyebrow::after {content:"";display:block;width:17px;height:1px;background:currentColor;opacity:.6;}
+    h1 {font-family:'Playfair Display',Georgia,serif;font-weight:500;line-height:1.17;letter-spacing:-1.5px;font-size:clamp(32px,9vw,43px);margin:14px 0 9px;}
+    h1 em {font-weight:500;color:var(--pink);}
+    .intro p {font-size:12px;color:var(--muted);letter-spacing:.1px;margin:0;}
+    .envelope-stage {width:100%; height:292px;position:relative;display:grid;place-items:center;}
+    .halo {width:285px;height:220px;border-radius:50%;position:absolute;filter:blur(38px);background:radial-gradient(ellipse,#f7b4cb35,transparent 70%);top:48px;pointer-events:none;}
+    .orbit {width:316px;height:232px;position:absolute;border:1px solid #ffffff10;border-radius:50%;transform:rotate(-18deg);pointer-events:none;}
+    .orbit::after {content:"";position:absolute;right:35px;top:3px;width:4px;height:4px;border-radius:50%;background:var(--pink);box-shadow:0 0 16px var(--pink);}
+    .sparkle {position:absolute;color:var(--pink);font-size:15px;opacity:.7;animation:twinkle 3s ease-in-out infinite;pointer-events:none;}
+    .s1 {top:43px;left:16%;font-size:12px;}.s2 {right:15%;bottom:48px;animation-delay:1.3s;}.s3 {right:17%;top:42px;font-size:10px;animation-delay:2s;}
+    .envelope-button {background:none;padding:0;position:relative;border:0;width:282px;height:193px;filter:drop-shadow(0 19px 21px #08030950);transform:translateY(12px) rotate(-3deg);transition:transform .3s;touch-action:manipulation;}
+    .envelope-button:hover {transform:translateY(7px) rotate(-2deg);}
+    .envelope-button:active {transform:scale(.98) rotate(-1deg);}
+    .envelope {position:absolute;inset:0;perspective:900px;}
+    .envelope-back {position:absolute;inset:0;background:var(--envelope-edge);border-radius:7px;box-shadow:inset 0 0 0 1px #fff5;}
+    .letter-peek {position:absolute;width:85%;height:160px;left:7.5%;bottom:12px;background:var(--paper);border-radius:5px 5px 2px 2px;z-index:1;display:flex;flex-direction:column;align-items:center;padding:15px;transform:translateY(-11px);box-shadow:0 0 15px #38202118;transition:transform .55s .22s;}
+    .peek-heading {font-family:'Playfair Display',Georgia,serif;color:var(--ink);font-size:17px;}
+    .peek-rule {width:34px;height:1px;background:#d1a0a9;margin-top:8px;}
+    .peek-txt {font-size:9px;color:var(--soft-ink);margin-top:12px;letter-spacing:.5px;}
+    .envelope-front {position:absolute;inset:0;z-index:3;background:var(--envelope-front);clip-path:polygon(0 0,50% 51%,100% 0,100% 100%,0 100%);border-radius:6px;filter:drop-shadow(0 -1px 2px #c17c8a38);}
+    .envelope-front::after {content:"";position:absolute;inset:0;background:#fff2;clip-path:polygon(0 100%,50% 51%,100% 100%);}
+    .envelope-flap {position:absolute;z-index:4;top:0;left:0;width:100%;height:112px;background:var(--envelope);clip-path:polygon(0 0,100% 0,50% 99%);transform-origin:center top;backface-visibility:hidden;transition:transform .65s ease-in-out,z-index 0s .3s;filter:drop-shadow(0 3px 2px #70465225);}
+    .seal {position:absolute;z-index:5;left:50%;top:95px;translate:-50% -50%;width:43px;height:43px;border-radius:50%;display:grid;place-items:center;background:#9d526d;box-shadow:0 3px 0 #6e3c50,0 4px 11px #783d5c60,inset 0 1px 5px #ffffff5c;color:#fff3f3;border:1px solid #f5c7d683;font-size:24px;transition:opacity .25s,transform .5s;}
+    .app[data-theme="night"] .seal {background:#7972b2;box-shadow:0 3px 0 #575078,0 4px 11px #26265088;}
+    .app[data-theme="peach"] .seal {background:#b57a64;box-shadow:0 3px 0 #825647,0 4px 11px #663d3688;}
+    .envelope-button.is-opening .envelope-flap {transform:rotateX(180deg);z-index:0;}
+    .envelope-button.is-opening .letter-peek {transform:translateY(-81px);transition-delay:.25s;}
+    .envelope-button.is-opening .seal {opacity:0;transform:scale(.5);}
+    .hint {margin:-2px auto 0;width:max-content;max-width:100%;display:flex;align-items:center;gap:7px;color:#e9d5df;font-size:11px;font-weight:500;}
+    .pulse-dot {width:6px;height:6px;border-radius:50%;background:var(--pink);box-shadow:0 0 0 4px #ffaac510;animation:pulse 1.9s infinite;}
+    .subtle-line {height:1px;background:linear-gradient(90deg,transparent,#ffffff25,transparent);width:100%;margin:26px auto 13px;}
+    .mini-note {font-family:'Playfair Display',Georgia,serif;font-size:14px;color:var(--muted);font-style:italic;text-align:center;margin:0;}
+    .bottom {display:flex;flex-direction:column;gap:10px;padding:16px 0 calc(22px + env(safe-area-inset-bottom));}
+    .btn {border:0;display:flex;align-items:center;justify-content:center;gap:9px;min-height:49px;border-radius:15px;font-size:13px;font-weight:700;letter-spacing:.05px;transition:transform .16s,filter .16s;}
+    .btn:active {transform:scale(.985);}.btn:hover {filter:brightness(1.03);}
+    .btn-primary {background:var(--highlight);color:#442c36;box-shadow:0 10px 30px #d68caa23;}
+    .app[data-theme="night"] .btn-primary {color:#322b54;}
+    .btn-quiet {background:#ffffff12;color:var(--light);border:1px solid #ffffff20;}
+    .footer-caption {font-size:10px;color:var(--muted);text-align:center;margin:0;}
+    /* Opened letter */
+    .letter-view {padding:10px 0 4px;animation:reveal .65s both;}
+    .letter-top {display:flex;align-items:center;justify-content:space-between;margin:0 3px 13px;}
+    .letter-top .eyebrow {font-size:9px;letter-spacing:1.3px;}.letter-top .eyebrow::after {display:none;}
+    .icon-btn {display:grid;place-items:center;width:32px;height:32px;border-radius:50%;border:1px solid #ffffff27;background:#ffffff0b;color:var(--highlight);}
+    .icon-btn svg {width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+    .paper {position:relative;background:var(--paper);color:var(--ink);border-radius:8px;min-height:360px;max-height:calc(100dvh - 244px);overflow-y:auto;overscroll-behavior:contain;box-shadow:0 25px 65px #00000050,0 1px 0 #ffffffa0 inset;padding:29px 25px 27px;scrollbar-width:thin;scrollbar-color:#bb98a3 transparent;}
+    .paper::before {content:"";position:absolute;inset:8px;border:1px solid #b787942d;pointer-events:none;border-radius:3px;}
+    .paper-top {display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+    .paper-symbol {font-family:Georgia,serif;font-size:24px;color:#b78291;line-height:1;}
+    .paper-date {font-size:9px;color:var(--soft-ink);letter-spacing:1px;text-transform:uppercase;}
+    .paper-label {font-size:9px;letter-spacing:2px;color:var(--soft-ink);font-weight:700;text-transform:uppercase;margin:0 0 7px;}
+    .paper-to {font-family:'Playfair Display',Georgia,serif;font-weight:600;font-size:21px;line-height:1.3;overflow-wrap:anywhere;}
+    .paper-title {font-family:'Playfair Display',Georgia,serif;line-height:1.28;font-weight:600;font-size:clamp(25px,7.4vw,34px);letter-spacing:-.65px;margin:22px 0 12px;overflow-wrap:anywhere;}
+    .paper-divider {display:flex;align-items:center;gap:10px;color:#b78394;margin:14px 0;}
+    .paper-divider:before,.paper-divider:after {content:"";width:33px;height:1px;background:#d8bfc6;}
+    .paper-message {white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.75;font-size:13px;color:#68515b;margin:0;}
+    .app[data-theme="night"] .paper-message {color:#585578;}.app[data-theme="peach"] .paper-message{color:#796059;}
+    .signoff {padding-top:19px;font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:14px;color:var(--soft-ink);}
+    .signoff strong {display:block;font-family:'Playfair Display',Georgia,serif;color:var(--ink);font-size:20px;font-weight:600;overflow-wrap:anywhere;margin-top:4px;}
+    .after-letter {text-align:center;color:var(--muted);font-size:10px;margin-top:13px;}
+    .letter-actions {display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    /* Editor bottom sheet */
+    .overlay {position:fixed;z-index:30;inset:0;background:#0c0810b8;display:flex;justify-content:center;align-items:flex-end;backdrop-filter:blur(7px);animation:fade .2s both;}
+    .sheet {background:#fff9f7;color:#3f2836;border-radius:23px 23px 0 0;width:min(100%,430px);max-height:min(91dvh,800px);display:flex;flex-direction:column;box-shadow:0 -20px 80px #0005;animation:slidein .28s cubic-bezier(.2,.8,.3,1) both;padding-bottom:env(safe-area-inset-bottom);}
+    .sheet-head {display:flex;align-items:center;justify-content:space-between;padding:18px 21px 13px;border-bottom:1px solid #eddce1;}
+    .sheet-head h2 {font-family:'Playfair Display',Georgia,serif;font-size:24px;letter-spacing:-.4px;margin:0;}
+    .sheet-head p {font-size:11px;margin:4px 0 0;color:#977c89;}
+    .close {background:#f2e6e9;border:0;width:32px;height:32px;border-radius:50%;color:#5c4050;font-size:23px;display:grid;place-items:center;line-height:1;}
+    .sheet-body {overflow-y:auto;overscroll-behavior:contain;padding:16px 21px 8px;}
+    .input-row {display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+    .field {display:flex;flex-direction:column;gap:6px;margin-bottom:13px;min-width:0;}
+    .field label,.field-label {font-size:10px;text-transform:uppercase;letter-spacing:.9px;font-weight:800;color:#715565;}
+    .field input,.field textarea {background:#fff;border:1px solid #e9d7df;color:#422b38;border-radius:11px;padding:11px 12px;outline:none;font-size:12px;min-width:0;}
+    .field input:focus,.field textarea:focus {border-color:#c57d9d;box-shadow:0 0 0 3px #edc7d932;}
+    .field textarea {min-height:146px;resize:vertical;line-height:1.65;}
+    .edit-group {margin-bottom:16px;}
+    .group-top {display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:9px;}
+    .micro-note {font-size:10px;color:#a08c95;}
+    .chips {display:flex;flex-wrap:wrap;gap:8px;}
+    .chip {border-radius:100px;border:1px solid #e5d0d9;color:#6d5261;background:#fff;padding:8px 11px;font-size:11px;font-weight:700;display:inline-flex;gap:6px;align-items:center;}
+    .chip.active {border-color:#9e5d78;background:#9e5d78;color:#fff;}
+    .theme-chip .swatch {width:11px;height:11px;border-radius:50%;border:1px solid #00000016;}
+    .sheet-footer {padding:12px 21px 18px;border-top:1px solid #eddce1;background:#fff9f7;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .sheet-footer .btn {font-size:11px;min-height:46px;border-radius:12px;}
+    .sheet-footer .btn-quiet {background:#f2e7eb;color:#754e63;border-color:transparent;}
+    .sheet-footer .btn-primary {background:#9e5d78;color:#fff;box-shadow:none;}
+    .disclaimer {font-size:10px;color:#947e89;line-height:1.5;margin:0 0 10px;}
+    .toast {position:fixed;z-index:50;bottom:max(98px,calc(20px + env(safe-area-inset-bottom)));left:50%;transform:translateX(-50%) translateY(20px);opacity:0;max-width:min(330px,calc(100% - 35px));padding:11px 15px;border-radius:12px;background:#382730;color:white;font-size:12px;text-align:center;box-shadow:0 10px 40px #0007;transition:all .22s;pointer-events:none;}
+    .toast.show {opacity:1;transform:translateX(-50%) translateY(0);}
+    .heart-particle {position:fixed;z-index:8;left:var(--x);top:var(--y);font-size:var(--size);pointer-events:none;color:var(--highlight);animation:float-heart 1.55s forwards ease-out;}
+    @keyframes float-heart {0%{opacity:0;transform:translate(0,10px) scale(.5) rotate(-12deg)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx),-155px) scale(1.3) rotate(20deg)}}
+    @keyframes pulse {0%,100%{box-shadow:0 0 0 3px #ffaac519}55%{box-shadow:0 0 0 8px #ffaac500}}
+    @keyframes twinkle {0%,100%{transform:scale(.7);opacity:.35}50%{transform:scale(1.15);opacity:1}}
+    @keyframes reveal {from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes fade {from{opacity:0}to{opacity:1}}
+    @keyframes slidein {from{transform:translateY(45px)}to{transform:translateY(0)}}
+    @media (min-width:600px) {body{padding:35px 0}.app{min-height:min(800px,calc(100dvh - 70px));width:430px;border:1px solid #ffffff20;border-radius:26px;box-shadow:0 30px 95px #07040a90}.shell{min-height:min(800px,calc(100dvh - 70px));}.overlay{align-items:center}.sheet{border-radius:22px;max-height:85dvh;padding-bottom:0}.paper{max-height:450px}.toast{bottom:34px}}
+    @media (max-height:710px) {.topbar{min-height:59px;padding-top:12px}.main{padding-top:3px}h1{font-size:33px;margin:9px 0 6px}.envelope-stage{height:238px}.envelope-button{transform:translateY(8px) scale(.88) rotate(-3deg)}.envelope-button:hover{transform:scale(.89) rotate(-2deg)}.subtle-line{margin:15px auto 10px}.bottom{padding-top:11px;padding-bottom:calc(12px + env(safe-area-inset-bottom))}.paper{min-height:300px;max-height:calc(100dvh - 194px)}.paper-top{margin-bottom:16px}}
+    @media (max-height:620px) {.topbar{min-height:53px}.envelope-stage{height:228px}.bottom{padding-top:7px;padding-bottom:calc(9px + env(safe-area-inset-bottom))}.footer-caption{display:none}.letter-top{margin-bottom:8px}.letter-view{padding-top:1px}.paper{min-height:0;max-height:calc(100dvh - 228px)}.after-letter{margin-top:8px}}
+    @media (prefers-reduced-motion:reduce) {*,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
+  </style>
+</head>
+<body>
+<div class="app" id="app" data-theme="rose">
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand" aria-label="Qalbim sayti">
+        <span class="brand-emblem" aria-hidden="true">♡</span>
+        <strong>qalbim<i>●</i></strong>
+      </div>
+      <button type="button" class="small-btn" id="editTop" aria-label="Yangi maktub yaratish">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Maktub yaratish
+      </button>
+    </header>
+
+    <main class="main">
+      <section class="view" id="sealedView" aria-label="Muhrlangan maktub">
+        <div class="intro">
+          <span class="eyebrow">Faqat bir inson uchun</span>
+          <h1>Bir <em>maktub,</em><br>mingta tuyg‘u.</h1>
+          <p>Ba’zi hislar so‘zlardan ham go‘zal...</p>
+        </div>
+        <div class="envelope-stage">
+          <div class="halo" aria-hidden="true"></div>
+          <div class="orbit" aria-hidden="true"></div>
+          <span class="sparkle s1" aria-hidden="true">✧</span>
+          <span class="sparkle s2" aria-hidden="true">✦</span>
+          <span class="sparkle s3" aria-hidden="true">✧</span>
+          <button class="envelope-button" id="envelopeButton" type="button" aria-label="Maktubni ochish">
+            <div class="envelope" aria-hidden="true">
+              <div class="envelope-back"></div>
+              <div class="letter-peek"><div class="peek-heading">senga atab...</div><div class="peek-rule"></div><div class="peek-txt" id="peekTo">SEN UCHUN ♡</div></div>
+              <div class="envelope-front"></div>
+              <div class="envelope-flap"></div>
+              <div class="seal">♥</div>
+            </div>
+          </button>
+        </div>
+        <p class="hint"><span class="pulse-dot"></span>Ochish uchun konvertga bosing</p>
+        <div class="subtle-line"></div>
+        <p class="mini-note">«Yurakdagi eng iliq so‘zlarim...»</p>
+      </section>
+
+      <section class="view letter-view" id="letterView" aria-label="Ochiq maktub" hidden>
+        <div class="letter-top">
+          <span class="eyebrow">Yurakdan yozilgan</span>
+          <button class="icon-btn" type="button" id="backToEnvelope" aria-label="Konvertga qaytish" title="Konvertga qaytish"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>
+        </div>
+        <article class="paper" id="paper" tabindex="0">
+          <div class="paper-top"><span class="paper-symbol">❦</span><span class="paper-date" id="paperDate"></span></div>
+          <p class="paper-label">Bu maktub</p>
+          <div class="paper-to" id="paperTo"></div>
+          <h2 class="paper-title" id="paperTitle"></h2>
+          <div class="paper-divider">♡</div>
+          <p class="paper-message" id="paperMessage"></p>
+          <div class="signoff">Mehr bilan,<strong id="paperFrom"></strong></div>
+        </article>
+        <p class="after-letter">Birgina maktub, unutilmas bir lahza ♡</p>
+      </section>
+    </main>
+
+    <footer class="bottom" id="bottom">
+      <button type="button" class="btn btn-primary" id="primaryButton">Maktubni ochish <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 17 10-10M8 7h9v9"/></svg></button>
+      <p class="footer-caption" id="bottomCaption">Sevgingizni birgina havola bilan ulashing ♡</p>
+    </footer>
+  </div>
+
+  <div class="overlay" id="editorOverlay" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+      <div class="sheet-head">
+        <div><h2 id="sheetTitle">O‘z maktubingiz ♡</h2><p>Har bir so‘z yurakdan chiqsin</p></div>
+        <button type="button" class="close" id="closeEditor" aria-label="Yopish">×</button>
+      </div>
+      <div class="sheet-body">
+        <div class="edit-group">
+          <div class="group-top"><span class="field-label">Ilhom kerakmi?</span><span class="micro-note">Tayyor namunalar</span></div>
+          <div class="chips" id="presets">
+            <button type="button" class="chip active" data-preset="love">♡ Sevgi</button>
+            <button type="button" class="chip" data-preset="miss">✦ Sog‘inch</button>
+            <button type="button" class="chip" data-preset="sorry">❀ Kechirim</button>
+          </div>
+        </div>
+        <form id="letterForm">
+          <div class="input-row">
+            <div class="field"><label for="toInput">Kimga?</label><input id="toInput" type="text" maxlength="40" placeholder="Sevgilim" required></div>
+            <div class="field"><label for="fromInput">Kimdan?</label><input id="fromInput" type="text" maxlength="40" placeholder="Ismingiz" required></div>
+          </div>
+          <div class="field"><label for="titleInput">Maktub sarlavhasi</label><input id="titleInput" type="text" maxlength="90" placeholder="Senga aytmoqchi edim..." required></div>
+          <div class="field"><div class="group-top" style="margin:0"><label for="messageInput">Yurakdagi so‘zlaringiz</label><span class="micro-note" id="charCount">0 / 1200</span></div><textarea id="messageInput" maxlength="1200" required placeholder="Eng samimiy so‘zlarni shu yerga yozing..."></textarea></div>
+          <div class="edit-group">
+            <div class="group-top"><span class="field-label">Maktub kayfiyati</span><span class="micro-note">3 xil dizayn</span></div>
+            <div class="chips" id="themes">
+              <button type="button" class="chip theme-chip active" data-theme="rose"><span class="swatch" style="background:#d9a1b0"></span>Atirgul</button>
+              <button type="button" class="chip theme-chip" data-theme="peach"><span class="swatch" style="background:#e8b997"></span>Shafaq</button>
+              <button type="button" class="chip theme-chip" data-theme="night"><span class="swatch" style="background:#b3a4e7"></span>Tungi osmon</button>
+            </div>
+          </div>
+          <p class="disclaimer">Maktub matni havolaning o‘zida saqlanadi. Shaxsiy sir yoki maxfiy ma’lumot yozmang.</p>
+        </form>
+      </div>
+      <div class="sheet-footer">
+        <button class="btn btn-quiet" type="button" id="copyLinkButton">↗ Havolani ulashish</button>
+        <button class="btn btn-primary" type="submit" form="letterForm">Ko‘rib chiqish ♡</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+<script>
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const app = $('app');
+  const storageKey = 'qalbim-letter-v1';
+  const presets = {
+    love: {
+      title: 'Baxtimning eng chiroyli sababi — sen',
+      message: 'Ba’zan hayotdagi eng go‘zal narsalar kutilmaganda uchraydi. Sen esa mening eng chiroyli tasodifimsan.\n\nYonimda bo‘lmasang ham, yuragimning eng yaqin joyidasan. Birgina tabassuming butun kunimni yorita oladi.\n\nBilasanmi, men seni bugun ham, ertaga ham, har kuni qayta tanlagan bo‘lardim. ♡'
+    },
+    miss: {
+      title: 'Seni juda sog‘indim...',
+      message: 'Bugun yana xayolim sendan boshlanib, sendan tugadi. Oramizdagi masofa ba’zan uzun tuyuladi, lekin yuragim seni doim yonimda his qiladi.\n\nSenga aytadigan gaplarim juda ko‘p. Hozir esa faqat bittasini aytaman: seni juda-juda sog‘indim. Tezroq ko‘rishaylik. ♡'
+    },
+    sorry: {
+      title: 'Meni kechir, iltimos...',
+      message: 'Ba’zan o‘ylamay aytilgan so‘zlar eng qadrli insonimizni xafa qiladi. Seni ranjitgan bo‘lsam, chin yurakdan uzr so‘rayman.\n\nMen uchun sening tabassuming, xotirjamliging va ishonching juda muhim. Seni eshitishga, tushunishga va yaxshiroq bo‘lishga harakat qilaman. ♡'
+    }
+  };
+  const initial = {to:'Sevgilim',from:'Seni sevuvchi inson',...presets.love,theme:'rose'};
+  let letter = {...initial};
+  let isOpen = false;
+  let isAnimating = false;
+  let previousFocus = null;
+  let toastTimeout;
+
+  const safe = (val, max, fallback) => typeof val === 'string' ? val.trim().slice(0,max) || fallback : fallback;
+  const clean = value => ({
+    to: safe(value?.to,40,initial.to),
+    from: safe(value?.from,40,initial.from),
+    title: safe(value?.title,90,initial.title),
+    message: safe(value?.message,1200,initial.message),
+    theme:['rose','peach','night'].includes(value?.theme) ? value.theme : 'rose'
+  });
+  function encode(value) {
+    const bytes = new TextEncoder().encode(JSON.stringify(value));
+    let binary = '';
+    for (const byte of bytes) binary += String.fromCharCode(byte);
+    return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }
+  function decode(encoded) {
+    if (!encoded || encoded.length > 10000) throw new Error('bad data');
+    const str = encoded.replace(/-/g,'+').replace(/_/g,'/');
+    const binary = atob(str.padEnd(Math.ceil(str.length/4)*4,'='));
+    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+    return clean(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes)));
+  }
+  const query = new URLSearchParams(location.search).get('m');
+  try {
+    if (query) letter = decode(query);
+    else letter = clean(JSON.parse(localStorage.getItem(storageKey) || 'null') || initial);
+  } catch (_) {letter={...initial};}
+
+  function applyTheme(theme) {
+    app.dataset.theme = theme;
+    const themeColor = {rose:'#17101c',peach:'#21141a',night:'#101728'}[theme];
+    document.querySelector('meta[name="theme-color"]').content = themeColor;
+    document.querySelectorAll('[data-theme].theme-chip').forEach(btn => btn.classList.toggle('active',btn.dataset.theme === theme));
+  }
+  function render() {
+    applyTheme(letter.theme);
+    $('peekTo').textContent = `UCHUN: ${letter.to.toLocaleUpperCase('uz-UZ')} ♡`;
+    $('paperTo').textContent = letter.to + ' ♡';
+    $('paperTitle').textContent = letter.title;
+    $('paperMessage').textContent = letter.message;
+    $('paperFrom').textContent = letter.from + ' ♡';
+    const now=new Date();
+    const months=['yanvar','fevral','mart','aprel','may','iyun','iyul','avgust','sentabr','oktabr','noyabr','dekabr'];
+    $('paperDate').textContent = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+    $('toInput').value = letter.to;
+    $('fromInput').value = letter.from;
+    $('titleInput').value = letter.title;
+    $('messageInput').value = letter.message;
+    $('charCount').textContent = `${letter.message.length} / 1200`;
+  }
+  function showToast(text) {
+    const el=$('toast');
+    el.textContent=text;
+    el.classList.add('show');
+    clearTimeout(toastTimeout);
+    toastTimeout=setTimeout(()=>el.classList.remove('show'),3100);
+  }
+  function heartBurst() {
+    const count=13;
+    for(let i=0;i<count;i++){
+      const heart=document.createElement('span');
+      heart.className='heart-particle';
+      heart.textContent=i%3===0?'✦':'♥';
+      heart.style.setProperty('--x', `${34+Math.random()*32}%`);
+      heart.style.setProperty('--y', `${40+Math.random()*17}%`);
+      heart.style.setProperty('--dx', `${Math.random()*145-72}px`);
+      heart.style.setProperty('--size', `${10+Math.random()*15}px`);
+      heart.style.animationDelay=`${Math.random()*.4}s`;
+      app.appendChild(heart);
+      setTimeout(()=>heart.remove(),2100);
+    }
+  }
+  function openEnvelope() {
+    if(isAnimating || isOpen)return;
+    isAnimating=true;
+    $('envelopeButton').classList.add('is-opening');
+    heartBurst();
+    setTimeout(()=>{
+      $('sealedView').hidden=true;
+      $('letterView').hidden=false;
+      $('paper').scrollTop=0;
+      $('primaryButton').innerHTML='Ulashish <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V3m0 0L7 8m5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      $('bottomCaption').textContent='Sevgan insoningizga shu maktubni yuboring ♡';
+      isOpen=true;isAnimating=false;
+    },800);
+  }
+  function closeEnvelope() {
+    if(isAnimating)return;
+    isOpen=false;
+    $('letterView').hidden=true;
+    $('sealedView').hidden=false;
+    $('envelopeButton').classList.remove('is-opening');
+    $('primaryButton').innerHTML='Maktubni ochish <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 17 10-10M8 7h9v9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    $('bottomCaption').textContent='Sevgingizni birgina havola bilan ulashing ♡';
+  }
+  function gather() {
+    const to=$('toInput').value.trim(),from=$('fromInput').value.trim(),title=$('titleInput').value.trim(),message=$('messageInput').value.trim();
+    if(!to||!from||!title||!message) {showToast('Iltimos, barcha maydonlarni to‘ldiring ♡');return false;}
+    letter=clean({to,from,title,message,theme:app.dataset.theme});
+    try {localStorage.setItem(storageKey,JSON.stringify(letter));} catch (_) {}
+    render();
+    return true;
+  }
+  function openEditor() {
+    previousFocus=document.activeElement;
+    render();
+    $('editorOverlay').hidden=false;
+    document.body.style.overflow='hidden';
+    $('closeEditor').focus();
+  }
+  function closeEditor() {
+    $('editorOverlay').hidden=true;
+    document.body.style.overflow='';
+    if(previousFocus && typeof previousFocus.focus==='function') previousFocus.focus();
+  }
+  function linkForLetter() {
+    const url=new URL(location.href);
+    url.searchParams.set('m',encode(letter));
+    url.hash='';
+    return url.toString();
+  }
+  async function shareLetter(fromEditor=false) {
+    if(fromEditor && !gather())return;
+    if(location.protocol==='file:') {showToast('Havola ishlashi uchun saytni avval Netlify’ga joylang.');return;}
+    const url=linkForLetter();
+    if(navigator.share){
+      try {await navigator.share({title:'Senga bir maktubim bor ♡',text:'Buni aynan sen uchun yozdim. Konvertni ochib ko‘r ♡',url});return;}
+      catch (error) {if(error?.name==='AbortError')return;}
+    }
+    try {await navigator.clipboard.writeText(url);showToast('Maktub havolasi nusxalandi ♡');}
+    catch(_){
+      const input=document.createElement('textarea');input.value=url;document.body.appendChild(input);input.select();
+      const ok=document.execCommand('copy');input.remove();showToast(ok?'Havola nusxalandi ♡':'Havolani nusxalab olish imkoni bo‘lmadi.');
+    }
+  }
+  $('envelopeButton').addEventListener('click',openEnvelope);
+  $('backToEnvelope').addEventListener('click',closeEnvelope);
+  $('primaryButton').addEventListener('click',()=>isOpen?shareLetter():openEnvelope());
+  $('editTop').addEventListener('click',openEditor);
+  $('closeEditor').addEventListener('click',closeEditor);
+  $('editorOverlay').addEventListener('click',event=>{if(event.target===$('editorOverlay'))closeEditor();});
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape'&&!$('editorOverlay').hidden)closeEditor();
+    if(event.key==='Tab'&&!$('editorOverlay').hidden){
+      const focusables=Array.from($('editorOverlay').querySelectorAll('button:not([disabled]),input,textarea')).filter(el=>el.offsetParent!==null);
+      if(!focusables.length)return;
+      const first=focusables[0],last=focusables[focusables.length-1];
+      if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+      else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+    }
+  });
+  $('letterForm').addEventListener('submit',event=>{
+    event.preventDefault();
+    if(!gather())return;
+    closeEditor();
+    closeEnvelope();
+    openEnvelope();
+  });
+  $('copyLinkButton').addEventListener('click',()=>shareLetter(true));
+  $('messageInput').addEventListener('input',event=>{$('charCount').textContent=`${event.target.value.length} / 1200`;});
+  $('presets').addEventListener('click',event=>{
+    const btn=event.target.closest('[data-preset]');if(!btn)return;
+    const p=presets[btn.dataset.preset];
+    $('titleInput').value=p.title;
+    $('messageInput').value=p.message;
+    $('charCount').textContent=`${p.message.length} / 1200`;
+    $('presets').querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c===btn));
+  });
+  $('themes').addEventListener('click',event=>{const btn=event.target.closest('[data-theme]');if(btn)applyTheme(btn.dataset.theme);});
+  render();
+})();
+</script>
+</body>
+</html>
