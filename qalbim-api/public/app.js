@@ -86,7 +86,7 @@ function letter(){
  section('<div class="letter-ceremony"><div class="eyebrow">QALBINGIZGA ATALGAN</div><h1 class="page-title">Sizga bir maktub bor ♡</h1>'+
  '<button type="button" class="envelope" id="envelope" aria-label="Sevgi maktubini ochish"><span class="base"></span><span class="flap"></span><span class="fold"></span><span class="seal">♥</span></button>'+
  '<p id="openHint" aria-live="polite">Yurakchani bosing — maktubingizni oching ✦</p></div><div id="letterBody" hidden></div>');
- api('/api/letters/'+encodeURIComponent(id)).then(d=>{letterData=d;}).catch(e=>{if($('openHint'))$('openHint').textContent=e.message});
+ api('/api/letters/'+encodeURIComponent(id)).then(d=>{letterData=d;window.QalbimScenes.decorateIntro(d.letter.theme);}).catch(e=>{if($('openHint'))$('openHint').textContent=e.message});
 }
 function showLetter(){
  if(!letterData)return notify('Maktub yuklanmoqda, yana bir bor bosing.');
@@ -104,7 +104,7 @@ function presentLetter(){
  const l=letterData.letter;
  if($('envelope'))$('envelope').hidden=true;
  if($('openHint'))$('openHint').hidden=true;
- const html='<div class="letter-content-layout">'+window.QalbimExperience.paper(l.title,l.message,l.theme,l.from,l.to)+
+ const html='<div class="letter-content-layout">'+window.QalbimScenes.render({title:l.title,message:l.message,theme:l.theme,from:l.from,to:l.to,preview:false})+
  (l.photoIds.length?'<div class="card"><h3 class="card-title">📸 Bizning xotiralarimiz</h3><div class="photo-row">'+l.photoIds.map(id=>'<img class="paperphoto" src="'+media(id)+'" alt="Maktub xotirasi" loading="lazy">').join('')+'</div><p class="muted small">🔐 Maxfiy rasmlar faqat egasi va faol Pro foydalanuvchiga ko‘rinadi.</p></div>':'')+
  '<div class="card center"><h3 class="card-title">Maktub yuragingizga yetib bordimi?</h3><p class="muted small">Birgina belgi bilan hislaringizni ifodalang ♡</p><div class="row wrap" style="justify-content:center">'+['❤️','🥹','😍','💌','🌹','😘'].map(e=>'<button class="reaction" data-a="react" data-emoji="'+e+'" aria-label="'+e+' reaksiyasi">'+e+' '+(letterData.reactions[e]||'')+'</button>').join('')+'</div><div class="divide"></div><div class="row wrap" style="justify-content:center">'+btn('shareNative','↗ Ulashish')+btn('copyCurrent','🔗 Havolani nusxalash')+btn('reportCurrent','⚑ Shikoyat')+'</div></div></div>';
  if($('letterBody')){$('letterBody').innerHTML=html;$('letterBody').hidden=false}
@@ -197,7 +197,7 @@ async function act(action,node){
  if(action.startsWith('editLetter:')){
   let id=action.split(':')[1],v=await api('/api/letters/'+id),l=v.letter;
   if(l.ownerId!==me.id)return notify('Faqat o‘z maktubingizni tahrirlang');
-  modal('<form data-form="letterEdit"><input name="id" type="hidden" value="'+esc(id)+'"><label class="field"><span>Kimga</span><input class="input" name="to" value="'+esc(l.to)+'" required></label><label class="field"><span>Kimdan</span><input class="input" name="from" value="'+esc(l.from)+'" required></label><label class="field"><span>Sarlavha</span><input class="input" name="title" value="'+esc(l.title)+'" required></label><label class="field"><span>Maktub matni</span><textarea name="message" class="input" required>'+esc(l.message)+'</textarea></label><label class="field"><span>Shablon (1–6)</span><select name="theme" class="input">'+window.QalbimExperience.THEMES.map(t=>'<option value="'+t.id+'" '+(t.id===l.theme?'selected':'')+'>'+t.emoji+' '+t.name+'</option>').join('')+'</select></label><button type="submit" class="btn block">Saqlash</button></form>');return;
+  modal('<form data-form="letterEdit"><input name="id" type="hidden" value="'+esc(id)+'"><label class="field"><span>Kimga</span><input class="input" name="to" value="'+esc(l.to)+'" required></label><label class="field"><span>Kimdan</span><input class="input" name="from" value="'+esc(l.from)+'" required></label><label class="field"><span>Sarlavha</span><input class="input" name="title" value="'+esc(l.title)+'" required></label><label class="field"><span>Maktub matni</span><textarea name="message" class="input" required>'+esc(l.message)+'</textarea></label><label class="field"><span>Sahifa dizayni (18 xil)</span><select name="theme" class="input">'+window.QalbimExperience.THEMES.map(t=>'<option value="'+t.id+'" '+(t.id===l.theme?'selected':'')+'>'+t.emoji+' '+t.name+'</option>').join('')+'</select></label><button type="submit" class="btn block">Saqlash</button></form>');return;
  }
  if(action.startsWith('deleteLetter:')){if(!confirm('Maktub o‘chirilsinmi?'))return;await api('/api/letters/'+action.split(':')[1],{method:'DELETE'});return letters()}
  if(action==='invite'){let d=await api('/api/pairs/invite',{method:'POST',body:{}});let s=location.origin+'/invite/'+d.token;modal('<p class="muted">Sevgilingizga faqat shu maxsus havolani yuboring. Amal qilish muddati 72 soat.</p><textarea class="input" readonly>'+esc(s)+'</textarea><button class="btn block" data-a="copyInvite" data-link="'+esc(s)+'">🔗 Nusxalash</button>');return}
