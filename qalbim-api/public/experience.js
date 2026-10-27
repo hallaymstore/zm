@@ -221,7 +221,7 @@ function homeWidget(user,partner){
  '<button class="discover-card" data-a="create"><span class="discover-icon">✎</span><div><small>01 / CREATE</small><strong>Maktub yozish</strong><p>Yangi hislaringizni sahifaga aylantiring</p></div><span class="discover-arrow">↗</span></button>'+
  '<button class="discover-card" data-a="letters"><span class="discover-icon">▤</span><div><small>02 / LIBRARY</small><strong>Maktublarim</strong><p>Barcha yaratgan xotiralaringiz</p></div><span class="discover-arrow">↗</span></button>'+
  '<button class="discover-card" data-a="pair"><span class="discover-icon">♡</span><div><small>03 / TOGETHER</small><strong>Bizning hikoya</strong><p>Ikki qalb uchun umumiy makon</p></div><span class="discover-arrow">↗</span></button>'+
- '<button class="discover-card" data-a="pro"><span class="discover-icon">✦</span><div><small>04 / EXCLUSIVE</small><strong>Qalbim Pro</strong><p>Ko‘proq imkoniyat, ko‘proq sehr</p></div><span class="discover-arrow">↗</span></button></div>';
+ '<button class="discover-card" data-a="games"><span class="discover-icon">'+window.QalbimIcons.svg('gamepad',23)+'</span><div><small>04 / PLAY SPACE</small><strong>Mini-o‘yinlar</strong><p>Yuraklarni tuting, xotira va juftlik viktorinasini o‘ynang</p></div><span class="discover-arrow">↗</span></button></div>';
 }
 function anniversaryWidget(user){
  const current=user.anniversary;
