@@ -11,7 +11,7 @@ const wrap=f=>(req,res,next)=>Promise.resolve(f(req,res,next)).catch(next),bad=(
 let db=null,mongoClient=null,dbError='MongoDB hozir ulanmagan';const c=n=>db.collection(n),date=()=>new Date(),clean=(v,n=120)=>String(v||'').trim().slice(0,n);
 const phone=v=>{let s=String(v||'').replace(/[\s()\-]/g,'');if(/^9\d{8}$/.test(s))s='+998'+s;else if(/^998\d{9}$/.test(s))s='+'+s;return /^\+998\d{9}$/.test(s)?s:null};
 const pro=u=>!!(u&&u.proUntil&&new Date(u.proUntil)>date());
-const showUser=u=>({id:String(u._id),name:u.name,phone:u.phone,bio:u.bio||'',avatarId:u.avatarId||null,role:u.role||'user',banned:!!u.banned,proUntil:u.proUntil||null,isPro:pro(u),partnerId:u.partnerId?String(u.partnerId):null,chatTtl:u.chatTtl||'view',createdAt:u.createdAt});
+const showUser=u=>({id:String(u._id),name:u.name,phone:u.phone,bio:u.bio||'',avatarId:u.avatarId||null,role:u.role||'user',banned:!!u.banned,proUntil:u.proUntil||null,isPro:pro(u),partnerId:u.partnerId?String(u.partnerId):null,chatTtl:u.chatTtl||'view',anniversary:u.anniversary||null,createdAt:u.createdAt});
 const showLetter=l=>({id:String(l._id),ownerId:String(l.owner),title:l.title,message:l.message,to:l.to,from:l.from,theme:l.theme,photoIds:l.photoIds||[],createdAt:l.createdAt});
 const secret=process.env.JWT_SECRET||'';
 function cookie(res,id){res.cookie('qalbim_session',jwt.sign({sub:String(id)},secret,{expiresIn:'30d'}),{httpOnly:true,sameSite:'lax',secure:process.env.NODE_ENV==='production',maxAge:30*86400000,path:'/'})}
@@ -40,6 +40,15 @@ app.get('/api/users/:id',ready,wrap(async(req,res)=>{let id=oid(req.params.id),u
 app.patch('/api/me',auth,wrap(async(req,res)=>{
  let v={};if('name'in req.body){v.name=clean(req.body.name,80);if(v.name.length<3)return bad(res,400,'Ism juda qisqa')}
  if('bio'in req.body)v.bio=clean(req.body.bio,240);
+ if('anniversary'in req.body){
+   const value=String(req.body.anniversary||'');
+   if(value==='')v.anniversary=null;
+   else{
+     const dt=/^\d{4}-\d{2}-\d{2}$/.test(value)?new Date(value+'T00:00:00Z'):new Date('invalid');
+     if(!Number.isFinite(dt.getTime())||dt.toISOString().slice(0,10)!==value||dt.getTime()>Date.now())return bad(res,400,'Sanani to‘g‘ri kiriting');
+     v.anniversary=value;
+   }
+ }
  if('chatTtl'in req.body){if(!['view','6h','12h','18h','24h'].includes(req.body.chatTtl))return bad(res,400,'Muddat noto‘g‘ri');v.chatTtl=req.body.chatTtl}
  if(Object.keys(v).length)await colUser().updateOne({_id:req.user._id},{$set:v});res.json({ok:true});
 }));
@@ -64,7 +73,7 @@ app.get('/api/photos/:id',wrap(async(req,res)=>{
 app.get('/api/letters/mine',auth,wrap(async(req,res)=>{let v=await c('letters').find({owner:req.user._id}).sort({createdAt:-1}).limit(60).toArray();res.json({letters:v.map(showLetter)})}));
 app.post('/api/letters',auth,wrap(async(req,res)=>{
  let title=clean(req.body.title,90),message=clean(req.body.message,1400),to=clean(req.body.to,80),from=clean(req.body.from,80),theme=Number(req.body.theme),ids=Array.isArray(req.body.photoIds)?req.body.photoIds:[];ids=[...new Set(ids)].slice(0,4);
- if(!title||message.length<5||!to||!from||!Number.isInteger(theme)||theme<1||theme>6)return bad(res,400,'Maktubni to‘liq to‘ldiring');
+ if(!title||message.length<5||!to||!from||!Number.isInteger(theme)||theme<1||theme>18)return bad(res,400,'Maktubni to‘liq to‘ldiring');
  if(ids.some(x=>!oid(x))||(ids.length&&await c('photos').countDocuments({_id:{$in:ids.map(oid)},owner:req.user._id})!==ids.length))return bad(res,403,'Rasmlar sizga tegishli bo‘lishi kerak');
  let letter={owner:req.user._id,title,message,to,from,theme,photoIds:ids,createdAt:date(),updatedAt:date()};let v=await c('letters').insertOne(letter);letter._id=v.insertedId;res.status(201).json({letter:showLetter(letter)});
 }));
@@ -76,7 +85,7 @@ app.get('/api/letters/:id',ready,wrap(async(req,res)=>{
 app.patch('/api/letters/:id',auth,wrap(async(req,res)=>{
  let id=oid(req.params.id),v={updatedAt:date()};if(!id)return bad(res,404,'Topilmadi');
  for(let k of ['title','message','to','from'])if(k in req.body)v[k]=clean(req.body[k],k==='message'?1400:90);
- if('theme'in req.body){let t=Number(req.body.theme);if(t<1||t>6||!Number.isInteger(t))return bad(res,400,'Shablon noto‘g‘ri');v.theme=t}
+ if('theme'in req.body){let t=Number(req.body.theme);if(t<1||t>18||!Number.isInteger(t))return bad(res,400,'Shablon noto‘g‘ri');v.theme=t}
  if('photoIds'in req.body){let ids=req.body.photoIds;if(!Array.isArray(ids)||ids.length>4||ids.some(x=>!oid(x)))return bad(res,400,'Rasmlar noto‘g‘ri');ids=[...new Set(ids)];if(ids.length&&await c('photos').countDocuments({_id:{$in:ids.map(oid)},owner:req.user._id})!==ids.length)return bad(res,403,'Begona rasm');v.photoIds=ids}
  let r=await c('letters').updateOne({_id:id,owner:req.user._id},{$set:v});if(!r.matchedCount)return bad(res,404,'Maktub topilmadi');res.json({ok:true});
 }));
