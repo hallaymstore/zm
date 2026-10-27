@@ -44,7 +44,7 @@ window.QalbimIntegrations=function(ctx){
      ctx.go('/');return true;
    }
    if(name==='proPrices'){
-     await api('/api/admin/prices',{method:'PATCH',body:{price3:Number(data.price3),price7:Number(data.price7)}});
+     await api('/api/admin/prices',{method:'PATCH',body:{price3:Number(data.price3),price7:Number(data.price7),stars3:Number(data.stars3),stars7:Number(data.stars7)}});
      ctx.notify('Tariflar narxi saqlandi');ctx.go('/admin.html');return true;
    }
    return false;
@@ -73,44 +73,73 @@ window.QalbimIntegrations=function(ctx){
  async function pay(days){
    try{const r=await api('/api/payments/create',{method:'POST',body:{days}});paymentModal(r)}catch(err){ctx.notify(err.message)}
  }
- function proPage(){
+ async function starStatus(){
+ if(!activeOrder)return;
+ try{
+   const info=await api('/api/stars/status/'+encodeURIComponent(activeOrder));
+   if(info.status==='paid'){
+     cleanTimer();activeOrder='';ctx.closeModal();await ctx.refresh();ctx.notify('Telegram Stars to‘lovi tasdiqlandi! ✦');ctx.go('/?view=pro');
+   }else if(info.status==='failed'){
+     cleanTimer();const el=$('paymentStatus');if(el)el.textContent='❌ Telegram Stars buyurtmasi bajarilmadi.';
+   }else{const el=$('paymentStatus');if(el)el.textContent='⏳ Telegram Stars to‘lovini kutyapmiz...'}
+ }catch(err){const el=$('paymentStatus');if(el)el.textContent=err.message}
+}
+async function payStars(days){
+ if(!initData||!tg||typeof tg.openInvoice!=='function'){ctx.notify('Stars to‘lovini Telegram Mini App ichida oching');return}
+ try{
+   const p=await api('/api/stars/create',{method:'POST',body:{initData,days}});
+   cleanTimer();activeOrder=p.orderId;
+   ctx.modal('<div class="center"><div style="font-size:40px">⭐</div><h2 class="card-title">Telegram Stars</h2><p>'+p.days+' kunlik Pro — <strong>'+Number(p.stars)+' ⭐</strong></p><p class="muted small">To‘lov Telegramʼning o‘zida tasdiqlanadi. Karta raqami talab qilinmaydi.</p></div><div id="paymentStatus" class="notice">⏳ Telegram to‘lov oynasi ochilmoqda...</div><button class="btn block" data-a="checkStars">Holatni tekshirish</button>');
+   checkTimer=setInterval(starStatus,5500);
+   tg.openInvoice(p.invoiceLink,function(status){if(status==='paid')starStatus();else if(status==='cancelled'){const el=$('paymentStatus');if(el)el.textContent='To‘lov bekor qilindi.'}});
+ }catch(err){ctx.notify(err.message)}
+}
+function proPage(){
+   const mini=needsTelegram();
    const me=ctx.getMe();
    ctx.section('<h1 class="page-title">✦ Qalbim Pro</h1><p class="muted small">Yagona Pro obuna: Mini App va oddiy saytda birgalikda ishlaydi.</p>'+
    (me&&me.isPro?'<div class="notice good">✦ Pro faol. Tugash sanasi: '+e(new Date(me.proUntil).toLocaleDateString('uz-UZ'))+'</div>':'')+
    '<div class="twocol" id="proPlans"><div class="card center">Tariflar yuklanmoqda...</div></div>'+
-   '<div class="card"><p>🔐 <strong>Maxfiy rasmlarni ko‘rish</strong></p><p>🎲 <strong>Juftliklar uchun o‘yinlar</strong></p><p>🎁 <strong>Syurprizlar</strong></p><p class="small muted">Hamyon API to‘lovni kartaga tushgan pul xabariga ko‘ra aniqlaydi. Har bir buyurtma 5 daqiqa faol.</p></div>'+
+   '<div class="card"><p>🔐 <strong>Maxfiy rasmlarni ko‘rish</strong></p><p>🎲 <strong>Juftliklar uchun o‘yinlar</strong></p><p>🎁 <strong>Syurprizlar</strong></p><p class="small muted">'+(mini?'Telegram Mini App ichida raqamli obunalar faqat ⭐ Telegram Stars bilan sotiladi.':'Oddiy saytda Hamyon API kartaga tushgan to‘lovni tasdiqlaydi. Buyurtma 5 daqiqa faol.')+'</p></div>'+
    '<h2 class="page-title">Pro mini-o‘yinlar</h2>'+
    '<div class="feature"><span class="emoji">💘</span><div style="flex:1"><strong>Sevgi testi</strong><small>Juftingizni qanchalik bilasiz?</small></div>'+btn('game:quiz','O‘ynash')+'</div>'+
    '<div class="feature"><span class="emoji">🎲</span><div style="flex:1"><strong>Sirli savol</strong><small>Bir-biringizni yanada yaqinroq biling.</small></div>'+btn('game:question','O‘ynash')+'</div>'+
    '<div class="feature"><span class="emoji">🎁</span><div style="flex:1"><strong>Syurpriz quti</strong><small>Sevgi topshirig‘i.</small></div>'+btn('game:box','O‘ynash')+'</div>'+
    '<div class="card faint"><h3 class="card-title">To‘lovlar tarixi</h3><div id="orderHistory" class="muted small">Yuklanmoqda...</div></div>');
-   Promise.all([api('/api/payments/plans'),api('/api/payments/mine')]).then(([p,h])=>{
-      if($('proPlans'))$('proPlans').innerHTML=p.plans.map(t=>'<div class="card center" style="margin:4px 0"><div style="font-size:32px">'+(t.days===3?'🌸':'👑')+'</div><h3>'+t.days+' kunlik Pro</h3><strong style="font-size:20px">'+(t.price?fmt(t.price):'Hali narx belgilanmagan')+'</strong><p class="muted small">To‘lovdan keyin avtomatik faollashadi</p><button class="btn block" data-a="payPro:'+t.days+'" '+(!t.price||!p.gatewayReady?'disabled':'')+'>💳 To‘lov qilish</button></div>').join('');
-      if($('orderHistory'))$('orderHistory').innerHTML=h.payments.length?h.payments.map(o=>'<div class="letteritem row between"><div><strong>'+o.days+' kun · '+fmt(o.amount)+'</strong><div class="muted small">'+e(o.status)+' · '+e(o.orderId)+'</div></div>'+(o.status==='pending'?btn('resumePay:'+o.orderId,'Ochish'):'')+'</div>').join(''):'Hali buyurtmalar yo‘q.';
+   Promise.all([api(mini?'/api/stars/plans':'/api/payments/plans'),api(mini?'/api/stars/mine':'/api/payments/mine')]).then(([p,h])=>{
+      if($('proPlans'))$('proPlans').innerHTML=p.plans.map(t=>'<div class="card center" style="margin:4px 0"><div style="font-size:32px">'+(t.days===3?'🌸':'👑')+'</div><h3>'+t.days+' kunlik Pro</h3><strong style="font-size:20px">'+(t.price?(mini?(t.price+' ⭐'):fmt(t.price)):'Hali narx belgilanmagan')+'</strong><p class="muted small">To‘lovdan keyin avtomatik faollashadi</p><button class="btn block" data-a="'+(mini?'payStars:':'payPro:')+t.days+'" '+(!t.price||!p.gatewayReady?'disabled':'')+'>💳 To‘lov qilish</button></div>').join('');
+      if($('orderHistory'))$('orderHistory').innerHTML=h.payments.length?h.payments.map(o=>'<div class="letteritem row between"><div><strong>'+o.days+' kun · '+(mini?(o.stars+' ⭐'):fmt(o.amount))+'</strong><div class="muted small">'+e(o.status)+' · '+e(o.orderId)+'</div></div>'+(o.status==='pending'&&!mini?btn('resumePay:'+o.orderId,'Ochish'):'')+'</div>').join(''):'Hali buyurtmalar yo‘q.';
    }).catch(err=>ctx.notify(err.message));
  }
  async function adminWidgets(){
    const mount=$('view');if(!mount)return;
    const section=document.createElement('div');
    section.className='card';
-   section.innerHTML='<h2 class="card-title">💳 Hamyon API — Pro tarif narxlari</h2><p class="muted small">Narxlarni so‘mda belgilang. 0 qiymat tarifni o‘chiradi. Bir xil summali to‘lovlar ajratish uchun kichik identifikatsiya farqi bilan yaratilishi mumkin.</p>'+
+   section.innerHTML='<h2 class="card-title">💳 Pro tariflari — Sayt va Telegram</h2><p class="muted small">Narxlarni so‘mda belgilang. 0 qiymat tarifni o‘chiradi. Bir xil summali to‘lovlar ajratish uchun kichik identifikatsiya farqi bilan yaratilishi mumkin.</p>'+
    '<form data-form="proPrices" class="twocol"><label class="field"><span>3 kun (so‘m)</span><input class="input" type="number" name="price3" min="0" max="5000000" step="1" required></label>'+
    '<label class="field"><span>7 kun (so‘m)</span><input class="input" type="number" name="price7" min="0" max="5000000" step="1" required></label>'+
+   '<label class="field"><span>3 kun (Telegram ⭐)</span><input class="input" type="number" name="stars3" min="0" max="100000" step="1" required></label>'+ 
+   '<label class="field"><span>7 kun (Telegram ⭐)</span><input class="input" type="number" name="stars7" min="0" max="100000" step="1" required></label>'+ 
    '<button class="btn block" type="submit" style="grid-column:1/-1">Tariflarni saqlash</button></form>'+
    '<h3>So‘nggi buyurtmalar</h3><div class="small muted" id="adminOrderHistory">Yuklanmoqda...</div>';
    mount.appendChild(section);
    try{
-     const [prices,orders]=await Promise.all([api('/api/admin/prices'),api('/api/admin/payments')]);
+     const [prices,orders,stars]=await Promise.all([api('/api/admin/prices'),api('/api/admin/payments'),api('/api/admin/stars')]);
      if(mount.contains(section)){
        section.querySelector('[name=price3]').value=prices.price3;
        section.querySelector('[name=price7]').value=prices.price7;
+       section.querySelector('[name=stars3]').value=prices.stars3;
+       section.querySelector('[name=stars7]').value=prices.stars7;
        $('adminOrderHistory').innerHTML=orders.payments.length?orders.payments.slice(0,30).map(o=>'<div class="letteritem row between"><div><strong>'+o.days+' kun — '+fmt(o.amount)+'</strong><div class="small muted">'+e(o.status)+' · '+e(o.orderId)+'</div></div></div>').join(''):'To‘lovlar hali mavjud emas.';
+       $('adminOrderHistory').innerHTML+='<h3>⭐ Telegram Stars</h3>'+(stars.payments.length?stars.payments.map(o=>'<div class="letteritem"><strong>'+o.days+' kun — '+o.stars+' ⭐</strong><div class="muted small">'+e(o.status)+' · '+e(o.orderId)+'</div></div>').join(''):'<p class="muted small">Telegram Stars to‘lovlari yo‘q.</p>');
      }
    }catch(err){ctx.notify(err.message)}
  }
  async function action(a,node){
    if(a==='tgRegMode'||a==='tgLinkMode'){miniMode=a==='tgRegMode'?'register':'link';telegramWelcome();return true}
    if(a==='checkPay'){await checkPayment();return true}
+   if(a==='checkStars'){await starStatus();return true}
+   if(a.startsWith('payStars:')){await payStars(Number(a.split(':')[1]));return true}
    if(a==='copyPayCard'){await ctx.copy(lastCard);return true}
    if(a==='copyPayAmount'){await ctx.copy(String(lastAmount));return true}
    if(a.startsWith('payPro:')){await pay(Number(a.split(':')[1]));return true}
