@@ -106,6 +106,7 @@ function renderCard(message,myId){
     message.gameWinner===myId?'Siz yutdingiz':'Juftingiz yutdi')+'</p>':'')+
   (open&&button?'<button type="button" class="chatplay-card-button" data-chatgame-room="'+esc(message.gameId)+'" data-chatgame-type="'+esc(message.gameType)+'">'+
    I(status==='waiting'?'arrow':'gamepad',17)+' '+esc(button)+'</button>':'')+
+  (status==='finished'&&deps?.getMe?.()?.isPro?'<button type="button" class="chatplay-rematch" data-chatgame-rematch="'+esc(message.gameType)+'">'+I('refresh',16)+' Qayta duelga chorlash</button>':'')+
   '<div class="chatplay-card-foot"><span>'+time+'</span><span>24 soatgacha amal qiladi</span></div>'+
   '</div></div>';
 }
@@ -115,6 +116,7 @@ document.addEventListener('click',e=>{
  const more=e.target.closest('[data-chatgame-more]');if(more){close();deps?.go('games');return}
  const pro=e.target.closest('[data-chatgame-pro]');if(pro){close();deps?.go('pro');return}
  const invite=e.target.closest('[data-chatgame-create]');if(invite){create(invite.dataset.chatgameCreate,invite);return}
+ const rematch=e.target.closest('[data-chatgame-rematch]');if(rematch){create(rematch.dataset.chatgameRematch,rematch);return}
  const open=e.target.closest('[data-chatgame-room]');
  if(open){openRoom(open.dataset.chatgameType,open.dataset.chatgameRoom);return}
  if(e.target.id==='chatGameSheet'){close()}
