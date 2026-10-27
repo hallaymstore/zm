@@ -81,7 +81,9 @@ module.exports=function installIntegrations(app,deps){
    if(!secret()||!shared||got.length!==shared.length||!crypto.timingSafeEqual(Buffer.from(got),Buffer.from(shared)))return res.sendStatus(403);
    if(!req.body||!Number.isSafeInteger(req.body.update_id))return res.sendStatus(400);
    const update=req.body;
+   if(update.pre_checkout_query){await handlePreCheckout(update.pre_checkout_query);return res.json({ok:true})}
    const message=update.message;
+   if(message&&message.successful_payment){await handleStarPayment(message);return res.json({ok:true})}
    if(message&&message.chat&&message.chat.type==='private'&&message.text){
      const t=String(message.text);
      const chatId=message.chat.id;
@@ -89,6 +91,11 @@ module.exports=function installIntegrations(app,deps){
        await send(chatId,'💌 <b>Qalbim ♡ — ikki qalb, bitta makon</b>\n\nSehrli maktublar, maxfiy suhbat va Pro imkoniyatlar.\n\n👇 Mini App tugmasi orqali ro‘yxatdan o‘ting. Keyingi safar avtomatik kirasiz.',mainKeyboard());
      }else if(/^\/pro\b/.test(t)){
        await send(chatId,'✦ Pro obuna uchun mini ilovani ochib, <b>Pro</b> bo‘limiga o‘ting. To‘lov tekshirilgach Pro avtomatik faollashadi.',mainKeyboard());
+     }else if(/^\/terms\b/.test(t)){
+       await send(chatId,'Qalbim foydalanish shartlari: '+root()+'/terms.html');
+     }else if(/^\/paysupport\b/.test(t)){
+       const item=await c('settings').findOne({_id:'public'});
+       await send(chatId,'To‘lov bilan muammo bo‘lsa, buyurtma raqami bilan administratorga yozing: '+(item?.telegram||root()+'/profile.html'));
      }else if(/^\/app\b/.test(t)){
        await send(chatId,'Qalbim Mini App — ilovani oching:',mainKeyboard());
      }
@@ -201,17 +208,99 @@ module.exports=function installIntegrations(app,deps){
  app.post('/api/hamyon/prepare',ready,asyncRoute((req,res)=>callback(req,res,false)));
  app.post('/api/hamyon/complete',ready,asyncRoute((req,res)=>callback(req,res,true)));
 
+
+ // Telegram Mini App digital subscriptions are sold solely with Telegram Stars (XTR).
+ // Card-based Hamyon checkout remains for the standalone website.
+ const isStarPrice=n=>Number.isSafeInteger(Number(n))&&Number(n)>=0&&Number(n)<=100000;
+ async function getStars(){
+   const s=await c('settings').findOne({_id:'prices'});
+   return {stars3:isStarPrice(s?.stars3)?Number(s.stars3):0,stars7:isStarPrice(s?.stars7)?Number(s.stars7):0};
+ }
+ app.get('/api/stars/plans',ready,asyncRoute(async(req,res)=>{
+   const v=await getStars();
+   res.json({plans:[{days:3,price:v.stars3},{days:7,price:v.stars7}],gatewayReady:!!secret()});
+ }));
+ app.get('/api/stars/mine',deps.auth,asyncRoute(async(req,res)=>{
+   const list=await c('starPayments').find({userId:req.user._id},{projection:{_id:0,orderId:1,days:1,stars:1,status:1,createdAt:1}}).sort({createdAt:-1}).limit(30).toArray();
+   res.json({payments:list});
+ }));
+ app.get('/api/stars/status/:orderId',deps.auth,asyncRoute(async(req,res)=>{
+   const item=await c('starPayments').findOne({orderId:String(req.params.orderId),userId:req.user._id});
+   if(!item)return reply(res,404,'Buyurtma topilmadi');
+   res.json({orderId:item.orderId,status:item.status,days:item.days,stars:item.stars});
+ }));
+ app.post('/api/stars/create',ready,deps.auth,deps.authRate,asyncRoute(async(req,res)=>{
+   let tgUser;try{tgUser=checkInit(req.body.initData)}catch(e){return reply(res,401,'Stars uchun Telegram Mini App ichidan kiring')}
+   if(!req.user.telegramId||req.user.telegramId!==tgUser.id)return reply(res,403,'Telegram hisobingizga mos kelmaydi');
+   const days=Number(req.body.days),key=days===3?'stars3':days===7?'stars7':null;
+   if(!key)return reply(res,400,'Tarif 3 yoki 7 kun');
+   const stars=(await getStars())[key];
+   if(!stars)return reply(res,409,'Admin Telegram Stars tarif narxini kiritmagan');
+   const recent=await c('starPayments').findOne({userId:req.user._id,status:'pending',createdAt:{$gt:new Date(Date.now()-3600000)}});
+   if(recent)return res.json({orderId:recent.orderId,invoiceLink:recent.invoiceLink,stars:recent.stars,days:recent.days,reused:true});
+   const orderId='XTR-'+crypto.randomBytes(10).toString('hex');
+   const doc={userId:req.user._id,telegramId:tgUser.id,orderId,days,stars,status:'creating',createdAt:now()};
+   await c('starPayments').insertOne(doc);
+   try{
+     const invoice=await tgMethod('createInvoiceLink',{
+       title:'Qalbim Pro — '+days+' kun',
+       description:days+' kunlik Qalbim Pro: maxfiy suratlar va juftlik o‘yinlari',
+       payload:orderId,provider_token:'',currency:'XTR',
+       prices:[{label:days+' kunlik Qalbim Pro',amount:stars}]
+     });
+     await c('starPayments').updateOne({orderId,status:'creating'},{$set:{invoiceLink:invoice,status:'pending'}});
+     res.status(201).json({orderId,invoiceLink:invoice,days,stars});
+   }catch(e){
+     await c('starPayments').updateOne({orderId,status:'creating'},{$set:{status:'failed',error:'Telegram invoice error'}});
+     return reply(res,502,'Telegram Stars buyurtmasi yaratilmadi: '+e.message.slice(0,130));
+   }
+ }));
+ async function handlePreCheckout(q){
+   const order=await c('starPayments').findOne({orderId:String(q.invoice_payload||''),status:'pending'});
+   const ok=!!(order&&q.currency==='XTR'&&order.stars===Number(q.total_amount)&&order.telegramId===String(q.from?.id));
+   await tgMethod('answerPreCheckoutQuery',{pre_checkout_query_id:q.id,ok,error_message:ok?undefined:'Buyurtma mos emas yoki muddati tugagan. Yangi Pro buyurtma yarating.'});
+ }
+ async function handleStarPayment(message){
+   const paid=message.successful_payment;
+   const orderId=String(paid.invoice_payload||''),chargeId=String(paid.telegram_payment_charge_id||'');
+   const order=await c('starPayments').findOne({orderId});
+   if(!order||!chargeId||paid.currency!=='XTR'||order.stars!==Number(paid.total_amount)||order.telegramId!==String(message.from?.id)){
+     console.warn('Telegram Stars payment unmatched');return;
+   }
+   if(order.status==='paid')return;
+   if(order.status!=='pending')throw new Error('Telegram Stars payment order not pending');
+   const mongoClient=deps.mongoClient(),session=mongoClient.startSession();
+   try{
+     await session.withTransaction(async()=>{
+       const changed=await c('starPayments').updateOne({_id:order._id,status:'pending'},{$set:{status:'paid',chargeId,paidAt:now()}},{session});
+       if(changed.modifiedCount===1){
+         const u=await c('users').findOne({_id:order.userId},{session});
+         if(!u||u.banned)throw new Error('Telegram payment user missing or banned');
+         const baseTime=Math.max(Date.now(),u.proUntil?new Date(u.proUntil).getTime():0);
+         await c('users').updateOne({_id:u._id},{$set:{proUntil:new Date(baseTime+order.days*day)}},{session});
+       }
+     },{maxCommitTimeMS:12000});
+   }finally{await session.endSession()}
+   try{await send(message.chat.id,'✅ <b>To‘lov tasdiqlandi!</b>\n\n✦ Qalbim Pro '+order.days+' kunga faollashtirildi.',mainKeyboard())}catch(e){console.warn('Stars receipt notification failed:',e.message)}
+ }
+ app.get('/api/admin/stars',deps.auth,deps.adm,asyncRoute(async(req,res)=>{
+   const list=await c('starPayments').find({},{projection:{_id:0,invoiceLink:0,chargeId:0}}).sort({createdAt:-1}).limit(50).toArray();
+   res.json({payments:list.map(v=>({...v,userId:String(v.userId)}))});
+ }));
+
  app.get('/api/admin/payments',deps.auth,deps.adm,asyncRoute(async(req,res)=>{
    const list=await c('payments').find({},{projection:{_id:0,paymentId:0,card:0}}).sort({createdAt:-1}).limit(100).toArray();
    res.json({payments:list.map(p=>({...p,userId:String(p.userId)}))});
  }));
- app.get('/api/admin/prices',deps.auth,deps.adm,asyncRoute(async(req,res)=>res.json(await getPrices())));
+ app.get('/api/admin/prices',deps.auth,deps.adm,asyncRoute(async(req,res)=>res.json({...await getPrices(),...await getStars()})));
  app.patch('/api/admin/prices',deps.auth,deps.adm,asyncRoute(async(req,res)=>{
    const price3=Number(req.body.price3),price7=Number(req.body.price7);
    if(!validPrice(price3)||!validPrice(price7))return reply(res,400,'Narxlar 0–5 000 000 so‘m oralig‘idagi butun son bo‘lsin');
+   const stars3=Number(req.body.stars3),stars7=Number(req.body.stars7);
+   if(!isStarPrice(stars3)||!isStarPrice(stars7))return reply(res,400,'Stars narxlari 0–100 000 oralig‘idagi butun son bo‘lsin');
    if((price3>0&&price3<1000)||(price7>0&&price7<1000))return reply(res,400,'Aktiv tarif narxi kamida 1000 so‘m');
-   await c('settings').updateOne({_id:'prices'},{$set:{price3,price7,updatedAt:now()}},{upsert:true});
-   res.json({ok:true,price3,price7});
+   await c('settings').updateOne({_id:'prices'},{$set:{price3,price7,stars3,stars7,updatedAt:now()}},{upsert:true});
+   res.json({ok:true,price3,price7,stars3,stars7});
  }));
 
  async function start(){
@@ -221,7 +310,9 @@ module.exports=function installIntegrations(app,deps){
      c('payments').createIndex({orderId:1},{unique:true}),
      c('payments').createIndex({paymentId:1},{unique:true,partialFilterExpression:{paymentId:{$type:'string'}}}),
      c('paymentAmounts').createIndex({amount:1},{unique:true}),
-     c('paymentAmounts').createIndex({expiresAt:1},{expireAfterSeconds:0})
+     c('paymentAmounts').createIndex({expiresAt:1},{expireAfterSeconds:0}),
+     c('starPayments').createIndex({orderId:1},{unique:true}),
+     c('starPayments').createIndex({chargeId:1},{unique:true,partialFilterExpression:{chargeId:{$type:'string'}}})
    ]);
    if(!secret()){console.warn('TELEGRAM_BOT_TOKEN missing — Mini App Telegram login disabled');return}
    if(!process.env.TELEGRAM_WEBHOOK_SECRET){console.warn('TELEGRAM_WEBHOOK_SECRET missing — bot webhook not enabled');return}
@@ -231,9 +322,9 @@ module.exports=function installIntegrations(app,deps){
        console.error('Configured Telegram token does not belong to @maktubimbot. Webhook not configured.');
        return;
      }
-     await tgMethod('setWebhook',{url:root()+'/api/telegram/webhook',secret_token:process.env.TELEGRAM_WEBHOOK_SECRET,allowed_updates:['message'],max_connections:10});
+     await tgMethod('setWebhook',{url:root()+'/api/telegram/webhook',secret_token:process.env.TELEGRAM_WEBHOOK_SECRET,allowed_updates:['message','pre_checkout_query'],max_connections:10});
      await tgMethod('setChatMenuButton',{menu_button:{type:'web_app',text:'💌 Qalbim',web_app:{url:root()+'/?tg=1'}}});
-     await tgMethod('setMyCommands',{commands:[{command:'start',description:'Qalbim Mini App'},{command:'pro',description:'Pro tariflar'},{command:'help',description:'Yordam'}]});
+     await tgMethod('setMyCommands',{commands:[{command:'start',description:'Qalbim Mini App'},{command:'pro',description:'Pro tariflar'},{command:'terms',description:'Foydalanish shartlari'},{command:'paysupport',description:'To‘lovlar uchun yordam'},{command:'help',description:'Yordam'}]});
      configuredWebhook=true;
      console.log('Telegram @maktubimbot webhook and Mini App menu configured');
    }catch(e){console.error('Telegram integration setup:',e.message.slice(0,180))}
