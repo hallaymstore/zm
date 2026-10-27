@@ -1,13 +1,13 @@
 /* Qalbim scenes v3: 18 individually art-directed recipient pages, no images, no canvas, no third-party assets. */
-.letter-scene,.scene-thumb,.scene-intro-backdrop{
+.letter-scene,.scene-thumb,.scene-intro-backdrop,.scene-ceremony{
  --sbg:#f9dfe7;--sbg2:#fff4f1;--sfg:#572842;--saccent:#cb6289;--sglass:#fffaf2e8;--sline:#bb6b8b60;
  --sfont:"Playfair Display",Georgia,serif;--stext:var(--sfg);
 }
 .letter-scene{width:100%;min-width:0;position:relative;isolation:isolate;border-radius:23px;overflow:hidden;color:var(--sfg);background:linear-gradient(140deg,var(--sbg),var(--sbg2));min-height:610px;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:45px 30px;box-shadow:0 23px 48px #41203430;contain:layout style}
 .letter-scene *{box-sizing:border-box}
-.letter-scene .scene-world{position:absolute;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.letter-scene .scene-world{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
 .scene-world-glow,.scene-world-detail{position:absolute;display:block;pointer-events:none}
-.letter-scene .scene-composition{position:relative;z-index:2;width:min(100%,610px);min-height:390px;display:flex;flex-direction:column;justify-content:space-between;padding:33px 35px;background:var(--sglass);border:1px solid var(--sline);border-radius:10px;box-shadow:0 19px 48px #34212c22;backdrop-filter:blur(3px);animation:sceneCardIn .85s cubic-bezier(.17,.7,.2,1) both}
+.letter-scene .scene-composition{position:relative;z-index:2;width:min(100%,610px);min-height:390px;display:flex;flex-direction:column;justify-content:space-between;padding:33px 35px;background:var(--sglass);border:1px solid var(--sline);border-radius:10px;box-shadow:0 19px 48px #34212c22;animation:sceneCardIn .85s cubic-bezier(.17,.7,.2,1) both}
 .letter-scene .scene-topline,.letter-scene .scene-bottomline{display:flex;align-items:center;justify-content:space-between;gap:13px;font-size:10px;letter-spacing:2px;font-weight:800}
 .letter-scene .scene-topline{color:var(--saccent);text-align:center}
 .letter-scene .scene-kicker{max-width:75%}
@@ -256,3 +256,21 @@
  .letter-scene *, .scene-intro-backdrop *{animation:none!important;transition:none!important}
  .letter-scene .scene-composition{animation:none}
 }
+
+/* Actual saved-letter full-screen preview from the editor. */
+.scene-demo-overlay{position:fixed;inset:0;z-index:210;display:flex;flex-direction:column;align-items:center;overflow:auto;overscroll-behavior:contain;background:#15101bee;backdrop-filter:blur(7px);padding:56px clamp(10px,3vw,28px) 30px}
+.scene-demo-toolbar{width:min(100%,940px);display:flex;align-items:center;justify-content:space-between;gap:14px;color:#fff5fa;font-size:13px;margin-bottom:15px}
+.scene-demo-toolbar strong{font:600 21px "Playfair Display",serif}
+.scene-demo-toolbar .btn{flex-shrink:0}
+.scene-demo-content{width:min(100%,940px);margin:0 auto}
+.scene-demo-content .letter-scene{min-height:640px}
+.scene-demo-caption{color:#f3d9e7;max-width:800px;text-align:center;font-size:11px;line-height:1.6;margin:16px auto}
+.scene-preview-button{display:block;width:100%;min-height:42px;background:var(--e-soft);border:1px solid var(--e-line);border-radius:12px;color:var(--e-ink);margin-top:12px;font-weight:750;font-size:12px;cursor:pointer}
+.scene-preview-button:hover{border-color:var(--e-pink)}
+@media(max-width:767px){
+ .scene-demo-overlay{padding:12px 8px 25px;backdrop-filter:none}
+ .scene-demo-toolbar{padding:6px 7px}
+ .scene-demo-content .letter-scene{min-height:560px}
+ .scene-demo-toolbar strong{font-size:17px}
+}
+@media(prefers-reduced-motion:reduce){.scene-demo-overlay{backdrop-filter:none}}
