@@ -264,7 +264,14 @@ module.exports=function installIntegrations(app,deps){
    if(!validSignature(body))return reply(res,403,'Payment signature invalid');
    const paymentId=String(body.payment_id),amount=Number(body.amount),orderId=String(body.order_id||'');
    const order=await c('payments').findOne({paymentId,orderId,amount});
-   if(!order)return reply(res,404,'To‘lov buyurtmasi topilmadi');
+   if(!order){
+     const diag=await c('hamyonTests').findOne({orderId,amount});
+     if(!diag)return reply(res,404,'To‘lov buyurtmasi topilmadi');
+     if(diag.paymentId&&diag.paymentId!==paymentId)return reply(res,403,'Payment ID mismatch');
+     const resultStatus=String(body.status||'').toLowerCase();
+     await c('hamyonTests').updateOne({_id:diag._id},{$set:{paymentId,status:final?resultStatus:'prepare',updatedAt:now()}});
+     return res.json({ok:true,diagnostic:true});
+   }
    const status=String(body.status||'').toLowerCase();
    if(!final){return res.json({ok:true})}
    if(status==='cancel'){
@@ -384,6 +391,7 @@ module.exports=function installIntegrations(app,deps){
      return reply(res,429,'Tekshiruvni 30 soniyadan keyin takrorlang');
    const amount=39100+crypto.randomInt(0,700);
    const orderId='QAL-CHECK-'+crypto.randomBytes(9).toString('hex');
+   await c('hamyonTests').insertOne({orderId,amount,status:'creating',createdAt:now(),expiresAt:new Date(Date.now()+3600000)});
    try{
      const data=new URLSearchParams({shop_id:h.id,shop_key:h.key,amount:String(amount),order_id:orderId});
      const response=await fetch('https://hamyon-api.uz/payment/create',{
@@ -398,6 +406,7 @@ module.exports=function installIntegrations(app,deps){
        await saveGateway('unverified');
        return reply(res,502,'Hamyon sinov buyurtmasini rad etdi: '+msg.slice(0,130));
      }
+     await c('hamyonTests').updateOne({orderId},{$set:{paymentId:String(json.payment_id),status:'pending'}});
      const state=await getHamyonStatus({paymentId:String(json.payment_id),orderId,amount});
      if(!['pending','prepare','created','waiting'].includes(state)){
        await saveGateway('unverified');
@@ -432,6 +441,8 @@ module.exports=function installIntegrations(app,deps){
      c('payments').createIndex({paymentId:1},{unique:true,partialFilterExpression:{paymentId:{$type:'string'}}}),
      c('paymentAmounts').createIndex({amount:1},{unique:true}),
      c('paymentAmounts').createIndex({expiresAt:1},{expireAfterSeconds:0}),
+     c('hamyonTests').createIndex({orderId:1},{unique:true}),
+     c('hamyonTests').createIndex({expiresAt:1},{expireAfterSeconds:0}),
      c('starPayments').createIndex({orderId:1},{unique:true}),
      c('starPayments').createIndex({chargeId:1},{unique:true,partialFilterExpression:{chargeId:{$type:'string'}}})
    ]);
