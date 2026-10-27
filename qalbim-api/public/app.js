@@ -19,10 +19,10 @@ async function api(url,options={}){
 }
 function modal(html){host.hidden=false;host.innerHTML='<div class="modal" role="dialog" aria-modal="true"><div class="row between"><strong style="font:600 23px Playfair Display,serif">Qalbim ♡</strong>'+btn('closeModal','✕')+'</div>'+html+'</div>'}
 function closeModal(){host.hidden=true;host.innerHTML=''}
-function markNav(){document.querySelectorAll('[data-a]').forEach(n=>{if(!n.classList.contains('navitem'))return;let page=location.pathname,tab=new URLSearchParams(location.search).get('view'),x=n.dataset.a;n.classList.toggle('active',(x==='chats'&&page.includes('chat'))||(x==='letters'&&tab==='letters')||(x==='pro'&&tab==='pro')||(x==='profile'&&page.includes('profile'))||(x==='home'&&page==='/'&&!tab))})}
+function markNav(){document.querySelectorAll('[data-a]').forEach(n=>{if(!n.classList.contains('navitem'))return;let page=location.pathname,tab=new URLSearchParams(location.search).get('view'),x=n.dataset.a;n.classList.toggle('active',(x==='chats'&&page.includes('chat'))||(x==='letters'&&tab==='letters')||(x==='games'&&tab==='games')||(x==='pro'&&tab==='pro')||(x==='profile'&&page.includes('profile'))||(x==='home'&&page==='/'&&!tab))})}
 async function refresh(){try{const v=await api('/api/me');me=v.user;partner=v.partner}catch(e){me=null;partner=null}}
 function page(){let p=location.pathname,tab=new URLSearchParams(location.search).get('view');if(p.startsWith('/l/'))return 'letter';if(p.startsWith('/invite/'))return 'invite';if(p.includes('admin'))return 'admin';if(p.includes('chats.html'))return 'chats';if(p.includes('chat.html'))return 'chat';if(p.startsWith('/u/'))return 'publicProfile';if(p.includes('profile'))return 'profile';return tab||'home'}
-function go(where){let routes={home:'/',letters:'/?view=letters',create:'/?view=create',pro:'/?view=pro',chats:'/chats.html',chat:'/chat.html',profile:'/profile.html',admin:'/admin.html'};location.href=routes[where]||where}
+function go(where){let routes={home:'/',letters:'/?view=letters',create:'/?view=create',games:'/?view=games',pro:'/?view=pro',chats:'/chats.html',chat:'/chat.html',profile:'/profile.html',admin:'/admin.html'};location.href=routes[where]||where}
 function hero(txt,sub){return '<div class="hero"><div class="spark">'+window.QalbimIcons.svg('mail',28)+'</div><p class="eyebrow">Ikki qalb — bir hikoya</p><h1>'+txt+'</h1><p>'+sub+'</p></div>'}
 const extra=window.QalbimIntegrations({api,section,hero,btn,esc,notify,go,copy,modal,closeModal,refresh,getMe:()=>me});
 function auth(){
@@ -184,6 +184,7 @@ async function loadMessages(){if(!chatPartner||!chatVisit||!$('chatMessages'))re
  }catch(e){if($('chatMessages'))$('chatMessages').textContent=e.message}}
 function leaveChat(){if(chatTimer){clearInterval(chatTimer);chatTimer=null}if(chatVisit){let body=new URLSearchParams({visit:chatVisit});if(navigator.sendBeacon)navigator.sendBeacon('/api/chats/leave',body);chatVisit=''}}
 function proPage(){return extra.proPage()}
+function arcade(){section(window.QalbimGames.mount())}
 function games(kind){
  if(!isPro()){notify('Bu o‘yin faqat Pro foydalanuvchilar uchun');go('pro');return}
  const data={quiz:['Sevgilingizni qanday xursand qilasiz?','Qaysi kichik e’tibor unga yoqadi?','Birgalikda eng chiroyli xotirangiz qaysi?'],question:['Birinchi uchrashuvimizdagi eng esda qolarli lahza nima?','Kelajakdagi birgalikdagi orzuimiz qaysi?','Mendan eshitishni xohlagan gaping nima?','Menga aytmay yurgan yoqimli sirin bormi?'],box:['Bugun unga 3 ta samimiy iltifot yozing.','Juftingizga 10 soniyali shirin ovozli xabar yuboring.','Birgalikdagi eng yaxshi suratni toping.','Bir-biringiz uchun 5 ta iliq so‘z ayting.']};
@@ -225,7 +226,7 @@ async function act(action,node){
  if(await extra.action(action,node))return;
  if(action==='closeModal')return closeModal();
  if(action==='loginMode'||action==='registerMode'){authMode=action==='loginMode'?'login':'register';return auth()}
- if(['home','letters','create','pro','chats','chat','profile','admin'].includes(action)){leaveChat();return go(action)}
+ if(['home','letters','create','games','pro','chats','chat','profile','admin'].includes(action)){leaveChat();return go(action)}
  if(action==='loginGo')return go('/');
  if(action==='pair')return pair();
  if(action==='logout'){await api('/api/auth/logout',{method:'POST'});me=null;go('/');return}
@@ -304,6 +305,7 @@ document.addEventListener('error',e=>{if(e.target.tagName==='IMG'&&e.target.src.
  if(p==='chats')return chats();
  if(p==='profile')return profile();
  if(p==='pro')return proPage();
+ if(p==='games')return arcade();
  if(p==='letters')return letters();
  if(p==='create')return studio();
  return home();
