@@ -66,7 +66,7 @@ function mount(host,data,options={}){
      b.classList.toggle('passed',i<index);
      b.setAttribute('aria-current',i===index?'step':'false');
    });
-   root.querySelector('.moment-slide').innerHTML=renderSlide(data,index,!!options.preview);
+   root.querySelector('.moment-slide').innerHTML=renderSlide(session.data,index,!!options.preview);
    root.querySelector('.moment-slide').dataset.step=String(index);
    const prev=root.querySelector('[data-moment-nav="-1"]');
    const next=root.querySelector('[data-moment-nav="1"]');
@@ -75,6 +75,7 @@ function mount(host,data,options={}){
    root.classList.remove('moment-changing');void root.offsetWidth;root.classList.add('moment-changing');
  };
  session.move=move;
+ session.update=next=>{session.data={...next};root.dataset.theme=String(Number((next.letter||next).theme)||1);move(session.index)};
  root.addEventListener('click',async e=>{
    const nav=e.target.closest('[data-moment-nav]');
    if(nav){move(session.index+Number(nav.dataset.momentNav));return}
@@ -96,7 +97,8 @@ function mount(host,data,options={}){
        if(counter)counter.textContent=String((Number(counter.textContent)||0)+1);
        else{const count=document.createElement('span');count.textContent='1';reaction.appendChild(count)}
        reaction.classList.add('sent');
-     }finally{reaction.disabled=false}
+     }catch(err){if(typeof options.onError==='function')options.onError(err)}
+     finally{reaction.disabled=false}
      return;
    }
    if(e.target.closest('[data-moment-full]')&&typeof options.onReadFull==='function')options.onReadFull();
