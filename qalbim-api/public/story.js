@@ -5,6 +5,13 @@
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const icon=(name,size=19)=>window.QalbimIcons.svg(name,size);
 let current=null;
+const photoIds=d=>{
+ const item=d.letter||d;return Array.isArray(item.photoIds)?item.photoIds.filter(id=>typeof id==='string'&&/^[a-f0-9]{24}$/i.test(id)).slice(0,4):[];
+};
+const steps=d=>photoIds(d).length?4:3;
+const progressHtml=(len)=>Array.from({length:len},(_,n)=>
+ '<button type="button" class="moment-progress-seg'+(n===0?' active':'')+'" data-moment-jump="'+n+
+ '" aria-label="'+(n+1)+'-sahifaga o‘tish" aria-current="'+(n===0?'step':'false')+'"><span></span></button>').join('');
 function renderSlide(data,n,preview){
  const l=data.letter||data;
  if(n===0){
@@ -20,6 +27,16 @@ function renderSlide(data,n,preview){
     '<h2>'+esc(l.title||'Senga yozilgan maktub')+'</h2>'+
     '<div class="moment-message" tabindex="0">'+esc(l.message||'Senga aytadigan gapim bor...')+'</div>'+
     '<div class="moment-sign">Mehr bilan, <strong>'+esc(l.from||'Men')+'</strong></div></div>';
+ }
+ if(photoIds(data).length&&n===2){
+  const ids=photoIds(data);
+  return '<div class="moment-content moment-memory"><div class="moment-label">BIZNING XOTIRALARIMIZ</div>'+
+   '<h2>Esda qolgan lahzalar</h2><p>Bir suratda bir olam hislar bor.</p>'+
+   '<div class="moment-photo-grid count-'+ids.length+'">'+ids.map((id,i)=>
+     '<button type="button" class="moment-photo" data-moment-photo="'+esc(id)+'" aria-label="'+(i+1)+'-suratni kattalashtirish">'+
+     '<span class="moment-photo-lock">'+icon('lock',24)+'<small>Maxfiy surat · Pro</small></span>'+
+     '<img class="moment-photo-image" src="/api/photos/'+esc(id)+'" alt="Birgalikdagi xotira '+(i+1)+'" loading="lazy"></button>').join('')+'</div>'+
+   '<span class="moment-photo-tip">Maxfiy suratlar faqat egasi yoki Pro foydalanuvchiga ko‘rinadi.</span></div>';
  }
  const hasGift=!!String(l.secretNote||'').trim();
  const counts=data.reactions||{};
@@ -39,14 +56,13 @@ function renderSlide(data,n,preview){
    '</div>';
 }
 function markup(data,preview=false){
- const l=data.letter||data;
+ const l=data.letter||data;const total=steps(data);
  return '<div class="moment-player" data-theme="'+(Number(l.theme)||1)+'" aria-label="Uch bosqichli sevgi hikoyasi" tabindex="0">'+
-   '<div class="moment-topbar"><div class="moment-progress" aria-label="Hikoya bosqichlari">'+[0,1,2].map(n=>
-   '<button type="button" class="moment-progress-seg'+(n===0?' active':'')+'" data-moment-jump="'+n+'" aria-label="'+(n+1)+'-sahifaga o‘tish" aria-current="'+(n===0?'step':'false')+'"><span></span></button>').join('')+'</div>'+
+   '<div class="moment-topbar"><div class="moment-progress" aria-label="Hikoya bosqichlari">'+progressHtml(total)+'</div>'+
    '<div class="moment-identity">'+icon('heart',16)+' QALBIM <span>MOMENTS</span></div></div>'+
    '<div class="moment-slide" data-step="0">'+renderSlide(data,0,preview)+'</div>'+
    '<div class="moment-controls"><button type="button" data-moment-nav="-1" aria-label="Oldingi sahifa" disabled>'+icon('arrow',21)+'</button>'+
-   '<span class="moment-counter" aria-live="polite">01 / 03</span>'+
+   '<span class="moment-counter" aria-live="polite">01 / 0'+total+'</span>'+
    '<button type="button" data-moment-nav="1" aria-label="Keyingi sahifa">'+icon('arrow',21)+'</button></div>'+
    '<span class="moment-tip">'+(preview?'To‘liq ekran demo':'Chapga suring yoki tugmalar orqali davom eting')+'</span></div>';
 }
@@ -59,7 +75,7 @@ function mount(host,data,options={}){
  current=session;
  const move=n=>{
    if(!root.isConnected)return;
-   session.index=Math.max(0,Math.min(2,n));
+   session.index=Math.max(0,Math.min(steps(session.data)-1,n));
    const index=session.index;
    root.querySelectorAll('.moment-progress-seg').forEach((b,i)=>{
      b.classList.toggle('active',i===index);
@@ -70,12 +86,12 @@ function mount(host,data,options={}){
    root.querySelector('.moment-slide').dataset.step=String(index);
    const prev=root.querySelector('[data-moment-nav="-1"]');
    const next=root.querySelector('[data-moment-nav="1"]');
-   prev.disabled=index===0;next.disabled=index===2;
-   root.querySelector('.moment-counter').textContent='0'+(index+1)+' / 03';
+   prev.disabled=index===0;next.disabled=index===steps(session.data)-1;
+   root.querySelector('.moment-counter').textContent='0'+(index+1)+' / 0'+steps(session.data);
    root.classList.remove('moment-changing');void root.offsetWidth;root.classList.add('moment-changing');
  };
  session.move=move;
- session.update=next=>{session.data={...next};root.dataset.theme=String(Number((next.letter||next).theme)||1);move(session.index)};
+ session.update=next=>{session.data={...next};root.dataset.theme=String(Number((next.letter||next).theme)||1);root.querySelector('.moment-progress').innerHTML=progressHtml(steps(next));move(session.index)};
  root.addEventListener('click',async e=>{
    const nav=e.target.closest('[data-moment-nav]');
    if(nav){move(session.index+Number(nav.dataset.momentNav));return}
@@ -88,6 +104,17 @@ function mount(host,data,options={}){
      gift.innerHTML=icon(showing?'check':'gift',18)+(showing?' Syurpriz ochildi':' Syurprizni ochish');
      return;
    }
+   const image=e.target.closest('[data-moment-photo]');
+   if(image&&image.querySelector('img')&&!image.querySelector('img').hidden){
+      const overlay=document.createElement('div');overlay.className='moment-photo-overlay';
+      const src=image.querySelector('img').getAttribute('src');
+      overlay.innerHTML='<button type="button" class="moment-photo-close" data-moment-photo-close aria-label="Suratni yopish">'+icon('x',19)+'</button>'+
+        '<img alt="Kattalashtirilgan xotira" src="'+src+'">';
+      root.appendChild(overlay);
+      const close=overlay.querySelector('[data-moment-photo-close]');if(close)close.focus();
+      return;
+   }
+   if(e.target.closest('[data-moment-photo-close]')){root.querySelector('.moment-photo-overlay')?.remove();return}
    const reaction=e.target.closest('[data-moment-react]');
    if(reaction&&!options.preview&&typeof options.onReact==='function'){
      reaction.disabled=true;
@@ -103,10 +130,15 @@ function mount(host,data,options={}){
    }
    if(e.target.closest('[data-moment-full]')&&typeof options.onReadFull==='function')options.onReadFull();
  });
+ root.addEventListener('error',event=>{
+   if(!event.target.matches?.('.moment-photo-image'))return;
+   event.target.hidden=true;
+   event.target.closest('.moment-photo')?.setAttribute('aria-label','Maxfiy surat: Pro kerak');
+ },true);
  let sx=0,sy=0;
  root.addEventListener('touchstart',e=>{if(e.touches.length===1){sx=e.touches[0].clientX;sy=e.touches[0].clientY}},{passive:true});
  root.addEventListener('touchend',e=>{
-   if(!e.changedTouches.length||e.target.closest('button,.moment-message,.moment-hidden-note'))return;
+   if(!e.changedTouches.length||e.target.closest('button,.moment-message,.moment-hidden-note,.moment-photo-overlay'))return;
    const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
    if(Math.abs(dx)>65&&Math.abs(dx)>Math.abs(dy)*1.5)move(session.index+(dx<0?1:-1));
  },{passive:true});
