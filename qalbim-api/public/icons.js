@@ -22,6 +22,9 @@ function convertText(node){
 function hydrate(root=document){
  const base=root.nodeType===9?root.documentElement:root;
  if(!base)return;
+ const slots=Array.from(base.querySelectorAll('[data-icon]'));
+ if(base.matches?.('[data-icon]'))slots.unshift(base);
+ slots.forEach(el=>{if(!el.querySelector('svg.ui-icon'))el.innerHTML=svg(el.dataset.icon,21)});
  const all=Array.from(base.querySelectorAll('button,.discover-icon,.feature .emoji,.upload-mark,.template-option,.scene-kicker,.scene-symbol,.studio-help,.card-title,.page-title,.spark,.library-cover'));
  if(base.matches&&base.matches('button,.discover-icon,.feature .emoji,.upload-mark'))all.unshift(base);
  for(const el of all.slice(0,650)){
