@@ -133,9 +133,47 @@ function activate(button){
  stage.appendChild(feedback);
  setTimeout(()=>feedback.remove(),1350);
 }
+let previousFocus=null;
+function closeDemo(){
+ const el=document.querySelector('.scene-demo-overlay');if(!el)return;
+ el.remove();document.body.style.removeProperty('overflow');
+ if(previousFocus&&typeof previousFocus.focus==='function')previousFocus.focus();
+ previousFocus=null;
+}
+function openDemo(){
+ const form=document.getElementById('letterStudio');
+ if(!form)return;
+ closeDemo();
+ const d=new FormData(form);
+ const current=document.querySelector('#letterLivePreview .letter-scene');
+ const theme=Number(current?.dataset.scene)||1;
+ const html=render({title:d.get('title'),message:d.get('message'),from:d.get('from'),to:d.get('to'),theme,preview:false});
+ const overlay=document.createElement('div');overlay.className='scene-demo-overlay';
+ overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','Yuboriladigan maktubning to‘liq ko‘rinishi');
+ overlay.innerHTML='<div class="scene-demo-toolbar"><strong>✦ Maktub oluvchisi ko‘radigan sahifa</strong>'+
+ '<button type="button" class="btn alt sm" data-scene-demo-close>✕ Yopish</button></div>'+
+ '<div class="scene-demo-content">'+html+'</div>'+
+ '<p class="scene-demo-caption">Bu shablonning haqiqiy yuboriladigan sahifasi. Maktub hali saqlanmagan. Suratlar va reaksiyalar maktub yuborilgach ko‘rinadi.</p>';
+ previousFocus=document.activeElement;
+ document.body.appendChild(overlay);document.body.style.overflow='hidden';
+ const close=overlay.querySelector('[data-scene-demo-close]');if(close)close.focus();
+}
 document.addEventListener('click',e=>{
  const b=e.target.closest('[data-scene-action]');
  if(b)activate(b);
+ if(e.target.closest('[data-scene-demo]'))openDemo();
+ if(e.target.closest('[data-scene-demo-close]')||e.target.classList?.contains('scene-demo-overlay'))closeDemo();
+});
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'&&document.querySelector('.scene-demo-overlay')){closeDemo();e.preventDefault()}
+ if(e.key==='Tab'){
+   const overlay=document.querySelector('.scene-demo-overlay');if(!overlay)return;
+   const controls=[...overlay.querySelectorAll('button:not([disabled])')];
+   if(!controls.length)return;
+   const first=controls[0],last=controls[controls.length-1];
+   if(e.shiftKey&&document.activeElement===first){last.focus();e.preventDefault()}
+   else if(!e.shiftKey&&document.activeElement===last){first.focus();e.preventDefault()}
+ }
 });
 window.QalbimScenes={I,render,thumb,decorateIntro};
 })();
