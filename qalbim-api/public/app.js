@@ -64,8 +64,21 @@ function renderPhotos(){
  window.QalbimExperience.updatePhotoCount(draftPhotos);
 }
 function letters(){
- section('<h1 class="page-title">Mening maktublarim</h1><div class="row between"><p class="muted small">Yurakdan chiqqan so‘zlaringiz.</p>'+btn('create','+ Yangi','')+'</div><div id="lettersList" class="letterlist"><div class="muted">Yuklanmoqda...</div></div>');
- api('/api/letters/mine').then(d=>{$('lettersList').innerHTML=d.letters.length?d.letters.map(l=>'<div class="letteritem"><div class="row between"><span class="mini-tag">✉ '+esc(l.to)+'</span><span class="small muted">'+moneyDate(l.createdAt)+'</span></div><h3 style="margin:8px 0;font:600 19px Playfair Display,serif">'+esc(l.title)+'</h3><p class="muted small">'+esc(l.message.slice(0,100))+'</p><div class="row wrap">'+btn('openLetter:'+l.id,'Ko‘rish')+btn('editLetter:'+l.id,'Tahrirlash')+btn('copyLetter:'+l.id,'Havola')+btn('deleteLetter:'+l.id,'O‘chirish','danger')+'</div></div>').join(''):'<div class="card center">Hozircha maktub yo‘q. Birinchi maktubingizni yarating! 💌</div>'}).catch(err);
+ section('<div class="library-heading"><div><div class="eyebrow">SIZNING HIKOYALARINGIZ</div><h1 class="page-title">Maktublar kolleksiyasi ♡</h1><p class="muted small">Har bir maktub — bir qadrli xotira.</p></div>'+btn('create','+ Yangi maktub','')+'</div>'+
+ '<div class="library-tools"><label class="field"><span>Maktublar orasidan qidirish</span><input id="letterSearch" class="input" type="search" placeholder="Ism, sarlavha yoki matn..."></label><span id="libraryCount" class="status"></span></div>'+
+ '<div id="lettersList" class="letterlist"><div class="muted">Yuklanmoqda...</div></div>');
+ api('/api/letters/mine').then(d=>{
+   const el=$('lettersList'),count=$('libraryCount');if(!el)return;
+   if(count)count.textContent=d.letters.length+' ta maktub';
+   el.innerHTML=d.letters.length?d.letters.map(l=>{
+     const t=window.QalbimExperience.THEMES[l.theme-1]||window.QalbimExperience.THEMES[0];
+     return '<article class="library-letter" data-library-item data-search="'+esc((l.to+' '+l.title+' '+l.message).toLowerCase())+'">'+
+       '<div class="library-cover" data-theme="'+l.theme+'"><span>'+t.emoji+'</span><small>'+esc(t.name)+'</small></div>'+
+       '<div class="library-letter-body"><div class="row between"><span class="mini-tag">✉ '+esc(l.to)+'</span><span class="small muted">'+moneyDate(l.createdAt)+'</span></div>'+
+       '<h2>'+esc(l.title)+'</h2><p>'+esc(l.message.slice(0,125))+'</p>'+
+       '<div class="library-actions">'+btn('openLetter:'+l.id,'O‘qish','')+btn('copyLetter:'+l.id,'↗ Ulashish')+btn('editLetter:'+l.id,'Tahrir')+btn('deleteLetter:'+l.id,'O‘chirish','danger')+'</div></div></article>';
+   }).join(''):'<div class="card center">Bu yerda sizning birinchi maktubingiz paydo bo‘ladi. 💌<div style="margin:15px">'+btn('create','Birinchi maktubni yaratish','')+'</div></div>';
+ }).catch(err);
 }
 function letter(){
  const id=location.pathname.split('/').pop();
@@ -184,7 +197,7 @@ async function act(action,node){
  if(action.startsWith('editLetter:')){
   let id=action.split(':')[1],v=await api('/api/letters/'+id),l=v.letter;
   if(l.ownerId!==me.id)return notify('Faqat o‘z maktubingizni tahrirlang');
-  modal('<form data-form="letterEdit"><input name="id" type="hidden" value="'+esc(id)+'"><label class="field"><span>Kimga</span><input class="input" name="to" value="'+esc(l.to)+'" required></label><label class="field"><span>Kimdan</span><input class="input" name="from" value="'+esc(l.from)+'" required></label><label class="field"><span>Sarlavha</span><input class="input" name="title" value="'+esc(l.title)+'" required></label><label class="field"><span>Maktub matni</span><textarea name="message" class="input" required>'+esc(l.message)+'</textarea></label><label class="field"><span>Shablon (1–6)</span><select name="theme" class="input">'+[1,2,3,4,5,6].map(n=>'<option value="'+n+'" '+(n===l.theme?'selected':'')+'>'+n+'-shablon</option>').join('')+'</select></label><button type="submit" class="btn block">Saqlash</button></form>');return;
+  modal('<form data-form="letterEdit"><input name="id" type="hidden" value="'+esc(id)+'"><label class="field"><span>Kimga</span><input class="input" name="to" value="'+esc(l.to)+'" required></label><label class="field"><span>Kimdan</span><input class="input" name="from" value="'+esc(l.from)+'" required></label><label class="field"><span>Sarlavha</span><input class="input" name="title" value="'+esc(l.title)+'" required></label><label class="field"><span>Maktub matni</span><textarea name="message" class="input" required>'+esc(l.message)+'</textarea></label><label class="field"><span>Shablon (1–6)</span><select name="theme" class="input">'+window.QalbimExperience.THEMES.map(t=>'<option value="'+t.id+'" '+(t.id===l.theme?'selected':'')+'>'+t.emoji+' '+t.name+'</option>').join('')+'</select></label><button type="submit" class="btn block">Saqlash</button></form>');return;
  }
  if(action.startsWith('deleteLetter:')){if(!confirm('Maktub o‘chirilsinmi?'))return;await api('/api/letters/'+action.split(':')[1],{method:'DELETE'});return letters()}
  if(action==='invite'){let d=await api('/api/pairs/invite',{method:'POST',body:{}});let s=location.origin+'/invite/'+d.token;modal('<p class="muted">Sevgilingizga faqat shu maxsus havolani yuboring. Amal qilish muddati 72 soat.</p><textarea class="input" readonly>'+esc(s)+'</textarea><button class="btn block" data-a="copyInvite" data-link="'+esc(s)+'">🔗 Nusxalash</button>');return}
