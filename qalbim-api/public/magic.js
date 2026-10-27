@@ -29,9 +29,9 @@ function controls(){
 function surprise(note,preview){
  const n=String(note||'').trim();
  if(!n)return '';
- if(preview)return '<div class="scene-secret-preview">🎁 Maxsus syurpriz tayyor</div>';
+ if(preview)return '<div class="scene-secret-preview">'+window.QalbimIcons.svg('gift',15)+' Maxsus syurpriz tayyor</div>';
  return '<div class="scene-secret">'+
- '<button type="button" class="scene-gift" data-magic-gift aria-expanded="false">🎁 Men uchun bir sir bor ekan... <span>↗</span></button>'+
+ '<button type="button" class="scene-gift" data-magic-gift aria-expanded="false">'+window.QalbimIcons.svg('gift',18)+' Men uchun bir sir bor ekan... <span>↗</span></button>'+
  '<div class="scene-gift-card" hidden><div class="gift-star" aria-hidden="true">✦</div>'+
  '<div class="gift-caption">YURAKDAN SIR</div><p data-secret-note>'+escape(n)+'</p>'+
  '<span class="gift-sign">Faqat sen uchun ♡</span></div></div>';
@@ -70,7 +70,8 @@ function chime(theme){
 function oneParticle(stage,mark,x,y,dx,dy,rotation,duration){
  const node=document.createElement('span');
  node.className='magic-particle';
- node.textContent=mark;
+ const icons=['flower','moon','sun','leaf','heart','feather','flower','star','mail','flower','waves','crown','camera','zap','snow','gem','sun','heart'];
+ node.innerHTML=window.QalbimIcons.svg(icons[(Number(stage.dataset.scene)||1)-1]||'sparkle',18);
  node.style.left=x+'px';node.style.top=y+'px';
  node.style.setProperty('--mx',dx+'px');node.style.setProperty('--my',dy+'px');
  node.style.setProperty('--turn',rotation+'deg');
@@ -121,20 +122,20 @@ function activate(button){
 }
 function refreshButtons(){
  document.querySelectorAll('[data-magic-fx]').forEach(b=>{
-  b.textContent=effects?'✨ Effektlar yoqilgan':'✨ Effektlar o‘chiq';
+  b.innerHTML=window.QalbimIcons.svg('sparkle',16)+(effects?' Effektlar yoqilgan':' Effektlar o‘chiq');
   b.setAttribute('aria-pressed',String(effects));
  });
  document.querySelectorAll('[data-magic-sound]').forEach(b=>{
-  b.textContent=sound?'♪ Ovoz yoqilgan':'♪ Ovoz o‘chiq';
+  b.innerHTML=window.QalbimIcons.svg(sound?'volume':'volumex',16)+(sound?' Ovoz yoqilgan':' Ovoz o‘chiq');
   b.setAttribute('aria-pressed',String(sound));
  });
 }
 function gift(btn){
  const scene=btn.closest('.letter-scene');if(!scene)return;
  const box=btn.parentElement.querySelector('.scene-gift-card');if(!box)return;
- if(!box.hidden){box.hidden=true;btn.setAttribute('aria-expanded','false');btn.textContent='🎁 Men uchun bir sir bor ekan...';return}
+ if(!box.hidden){box.hidden=true;btn.setAttribute('aria-expanded','false');btn.innerHTML=window.QalbimIcons.svg('gift',18)+' Men uchun bir sir bor ekan...';return}
  box.hidden=false;btn.setAttribute('aria-expanded','true');
- btn.textContent='💌 Syurprizni yashirish';
+ btn.innerHTML=window.QalbimIcons.svg('mail',18)+' Syurprizni yashirish';
  erupt(scene,null,null,false);chime(Number(scene.dataset.scene)||1);
 }
 document.addEventListener('click',e=>{
