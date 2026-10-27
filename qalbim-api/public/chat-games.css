@@ -93,3 +93,14 @@ html .chatplay-pending-count{color:var(--m-accent,#79639f);font-size:10px;font-w
  html .chatplay-composer-btn{width:42px;height:42px}
 }
 @media(prefers-reduced-motion:reduce){html .chatplay-sheet{backdrop-filter:none}}
+
+html .chatplay-rematch{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 26px);margin:0 13px 12px;padding:10px;border-radius:10px;
+ border:1px solid var(--m-border,#e9e4ec);background:var(--m-soft,#f4eff9);color:var(--m-accent,#79639f);font-weight:800;font-size:11px;cursor:pointer}
+html .chatplay-rematch:hover{border-color:var(--m-accent,#79639f)}
+html .arena-invite-sent{display:flex;align-items:center;gap:8px;color:var(--m-accent,#79639f);font-size:11px;font-weight:800;flex-wrap:wrap;justify-content:flex-end}
+html .arena-invite-sent>.ui-icon{flex:none}
+html .arena-invite-sent .btn{font-size:10px}
+html body.chatplay-lock #toastHost .toast{z-index:310}
+@media(max-width:767px){
+ html .arena-invite-sent{justify-content:center}
+}
