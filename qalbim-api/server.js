@@ -176,8 +176,32 @@ async function connect(){
   const client=new MongoClient(process.env.MONGODB_URI,{serverSelectionTimeoutMS:12000,maxPoolSize:10});await client.connect();db=client.db(process.env.MONGODB_DB||'qalbim');
   await Promise.all([colUser().createIndex({phone:1},{unique:true}),c('messages').createIndex({expiresAt:1},{expireAfterSeconds:0}),c('invites').createIndex({expiresAt:1},{expireAfterSeconds:0}),c('reactions').createIndex({letterId:1,userId:1},{unique:true}),c('letters').createIndex({owner:1}),c('photos').createIndex({owner:1})]);
   if(process.env.ADMIN_PASSWORD&&process.env.ADMIN_PHONE){
-    let p=process.env.ADMIN_PHONE==='admin'?'admin':phone(process.env.ADMIN_PHONE),x=p?await colUser().findOne({phone:p}):null;
-    if(p&&!x)await colUser().insertOne({phone:p,name:'Qalbim administrator',passwordHash:await bcrypt.hash(process.env.ADMIN_PASSWORD,12),role:'admin',bio:'',banned:false,partnerId:null,proUntil:null,chatTtl:'view',createdAt:date(),termsAt:date(),termsVersion:'2026-10-26',privacyVersion:'2026-10-26'});
+    const requestedPhone=process.env.ADMIN_PHONE==='admin'?'admin':phone(process.env.ADMIN_PHONE);
+    const adminPassword=process.env.ADMIN_PASSWORD;
+    if(!requestedPhone){console.error('ADMIN_PHONE not valid');}
+    else if(adminPassword.length<12){console.warn('SECURITY: ADMIN_PASSWORD should be at least 12 characters; choose a unique strong password in Render.');}
+    if(requestedPhone){
+      const target=await colUser().findOne({phone:requestedPhone});
+      if(target&&target.role!=='admin'){
+        console.error('ADMIN_PHONE is already registered to a normal user. Refusing automatic privilege escalation. Choose a different admin number or use existing admin login.');
+      }else if(target&&target.role==='admin'){
+        const changes={};
+        if(!await bcrypt.compare(adminPassword,target.passwordHash))changes.passwordHash=await bcrypt.hash(adminPassword,12);
+        if(target.banned)changes.banned=false;
+        if(Object.keys(changes).length)await colUser().updateOne({_id:target._id},{$set:changes});
+        console.log('Admin login synchronized with configured environment.');
+      }else{
+        const legacy=await colUser().findOne({phone:'admin',role:'admin'});
+        const fields={phone:requestedPhone,passwordHash:await bcrypt.hash(adminPassword,12),banned:false};
+        if(legacy){
+          await colUser().updateOne({_id:legacy._id},{$set:fields});
+          console.log('Legacy administrator phone and password migrated to environment configuration.');
+        }else{
+          await colUser().insertOne({...fields,name:'Qalbim administrator',role:'admin',bio:'',partnerId:null,proUntil:null,chatTtl:'view',createdAt:date(),termsAt:date(),termsVersion:'2026-10-26',privacyVersion:'2026-10-26'});
+          console.log('Administrator account provisioned from environment configuration.');
+        }
+      }
+    }
   }dbError='';console.log('MongoDB connected');
  }catch(e){dbError='MongoDB bilan bog‘lanish xatosi';console.error(dbError,e.message)}
 }
