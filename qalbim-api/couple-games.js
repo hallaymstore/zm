@@ -135,6 +135,16 @@ module.exports=function registerCoupleGames({app,auth,wrap,c,pro,oid,bad}){
     round:0,answers:{},matches:0,lastResult:null,version:0,
     createdAt:new Date(),updatedAt:new Date(),expiresAt:new Date(Date.now()+24*60*60*1000)};
   const result=await collection().insertOne(room);room._id=result.insertedId;
+  // Every new game becomes a durable invite card inside the existing private chat.
+  // This system card lasts for the game lifetime, independently of ephemeral text TTL.
+  try{
+   await c('messages').insertOne({from:req.user._id,to:state.other._id,
+     kind:'game',gameId:room._id,gameType:type,mode:'game',
+     text:'',createdAt:new Date(),expiresAt:room.expiresAt});
+  }catch(error){
+    await collection().deleteOne({_id:room._id});
+    throw error;
+  }
   res.status(201).json({room:project(room,req.user._id)});
  }));
  app.get('/api/games/rooms/:id',auth,wrap(async(req,res)=>{
