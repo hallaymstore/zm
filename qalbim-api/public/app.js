@@ -83,31 +83,59 @@ function letters(){
 function letter(){
  const id=location.pathname.split('/').pop();
  letterData=null;
- section('<div class="letter-ceremony"><div class="eyebrow">QALBINGIZGA ATALGAN</div><h1 class="page-title">Sizga bir maktub bor ♡</h1>'+
- '<button type="button" class="envelope" id="envelope" aria-label="Sevgi maktubini ochish"><span class="base"></span><span class="flap"></span><span class="fold"></span><span class="seal">♥</span></button>'+
- '<p id="openHint" aria-live="polite">Yurakchani bosing — maktubingizni oching ✦</p></div><div id="letterBody" hidden></div>');
- api('/api/letters/'+encodeURIComponent(id)).then(d=>{letterData=d;window.QalbimScenes.decorateIntro(d.letter.theme);}).catch(e=>{if($('openHint'))$('openHint').textContent=e.message});
+ section('<div class="letter-stage" id="letterStage">'+
+ '<div class="letter-ceremony" id="letterCeremony">'+
+ '<div class="eyebrow">FAQAT SIZ UCHUN</div>'+
+ '<h1 class="page-title">Sizga bir maktub bor</h1>'+
+ '<p class="letter-ceremony-subtitle">Birgina teginish bilan yurakdan yozilgan so‘zlarni oching.</p>'+
+ '<button type="button" class="envelope" id="envelope" aria-label="Maktubni ochish">'+
+ '<span class="base"></span><span class="flap"></span><span class="fold"></span><span class="seal">'+window.QalbimIcons.svg('heart',22)+'</span></button>'+
+ '<p class="letter-opening-hint" id="openHint" aria-live="polite">Konvertni bosib maktubni oching</p></div></div>');
+ api('/api/letters/'+encodeURIComponent(id)).then(d=>{
+   if(!$('letterStage'))return;
+   letterData=d;
+   window.QalbimScenes.decorateIntro(d.letter.theme);
+ }).catch(e=>{if($('openHint'))$('openHint').textContent=e.message});
 }
 function showLetter(){
  if(!letterData)return notify('Maktub yuklanmoqda, yana bir bor bosing.');
- const env=$('envelope');
- if(env&&!env.hidden&&!env.dataset.opening){
-   env.dataset.opening='1';env.classList.add('is-opening');
-   window.QalbimExperience.burst(env,18);
-   setTimeout(()=>{if($('envelope'))presentLetter()},430);
-   return;
- }
- presentLetter();
+ const stage=$('letterStage'),env=$('envelope');
+ if(!stage)return;
+ if(stage.dataset.revealed==='1')return;
+ if(stage.dataset.opening==='1')return;
+ if(!env)return presentLetter();
+ stage.dataset.opening='1';
+ stage.classList.add('is-opening');
+ env.classList.add('is-opening');
+ env.setAttribute('aria-disabled','true');
+ env.disabled=true;
+ const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ if(!reduce)window.QalbimExperience.burst(env,9);
+ setTimeout(()=>{
+   if($('letterStage')===stage)presentLetter();
+ },reduce?0:530);
 }
 function presentLetter(){
  if(!letterData)return;
+ const stage=$('letterStage');
+ if(!stage)return;
  const l=letterData.letter;
- if($('envelope'))$('envelope').hidden=true;
- if($('openHint'))$('openHint').hidden=true;
  const html='<div class="letter-content-layout">'+window.QalbimScenes.render({title:l.title,message:l.message,theme:l.theme,from:l.from,to:l.to,secretNote:l.secretNote||'',preview:false})+
  (l.photoIds.length?'<div class="card"><h3 class="card-title">📸 Bizning xotiralarimiz</h3><div class="photo-row">'+l.photoIds.map(id=>'<img class="paperphoto" src="'+media(id)+'" alt="Maktub xotirasi" loading="lazy">').join('')+'</div><p class="muted small">🔐 Maxfiy rasmlar faqat egasi va faol Pro foydalanuvchiga ko‘rinadi.</p></div>':'')+
  '<div class="card center"><h3 class="card-title">Maktub yuragingizga yetib bordimi?</h3><p class="muted small">Birgina belgi bilan hislaringizni ifodalang ♡</p><div class="row wrap" style="justify-content:center">'+['❤️','🥹','😍','💌','🌹','😘'].map(e=>'<button class="reaction" data-a="react" data-emoji="'+e+'" aria-label="'+e+' reaksiyasi">'+window.QalbimIcons.svg(window.QalbimIcons.reactions[e],19)+(letterData.reactions[e]?'<span class="reaction-count">'+letterData.reactions[e]+'</span>':'')+'</button>').join('')+'</div><div class="divide"></div><div class="row wrap" style="justify-content:center">'+btn('shareNative','↗ Ulashish')+btn('copyCurrent','🔗 Havolani nusxalash')+btn('reportCurrent','⚑ Shikoyat')+'</div></div></div>';
- if($('letterBody')){$('letterBody').innerHTML=html;$('letterBody').hidden=false}
+ stage.dataset.revealed='1';
+ stage.dataset.opening='0';
+ stage.classList.remove('is-opening');
+ stage.classList.add('is-revealed');
+ // Replace the envelope in-place, instead of keeping a large empty intro above the letter.
+ stage.innerHTML='<div id="letterBody" class="letter-stage-content">'+html+'</div>';
+ const scene=stage.querySelector('.scene-full');
+ if(scene)scene.setAttribute('tabindex','-1');
+ const rect=stage.getBoundingClientRect();
+ if(rect.top<65||rect.top>window.innerHeight*.55){
+   const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+   stage.scrollIntoView({behavior:reduce?'instant':'smooth',block:'start'});
+ }
 }
 function pair(){
  section('<h1 class="page-title">💕 Bizning juftligimiz</h1>'+
@@ -193,7 +221,7 @@ async function act(action,node){
  if(action==='shareNative'){if(navigator.share){try{await navigator.share({title:'Senga maktubim bor ♡',url:location.href});return}catch(e){if(e.name==='AbortError')return}}return copy(location.href)}
  if(action==='shareProfile')return copy(location.origin+'/u/'+me.id);
  if(action==='reportCurrent'){if(!me)return notify('Shikoyat uchun tizimga kiring');modal('<form data-form="report"><input name="type" value="letter" type="hidden"><input name="target" value="'+esc(letterData.letter.id)+'" type="hidden"><label class="field"><span>Shikoyat sababi</span><textarea class="input" name="reason" minlength="10" placeholder="Kamida 10 belgi" required></textarea></label><button class="btn block" type="submit">Yuborish</button></form>');return}
- if(action==='react'){if(!me)return notify('Reaksiya uchun hisobga kiring');window.QalbimExperience.burst(node,12);await api('/api/letters/'+letterData.letter.id+'/react',{method:'POST',body:{emoji:node.dataset.emoji}});notify('Reaksiya yuborildi ❤️');letterData.reactions[node.dataset.emoji]=(letterData.reactions[node.dataset.emoji]||0)+1;showLetter();return}
+ if(action==='react'){if(!me)return notify('Reaksiya uchun hisobga kiring');window.QalbimExperience.burst(node,12);await api('/api/letters/'+letterData.letter.id+'/react',{method:'POST',body:{emoji:node.dataset.emoji}});notify('Reaksiya yuborildi');letterData.reactions[node.dataset.emoji]=(letterData.reactions[node.dataset.emoji]||0)+1;const total=letterData.reactions[node.dataset.emoji];const badge=node.querySelector('.reaction-count');if(badge)badge.textContent=String(total);else node.insertAdjacentHTML('beforeend','<span class="reaction-count">'+total+'</span>');return}
  if(action.startsWith('editLetter:')){
   let id=action.split(':')[1],v=await api('/api/letters/'+id),l=v.letter;
   if(l.ownerId!==me.id)return notify('Faqat o‘z maktubingizni tahrirlang');
