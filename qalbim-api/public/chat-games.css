@@ -2,7 +2,7 @@
 html .chatplay-lock{overflow:hidden}
 html .chatplay-sheet{position:fixed;inset:0;z-index:250;background:#14101bd7;display:flex;align-items:center;justify-content:center;padding:clamp(9px,2.5vw,32px);backdrop-filter:blur(11px);-webkit-backdrop-filter:blur(11px)}
 html .chatplay-sheet[hidden]{display:none!important}
-html .chatplay-panel{--m-text:var(--m-text,#26212d);--m-sub:var(--m-sub,#807b89);--m-card:var(--m-card,#fff);--m-border:var(--m-border,#e9e4ec);--m-soft:var(--m-soft,#f4f0f9);--m-accent:var(--m-accent,#785ba1);display:flex;flex-direction:column;min-width:0;width:min(100%,560px);max-height:min(92dvh,890px);overflow:hidden;border:1px solid var(--m-border);border-radius:23px;background:var(--m-card);box-shadow:0 34px 95px #140b1f55;color:var(--m-text)}
+html .chatplay-panel{display:flex;flex-direction:column;min-width:0;width:min(100%,560px);max-height:min(92dvh,890px);overflow:hidden;border:1px solid var(--m-border);border-radius:23px;background:var(--m-card);box-shadow:0 34px 95px #140b1f55;color:var(--m-text)}
 html .chatplay-header{display:flex;flex-shrink:0;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--m-border);padding:14px 20px}
 html .chatplay-small{display:flex;align-items:center;gap:8px;color:var(--m-accent);font:800 10px/1.2 'Manrope',sans-serif;letter-spacing:1.7px}
 html .chatplay-close{display:grid;place-items:center;flex:none;width:38px;height:38px;border:1px solid var(--m-border);border-radius:12px;background:var(--m-soft);color:var(--m-text);cursor:pointer}
