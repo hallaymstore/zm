@@ -23,7 +23,7 @@ function markNav(){document.querySelectorAll('[data-a]').forEach(n=>{if(!n.class
 async function refresh(){try{const v=await api('/api/me');me=v.user;partner=v.partner}catch(e){me=null;partner=null}}
 function page(){let p=location.pathname,tab=new URLSearchParams(location.search).get('view');if(p.startsWith('/l/'))return 'letter';if(p.startsWith('/invite/'))return 'invite';if(p.includes('admin'))return 'admin';if(p.includes('chats.html'))return 'chats';if(p.includes('chat.html'))return 'chat';if(p.startsWith('/u/'))return 'publicProfile';if(p.includes('profile'))return 'profile';return tab||'home'}
 function go(where){let routes={home:'/',letters:'/?view=letters',create:'/?view=create',pro:'/?view=pro',chats:'/chats.html',chat:'/chat.html',profile:'/profile.html',admin:'/admin.html'};location.href=routes[where]||where}
-function hero(txt,sub){return '<div class="hero"><div class="spark">💌</div><p class="eyebrow">Ikki qalb — bir hikoya</p><h1>'+txt+'</h1><p>'+sub+'</p></div>'}
+function hero(txt,sub){return '<div class="hero"><div class="spark">'+window.QalbimIcons.svg('mail',28)+'</div><p class="eyebrow">Ikki qalb — bir hikoya</p><h1>'+txt+'</h1><p>'+sub+'</p></div>'}
 const extra=window.QalbimIntegrations({api,section,hero,btn,esc,notify,go,copy,modal,closeModal,refresh,getMe:()=>me});
 function auth(){
  nav.hidden=true;$('profileButton').hidden=true;$('proBadge').hidden=true;
@@ -106,7 +106,7 @@ function presentLetter(){
  if($('openHint'))$('openHint').hidden=true;
  const html='<div class="letter-content-layout">'+window.QalbimScenes.render({title:l.title,message:l.message,theme:l.theme,from:l.from,to:l.to,secretNote:l.secretNote||'',preview:false})+
  (l.photoIds.length?'<div class="card"><h3 class="card-title">📸 Bizning xotiralarimiz</h3><div class="photo-row">'+l.photoIds.map(id=>'<img class="paperphoto" src="'+media(id)+'" alt="Maktub xotirasi" loading="lazy">').join('')+'</div><p class="muted small">🔐 Maxfiy rasmlar faqat egasi va faol Pro foydalanuvchiga ko‘rinadi.</p></div>':'')+
- '<div class="card center"><h3 class="card-title">Maktub yuragingizga yetib bordimi?</h3><p class="muted small">Birgina belgi bilan hislaringizni ifodalang ♡</p><div class="row wrap" style="justify-content:center">'+['❤️','🥹','😍','💌','🌹','😘'].map(e=>'<button class="reaction" data-a="react" data-emoji="'+e+'" aria-label="'+e+' reaksiyasi">'+e+' '+(letterData.reactions[e]||'')+'</button>').join('')+'</div><div class="divide"></div><div class="row wrap" style="justify-content:center">'+btn('shareNative','↗ Ulashish')+btn('copyCurrent','🔗 Havolani nusxalash')+btn('reportCurrent','⚑ Shikoyat')+'</div></div></div>';
+ '<div class="card center"><h3 class="card-title">Maktub yuragingizga yetib bordimi?</h3><p class="muted small">Birgina belgi bilan hislaringizni ifodalang ♡</p><div class="row wrap" style="justify-content:center">'+['❤️','🥹','😍','💌','🌹','😘'].map(e=>'<button class="reaction" data-a="react" data-emoji="'+e+'" aria-label="'+e+' reaksiyasi">'+window.QalbimIcons.svg(window.QalbimIcons.reactions[e],19)+(letterData.reactions[e]?'<span class="reaction-count">'+letterData.reactions[e]+'</span>':'')+'</button>').join('')+'</div><div class="divide"></div><div class="row wrap" style="justify-content:center">'+btn('shareNative','↗ Ulashish')+btn('copyCurrent','🔗 Havolani nusxalash')+btn('reportCurrent','⚑ Shikoyat')+'</div></div></div>';
  if($('letterBody')){$('letterBody').innerHTML=html;$('letterBody').hidden=false}
 }
 function pair(){
