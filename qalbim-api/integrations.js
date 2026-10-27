@@ -315,6 +315,16 @@ module.exports=function installIntegrations(app,deps){
      c('starPayments').createIndex({orderId:1},{unique:true}),
      c('starPayments').createIndex({chargeId:1},{unique:true,partialFilterExpression:{chargeId:{$type:'string'}}})
    ]);
+   // One-time configured Qalbim UZS pricing. The revision prevents restarts from overwriting later admin edits.
+   const pricingVersion='2026-10-27-3d5k-7d10k';
+   const existingPrices=await c('settings').findOne({_id:'prices'});
+   if(!existingPrices||existingPrices.webTariffsRevision!==pricingVersion){
+     await c('settings').updateOne({_id:'prices'},{$set:{
+       price3:5000,price7:10000,webTariffsRevision:pricingVersion,
+       lastPriceUpdate:now()
+     }},{upsert:true});
+     console.log('Qalbim Pro UZS rates saved: 3 days 5000, 7 days 10000');
+   }
    if(!secret()){console.warn('TELEGRAM_BOT_TOKEN missing — Mini App Telegram login disabled');return}
    if(!process.env.TELEGRAM_WEBHOOK_SECRET){console.warn('TELEGRAM_WEBHOOK_SECRET missing — bot webhook not enabled');return}
    try{
