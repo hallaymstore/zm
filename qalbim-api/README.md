@@ -45,3 +45,31 @@ Bootstrap account is created when database first connects and ADMIN_PHONE/ADMIN_
 - Letters with a share link are visible to anyone who knows the link. Photos flagged private require owner or Pro authorization.
 - Published privacy/terms pages are a technical draft, NOT professional legal certification. Provide operator contact, exact prices, data processing/legal compliance review before commercial launch.
 - The service needs a MongoDB Atlas cluster and network access list configuration. The connected user must create/authorize the cluster and paste their own URI securely into Render.
+
+
+## Telegram Mini App — @maktubimbot
+Render-only environment secrets (NEVER publish them to GitHub):
+- TELEGRAM_BOT_TOKEN=<rotated BotFather token>
+- TELEGRAM_WEBHOOK_SECRET=<strong random url-safe secret>
+- PUBLIC_BASE_URL=https://qalbim-juftlik.onrender.com
+
+On MongoDB startup the server verifies the bot username using getMe, sets a signed Telegram webhook at:
+  https://qalbim-juftlik.onrender.com/api/telegram/webhook
+and configures its menu button, bot commands and Mini App URL. Start the bot at https://t.me/maktubimbot and tap the 💌 Qalbim menu. If you want the direct \`?startapp\` link to launch as the main Mini App, configure the Main Mini App URL through @BotFather for this bot.
+
+Mini App auth uses Telegram's HMAC-SHA256 verified initData, fresh auth_date and user's Telegram ID; the first visit asks for a shared phone/password account and explicit Terms/Privacy consent, or linking an existing web account by its password. Later visits automatically authorize that Telegram ID. Both platforms use one MongoDB users collection and one Pro expiry date.
+
+## Hamyon API — ONLY the standalone website
+HAMYON_SHOP_ID=<merchant ID>
+HAMYON_SHOP_KEY=<rotated merchant key>
+The shop settings in @HamyonAPIBot must be configured with:
+  prepare_url: https://qalbim-juftlik.onrender.com/api/hamyon/prepare
+  complete_url: https://qalbim-juftlik.onrender.com/api/hamyon/complete
+
+Payment creation requires an admin-set 3-day and 7-day price. Default 0 means *disabled, not free*. Web checkout uses /payment/create on hamyon-api.uz. The callback validates merchant MD5 signature, merchant and recorded order/payment/amount, and independently checks paid status with /payment/status. Entitlements are granted only once via a MongoDB transaction. There is no live payment test until merchant callbacks are configured and a real order is paid. Never transfer funds during integration testing without checking the destination/card.
+
+## Telegram Stars — inside Telegram only
+Telegram requires digital goods/subscriptions in bots/Mini Apps to be sold exclusively in Telegram Stars (XTR), not Hamyon/UZS. Admin sets stars3 and stars7 separately, default 0 disabled. The Mini App uses createInvoiceLink / openInvoice, receives pre_checkout_query and successful_payment in the signed bot webhook, and credits the same users.proUntil transactionally and idempotently. Support via /paysupport. Telegram Stars flow should be tested using Telegram's test environment before accepting live payments.
+
+## Security
+The bot token and merchant credentials were exposed in the user's chat/screenshot during setup. ROTATE both in BotFather and HamyonAPIBot, then replace only Render Environment variable values; never store them in Git. Set a strong unique ADMIN_PASSWORD and configure real prices, support channel, legal operator identity, and data security practices before launching to the public.
