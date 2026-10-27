@@ -132,7 +132,7 @@ function refreshButtons(){
 function gift(btn){
  const scene=btn.closest('.letter-scene');if(!scene)return;
  const box=btn.parentElement.querySelector('.scene-gift-card');if(!box)return;
- if(!box.hidden){box.hidden=true;btn.setAttribute('aria-expanded','false');return}
+ if(!box.hidden){box.hidden=true;btn.setAttribute('aria-expanded','false');btn.textContent='🎁 Men uchun bir sir bor ekan...';return}
  box.hidden=false;btn.setAttribute('aria-expanded','true');
  btn.textContent='💌 Syurprizni yashirish';
  erupt(scene,null,null,false);chime(Number(scene.dataset.scene)||1);
