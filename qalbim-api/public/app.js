@@ -56,12 +56,13 @@ function themeButtons(){
 function studio(){
  theme=1;
  section(window.QalbimExperience.renderStudio({name:me.name,theme,photos:draftPhotos}));
- window.QalbimExperience.attachStudio({getTheme:()=>theme});
+ window.QalbimExperience.attachStudio({getTheme:()=>theme,getPhotos:()=>draftPhotos.map(photo=>photo.id)});
  renderPhotos();
 }
 function renderPhotos(){
  let el=$('attached');if(el)el.innerHTML=draftPhotos.map(x=>'<div class="upload-thumb"><img class="thumb" src="'+media(x.id)+'" alt="surat"><div class="mini-tag">'+(x.private?'🔒 Maxfiy':'Ochiq')+'</div></div>').join('');
  window.QalbimExperience.updatePhotoCount(draftPhotos);
+ const form=$('letterStudio');if(form)form.dispatchEvent(new Event('input',{bubbles:true}));
 }
 function letters(){
  section('<div class="library-heading"><div><div class="eyebrow">SIZNING HIKOYALARINGIZ</div><h1 class="page-title">Maktublar kolleksiyasi ♡</h1><p class="muted small">Har bir maktub — bir qadrli xotira.</p></div>'+btn('create','+ Yangi maktub','')+'</div>'+
