@@ -3,12 +3,12 @@ require('dotenv').config();
 const express=require('express'),path=require('path'),crypto=require('crypto'),bcrypt=require('bcryptjs'),jwt=require('jsonwebtoken'),cookieParser=require('cookie-parser'),helmet=require('helmet'),rateLimit=require('express-rate-limit'),multer=require('multer'),sharp=require('sharp');
 const {MongoClient,ObjectId}=require('mongodb');
 const app=express();app.set('trust proxy',1);app.disable('x-powered-by');
-app.use(helmet({contentSecurityPolicy:{useDefaults:true,directives:{"default-src":["'self'"],"script-src":["'self'"],"style-src":["'self'","'unsafe-inline'","https://fonts.googleapis.com"],"font-src":["'self'","https://fonts.gstatic.com"],"img-src":["'self'","data:","blob:"],"connect-src":["'self'"]}}}));
+app.use(helmet({contentSecurityPolicy:{useDefaults:true,directives:{"default-src":["'self'"],"script-src":["'self'","https://telegram.org"],"style-src":["'self'","'unsafe-inline'","https://fonts.googleapis.com"],"font-src":["'self'","https://fonts.gstatic.com"],"img-src":["'self'","data:","blob:"],"connect-src":["'self'"]}}}));
 app.use(express.json({limit:'120kb'}));app.use(express.urlencoded({extended:false}));app.use(cookieParser());
 app.use('/api',(req,res,next)=>{if(!['GET','HEAD','OPTIONS'].includes(req.method)&&req.headers.origin){try{if(new URL(req.headers.origin).host!==req.get('host'))return res.sendStatus(403)}catch(e){return res.sendStatus(403)}}next()});
 const rate=rateLimit({windowMs:15*60000,limit:30,standardHeaders:'draft-7',legacyHeaders:false,message:{error:'Ko‘p urinish: keyinroq qayta urinib ko‘ring'}});
 const wrap=f=>(req,res,next)=>Promise.resolve(f(req,res,next)).catch(next),bad=(res,n,s)=>res.status(n).json({error:s}),oid=s=>ObjectId.isValid(s)&&String(new ObjectId(s))===String(s)?new ObjectId(s):null;
-let db=null,dbError='MongoDB hozir ulanmagan';const c=n=>db.collection(n),date=()=>new Date(),clean=(v,n=120)=>String(v||'').trim().slice(0,n);
+let db=null,mongoClient=null,dbError='MongoDB hozir ulanmagan';const c=n=>db.collection(n),date=()=>new Date(),clean=(v,n=120)=>String(v||'').trim().slice(0,n);
 const phone=v=>{let s=String(v||'').replace(/[\s()\-]/g,'');if(/^9\d{8}$/.test(s))s='+998'+s;else if(/^998\d{9}$/.test(s))s='+'+s;return /^\+998\d{9}$/.test(s)?s:null};
 const pro=u=>!!(u&&u.proUntil&&new Date(u.proUntil)>date());
 const showUser=u=>({id:String(u._id),name:u.name,phone:u.phone,bio:u.bio||'',avatarId:u.avatarId||null,role:u.role||'user',banned:!!u.banned,proUntil:u.proUntil||null,isPro:pro(u),partnerId:u.partnerId?String(u.partnerId):null,chatTtl:u.chatTtl||'view',createdAt:u.createdAt});
@@ -166,6 +166,10 @@ app.get('/api/admin/chats',auth,adm,wrap(async(req,res)=>{
 app.get('/api/admin/config',auth,adm,wrap(async(req,res)=>{let v=await c('settings').findOne({_id:'public'});res.json({telegram:v?.telegram||process.env.ADMIN_TELEGRAM_URL||''})}));
 app.patch('/api/admin/config',auth,adm,wrap(async(req,res)=>{let s=clean(req.body.telegram,120);if(s&&!/^https:\/\/t\.me\/[a-zA-Z0-9_]{5,32}$/.test(s))return bad(res,400,'https://t.me/username formatida kiriting');await c('settings').updateOne({_id:'public'},{$set:{telegram:s}},{upsert:true});res.json({ok:true})}));
 
+const integrations=require('./integrations')(app,{
+ db:()=>db,mongoClient:()=>mongoClient,auth,adm,
+ showUser,cookie,phone,clean,authRate:rate
+});
 const dir=path.join(__dirname,'public');app.use(express.static(dir,{extensions:['html']}));
 app.get(['/l/:id','/invite/:token','/u/:id','/'],(req,res)=>res.sendFile(path.join(dir,'index.html')));
 app.get('*',(req,res)=>res.sendFile(path.join(dir,'index.html')));
@@ -173,7 +177,7 @@ app.use((e,req,res,next)=>{console.error('Server error:',e.message);bad(res,e.co
 async function connect(){
  if(!process.env.MONGODB_URI){dbError='MongoDB sozlanmagan: Render Environment bo‘limida MONGODB_URI kerak';console.warn(dbError);return}
  try{
-  const client=new MongoClient(process.env.MONGODB_URI,{serverSelectionTimeoutMS:12000,maxPoolSize:10});await client.connect();db=client.db(process.env.MONGODB_DB||'qalbim');
+  const client=new MongoClient(process.env.MONGODB_URI,{serverSelectionTimeoutMS:12000,maxPoolSize:10});await client.connect();mongoClient=client;db=client.db(process.env.MONGODB_DB||'qalbim');
   await Promise.all([colUser().createIndex({phone:1},{unique:true}),c('messages').createIndex({expiresAt:1},{expireAfterSeconds:0}),c('invites').createIndex({expiresAt:1},{expireAfterSeconds:0}),c('reactions').createIndex({letterId:1,userId:1},{unique:true}),c('letters').createIndex({owner:1}),c('photos').createIndex({owner:1})]);
   if(process.env.ADMIN_PASSWORD&&process.env.ADMIN_PHONE){
     const requestedPhone=process.env.ADMIN_PHONE==='admin'?'admin':phone(process.env.ADMIN_PHONE);
@@ -202,7 +206,7 @@ async function connect(){
         }
       }
     }
-  }dbError='';console.log('MongoDB connected');
+  }dbError='';console.log('MongoDB connected');await integrations.start();
  }catch(e){dbError='MongoDB bilan bog‘lanish xatosi';console.error(dbError,e.message)}
 }
 app.listen(Number(process.env.PORT||3000),'0.0.0.0',()=>console.log('Qalbim server running'));
