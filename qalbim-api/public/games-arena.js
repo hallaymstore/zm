@@ -152,26 +152,28 @@ function launchPro(type,root,opts={}){
  if(!playing.includes(type)){errorUI(root,'O‘yin topilmadi');return {dispose(){}}}
  function render(){
   if(destroyed||!root.isConnected||!room)return;
-  const user=read(),me=user?.id||'',mine=room.myIndex;
-  const win=room.winner==='draw'?'Durang':room.type==='match'?room.winner:room.winner===me?'Siz yutdingiz!':'Juftingiz yutdi';
-  const status=room.status==='waiting'?(room.createdBy===me?'Juftingiz taklifni qabul qilishini kuting':'Juftingiz o‘ynashga taklif qildi'):
-    room.status==='playing'?(room.turn===me?'Sizning navbatingiz':'Juftingiz navbati'):room.status==='finished'?(win||'O‘yin yakunlandi'):'O‘yin yopilgan';
+  const user=read(),myId=user?.id||'',myIndex=room.myIndex;
+  const iCreated=room.createdBy===myId;
+  const myTurn=room.turn===myId;
+  const win=room.winner==='draw'?'Durang':room.type==='match'?room.winner:room.winner===myId?'Siz yutdingiz!':'Juftingiz yutdi';
+  const status=room.status==='waiting'?(iCreated?'Juftingiz taklifni qabul qilishini kuting':'Juftingiz o‘ynashga taklif qildi'):
+    room.status==='playing'?(myTurn?'Sizning navbatingiz':'Juftingiz navbati'):room.status==='finished'?(win||'O‘yin yakunlandi'):'O‘yin yopilgan';
   let html='<div class="arena-room-info"><div><span class="arcade-card-category">PRO · IKKI TELEFON</span><h3>'+E(status)+'</h3>'+
    '<p>'+(room.status==='waiting'?'Juftlik xonasi 24 soat faol. Faqat bog‘langan ikki akkaunt kira oladi.':'O‘yin holati taxminan har 2,5 soniyada yangilanadi.')+'</p></div>'+
-   (room.status==='waiting'&&room.createdBy===me?'<button class="btn" data-room-share>'+I('link',17)+' Taklif havolasini yuborish</button>':'')+
-   (room.status==='waiting'&&room.createdBy!==me?'<button class="btn" data-room-accept>'+I('check',17)+' Taklifni qabul qilish</button>':'')+'</div>';
+   (room.status==='waiting'&&iCreated?'<button class="btn" data-room-share>'+I('link',17)+' Taklif havolasini yuborish</button>':'')+
+   (room.status==='waiting'&&!iCreated?'<button class="btn" data-room-accept>'+I('check',17)+' Taklifni qabul qilish</button>':'')+'</div>';
   if(room.status==='playing'||room.status==='finished'){
    if(type==='xo'){
     html+='<div class="arena-solo-stats"><span>'+I('heart',17)+' 1-o‘yinchi</span><span>'+I('star',17)+' 2-o‘yinchi</span><b>'+E(status)+'</b></div>'+
     '<div class="arena-xo-board">'+room.board.map((v,i)=>
-     '<button type="button" class="arena-xo-cell '+(v?'occupied':'')+'" data-room-cell="'+i+'" '+(v||room.status!=='playing'||room.turn!==me?'disabled':'')+' aria-label="'+(i+1)+'-katak">'+
+     '<button type="button" class="arena-xo-cell '+(v?'occupied':'')+'" data-room-cell="'+i+'" '+(v||room.status!=='playing'||!myTurn?'disabled':'')+' aria-label="'+(i+1)+'-katak">'+
      (v?I(v,43):'')+'</button>').join('')+'</div>';
    }else if(type==='memory'){
-    html+='<div class="arena-solo-stats"><span>Siz <b>'+room.scores[mine]+' juftlik</b></span><span>Juftingiz <b>'+room.scores[1-mine]+' juftlik</b></span><span>'+room.moves+' yurish</span></div>'+
+    html+='<div class="arena-solo-stats"><span>Siz <b>'+room.scores[myIndex]+' juftlik</b></span><span>Juftingiz <b>'+room.scores[1-myIndex]+' juftlik</b></span><span>'+room.moves+' yurish</span></div>'+
      '<div class="arcade-memory-board arena-online-memory">'+room.cards.map((v,i)=>{
        const open=!!v,matched=room.matched.includes(i);
        return '<button type="button" class="memory-tile '+(open?'flipped':'')+' '+(matched?'matched':'')+
-        '" data-room-cell="'+i+'" '+(matched||room.status!=='playing'||room.turn!==me||open?'disabled':'')+
+        '" data-room-cell="'+i+'" '+(matched||room.status!=='playing'||!myTurn||open?'disabled':'')+
         ' aria-label="'+(i+1)+'-karta"><span class="memory-tile-back">'+I('heart',25)+'</span>'+
         '<span class="memory-tile-front">'+(v?I(v,32):'')+'</span></button>';
      }).join('')+'</div><p class="arena-rule">Har navbatda 2 karta oching. Mos kelgan juftlik uchun 1 ball beriladi.</p>';
