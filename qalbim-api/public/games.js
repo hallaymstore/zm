@@ -41,7 +41,7 @@ function hub(){
  '<div class="arcade-card-banner"><span class="arcade-card-no">'+g.index+' / 03</span><span class="arcade-card-graphic">'+icon(g.symbol,63)+'</span><span class="arcade-card-particle">'+icon('sparkle',25)+'</span></div>'+
  '<div class="arcade-card-content"><div class="arcade-card-category">'+g.eyebrow+'</div><h3>'+g.name+'</h3><p>'+g.summary+'</p>'+
  '<div class="arcade-card-footer"><span>'+icon('users',15)+' '+g.detail+'</span><strong>'+icon('arrowup',18)+' O‘ynash</strong></div></div></button>').join('')+'</div>'+
- '<div class="arcade-notice">'+icon('shield',19)+' <p>O‘yinlardagi shaxsiy natijalar faqat shu qurilma brauzerida saqlanadi. Juftlik viktorinasida ikkala odam navbat bilan bir telefondan foydalanadi.</p></div></div>';
+ '<div class="arcade-notice">'+icon('shield',19)+' <p>O‘yinlardagi shaxsiy natijalar faqat shu qurilma brauzerida saqlanadi. Juftlik viktorinasida ikkala odam navbat bilan bir telefondan foydalanadi.</p></div><div id="arcadePlayArea" hidden></div></div>';
 }
 let current=null;
 function clean(){
@@ -74,7 +74,7 @@ document.addEventListener('click',e=>{
  if(e.target.closest('[data-arcade-back]'))back();
 });
 window.addEventListener('pagehide',clean);
-function mount(){clean();return hub()+'<div id="arcadePlayArea" hidden></div>'}
+function mount(){clean();return hub()}
 function memoryGame(root){
  let deck=[],flipped=[],matched=0,turns=0,locked=false,clock=null,started=0,timeout=null,disposed=false;
  root.innerHTML='<div class="arcade-status-row"><div>'+icon('check',17)+' Juftliklar <strong id="memPairs">0 / 6</strong></div>'+
