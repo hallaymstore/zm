@@ -80,7 +80,7 @@ const LABELS={
  14:'YURAK URISHI · BIR RITM',15:'QOR TINCHLIGIDAGI IZROR',
  16:'ABADIY MUHABBAT QASAMI',17:'HAR KUNINGGA QUYOSH',18:'FAQAT SO‘ZLAR VA HISLAR'
 };
-function render({title,message,theme,from,to,preview=false}={}){
+function render({title,message,theme,from,to,secretNote='',preview=false}={}){
  const t=choice(theme),p=!!preview,mark=t.orn;
  const attrib='data-scene="'+t.id+'"';
  return '<section class="letter-scene scene-'+t.id+' '+(p?'scene-preview':'scene-full')+'" '+attrib+' aria-label="'+escapeText(t.name)+' — maktub dizayni">'+
@@ -91,8 +91,8 @@ function render({title,message,theme,from,to,preview=false}={}){
  '<div class="scene-rule"></div><h2 data-field="title">'+escapeText(title||'Senga bir maktubim bor')+'</h2>'+
  '<p class="scene-message" data-field="message">'+escapeText(message||'Yuragimdagi so‘zlar shu yerda paydo bo‘ladi...')+'</p>'+
  '<div class="scene-signature">Mehr bilan, <em data-field="from">'+escapeText(from||'Men')+'</em><span>♡</span></div></div>'+
- '<div class="scene-bottomline"><span>'+escapeText(t.tag)+'</span><span>'+String(t.id).padStart(2,'0')+' / 18</span></div></div>'+
- (p?'':'<button type="button" class="scene-action" data-scene-action aria-label="'+escapeText(t.action)+'"><span>'+escapeText(mark)+'</span> '+escapeText(t.action)+'</button>')+
+ '<div class="scene-bottomline"><span>'+escapeText(t.tag)+'</span><span>'+String(t.id).padStart(2,'0')+' / 18</span></div>'+window.QalbimMagic.surprise(secretNote,p)+'</div>'+
+ (p?'':'<button type="button" class="scene-action" data-scene-action aria-label="'+escapeText(t.action)+'"><span>'+escapeText(mark)+'</span> '+escapeText(t.action)+'</button>'+window.QalbimMagic.controls())+
  '</section>';
 }
 function thumb(theme){
@@ -120,6 +120,7 @@ function decorateIntro(theme){
  if(seal)seal.textContent=t.orn;
 }
 function activate(button){
+ window.QalbimMagic.activate(button);
  const stage=button.closest('.letter-scene');
  if(!stage)return;
  stage.classList.remove('scene-awake');
@@ -128,6 +129,7 @@ function activate(button){
  button.setAttribute('aria-pressed','true');
  const original=button.dataset.label||button.textContent;
  if(!button.dataset.label)button.dataset.label=original;
+ /* The theme-specific particle and sound effects are handled by QalbimMagic. */
  const feedback=document.createElement('span');
  feedback.className='scene-feedback';feedback.textContent='✧';
  stage.appendChild(feedback);
@@ -147,7 +149,7 @@ function openDemo(){
  const d=new FormData(form);
  const current=document.querySelector('#letterLivePreview .letter-scene');
  const theme=Number(current?.dataset.scene)||1;
- const html=render({title:d.get('title'),message:d.get('message'),from:d.get('from'),to:d.get('to'),theme,preview:false});
+ const html=render({title:d.get('title'),message:d.get('message'),from:d.get('from'),to:d.get('to'),secretNote:d.get('secretNote'),theme,preview:false});
  const overlay=document.createElement('div');overlay.className='scene-demo-overlay';
  overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','Yuboriladigan maktubning to‘liq ko‘rinishi');
  overlay.innerHTML='<div class="scene-demo-toolbar"><strong>✦ Maktub oluvchisi ko‘radigan sahifa</strong>'+
