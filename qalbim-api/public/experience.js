@@ -103,6 +103,13 @@ function changeTheme(t){
 }
 function galleryHtml(theme,filter){return gallery(theme,filter)}
 function attachGlobalHandlers(){
+ document.addEventListener('input',event=>{
+  if(event.target.id!=='letterSearch')return;
+  const search=String(event.target.value||'').trim().toLowerCase();
+  let visible=0;
+  document.querySelectorAll('[data-library-item]').forEach(item=>{item.hidden=!item.dataset.search.includes(search);if(!item.hidden)visible++});
+  const count=document.getElementById('libraryCount');if(count)count.textContent=visible+' ta maktub';
+ });
  document.addEventListener('click',event=>{
    const filter=event.target.closest('[data-template-filter]');
    if(filter&&currentStudio&&document.contains(currentStudio.form)){
