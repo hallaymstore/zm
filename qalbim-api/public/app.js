@@ -299,13 +299,13 @@ document.addEventListener('error',e=>{if(e.target.tagName==='IMG'&&e.target.src.
  if(p==='letter')return letter();
  if(p==='invite')return invite();
  if(p==='publicProfile')return publicProfile();
+ if(p==='games')return arcade(); // Public playable demos; no registration required
  if(!me)return auth();
  if(p==='admin')return adminPage();
  if(p==='chat')return chat();
  if(p==='chats')return chats();
  if(p==='profile')return profile();
  if(p==='pro')return proPage();
- if(p==='games')return arcade();
  if(p==='letters')return letters();
  if(p==='create')return studio();
  return home();
