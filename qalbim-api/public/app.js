@@ -10,7 +10,7 @@ const copy=async s=>{try{await navigator.clipboard.writeText(s);notify('Havola n
 const notify=s=>{let el=$('toastHost');el.innerHTML='<div class="toast">'+esc(s)+'</div>';setTimeout(()=>el.innerHTML='',3200)};
 const err=e=>{notify(e.message||String(e))};
 const btn=(action,label,kind='alt')=>'<button class="btn '+kind+' sm" data-a="'+esc(action)+'">'+label+'</button>';
-const section=html=>{view.innerHTML=html;nav.hidden=!me;$('profileButton').hidden=!me;$('proBadge').hidden=!isPro();markNav()};
+const section=html=>{view.dataset.page=page();view.innerHTML=html;nav.hidden=!me;$('profileButton').hidden=!me;$('proBadge').hidden=!isPro();markNav()};
 async function api(url,options={}){
  const opt={credentials:'same-origin',...options};
  if(opt.body&&!(opt.body instanceof FormData)&&typeof opt.body==='object'){opt.body=JSON.stringify(opt.body);opt.headers={'Content-Type':'application/json',...(opt.headers||{})}}
@@ -27,24 +27,24 @@ function hero(txt,sub){return '<div class="hero"><div class="spark">💌</div><p
 function auth(){
  nav.hidden=true;$('profileButton').hidden=true;$('proBadge').hidden=true;
  let register=authMode==='register';
- section(hero('Senga bir maktubim bor','So‘zlarga sig‘magan tuyg‘ular uchun yaratilgan kichik, sehrli makon.')+
+ section('<div class="auth-layout"><div class="auth-splash">'+hero('Senga bir maktubim bor','So‘zlarga sig‘magan tuyg‘ular uchun yaratilgan kichik, sehrli makon.')+
  '<div class="envelope"><div class="base"></div><div class="flap"></div><div class="fold"></div><div class="seal">♥</div></div>'+
- '<div class="card auth-card"><div class="tabs"><button class="tab '+(!register?'active':'')+'" data-a="loginMode">Kirish</button><button class="tab '+(register?'active':'')+'" data-a="registerMode">Ro‘yxatdan o‘tish</button></div>'+
+ '</div><div class="auth-panel"><div class="card auth-card"><div class="tabs"><button class="tab '+(!register?'active':'')+'" data-a="loginMode">Kirish</button><button class="tab '+(register?'active':'')+'" data-a="registerMode">Ro‘yxatdan o‘tish</button></div>'+
  '<form data-form="'+(register?'register':'login')+'">'+(register?'<label class="field"><span>Ism va familiya</span><input class="input" name="name" autocomplete="name" placeholder="Masalan, Ali Valiyev" required minlength="3"></label>':'')+
  '<label class="field"><span>Telefon raqam</span><input class="input" name="phone" type="tel" autocomplete="tel" placeholder="+998 90 123 45 67" required></label>'+
  '<label class="field"><span>Parol</span><input class="input" name="password" type="password" autocomplete="'+(register?'new-password':'current-password')+'" minlength="8" placeholder="Kamida 8 ta belgi" required></label>'+
  (register?'<label class="checkline"><input type="checkbox" name="terms" required><span><a href="/terms.html" target="_blank">Foydalanish shartlari</a> bilan tanishdim va roziman.</span></label><label class="checkline"><input type="checkbox" name="privacy" required><span><a href="/privacy.html" target="_blank">Maxfiylik siyosati</a> bilan tanishdim va roziman.</span></label>':'')+
  '<button class="btn block" type="submit">'+(register?'Hisob yaratish ♡':'Kirish ♡')+'</button></form></div>'+
  (!config.dbReady?'<div class="notice">⚙️ Administrator hali MongoDB ulanishini sozlamagan. Ro‘yxatdan o‘tish vaqtincha yopiq; mavjud dizaynni ko‘rishingiz mumkin.</div>':'')+
- '<div class="center muted small">18+ · Ismingiz va raqamingiz begonalarga ko‘rsatilmaydi</div>');
+ '<div class="center muted small auth-note">18+ · Ismingiz va raqamingiz begonalarga ko‘rsatilmaydi</div></div></div>');
 }
 function home(){
  section(hero('Sevgini boshqacha izhor eting','Samimiy maktublar, shaxsiy suhbat va faqat ikkitingizga atalgan lahzalar.')+
  '<div class="card"><div class="profile">'+avatar(me.avatarId,me.name)+'<div style="flex:1;min-width:0"><div class="small muted">Xush kelibsiz</div><strong>'+esc(me.name)+'</strong><div><span class="mini-tag">'+(isPro()?'✦ PRO foydalanuvchi':'♡ Oddiy hisob')+'</span></div></div>'+btn('profile','Profil')+'</div></div>'+
- '<div class="feature"><span class="emoji">💌</span><div style="flex:1"><strong>Sehrli maktub yarating</strong><small>6 xil dizayn, rasmlar va shaxsiy havola.</small></div>'+btn('create','Yaratish','')+'</div>'+
+ '<div class="home-grid"><div class="feature"><span class="emoji">💌</span><div style="flex:1"><strong>Sehrli maktub yarating</strong><small>6 xil dizayn, rasmlar va shaxsiy havola.</small></div>'+btn('create','Yaratish','')+'</div>'+
  '<div class="feature"><span class="emoji">💕</span><div style="flex:1"><strong>Juftingiz bilan bog‘laning</strong><small>Bir martalik taklif bilan ikki qalbni birlashtiring.</small></div>'+btn('pair','Ulash','')+'</div>'+
  '<div class="feature"><span class="emoji">💬</span><div style="flex:1"><strong>Sirli suhbat</strong><small>Ko‘rilgach yoki belgilangan muddatdan keyin o‘chadigan xabarlar.</small></div>'+btn('chats','Chat')+'</div>'+
- '<div class="feature"><span class="emoji">✨</span><div style="flex:1"><strong>Pro sehrli dunyo</strong><small>Maxfiy suratlar, juftlik o‘yinlari va alohida imkoniyatlar.</small></div>'+btn('pro','Ko‘rish')+'</div>'+
+ '<div class="feature"><span class="emoji">✨</span><div style="flex:1"><strong>Pro sehrli dunyo</strong><small>Maxfiy suratlar, juftlik o‘yinlari va alohida imkoniyatlar.</small></div>'+btn('pro','Ko‘rish')+'</div></div>'+
  (me.role==='admin'?'<div class="card">'+btn('admin','⚙️ Admin panel','')+'</div>':'')+
  '<div class="center muted small" style="margin-top:21px">Muhabbat — katta gaplarda emas, kichkina e’tiborda. ♡</div>');
 }
