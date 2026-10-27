@@ -75,7 +75,18 @@ window.QalbimIntegrations=function(ctx){
    checkTimer=setInterval(checkPayment,7500);
  }
  async function pay(days){
-   try{const r=await api('/api/payments/create',{method:'POST',body:{days}});paymentModal(r)}catch(err){ctx.notify(err.message)}
+   try{
+     const r=await api('/api/payments/create',{method:'POST',body:{days}});
+     paymentModal(r);
+   }catch(err){
+     if(/sessiya|session|ulanmagan/i.test(err.message)){
+       ctx.modal('<div class="center" style="padding:14px"><div style="font-size:40px">🔒</div>'+
+         '<h2 class="card-title">Hamyon sessiyasi ulanmagan</h2>'+
+         '<p class="muted">Bu sizning kartangiz yoki Qalbim loginidagi xato emas. Do‘kon egasi HamyonAPIBot orqali karta xabarlari keladigan Telegram sessiyasini ulashi kerak.</p>'+
+         '<p class="notice">Hozir pul o‘tkazmang. Sessiya ulangach admin paneldagi “Hamyon ulanishini tekshirish” tugmasi bilan sinovdan o‘tkazish kerak.</p>'+
+         '<a class="btn block" style="display:block" href="https://t.me/HamyonAPIBot" target="_blank" rel="noopener">Hamyon botini ochish</a></div>');
+     }else ctx.notify(err.message);
+   }
  }
  async function starStatus(){
  if(!activeOrder)return;
@@ -138,6 +149,23 @@ function proPage(){
    '<button class="btn block" type="submit" style="grid-column:1/-1">Tariflarni saqlash</button></form>'+
    '<h3>So‘nggi buyurtmalar</h3><div class="small muted" id="adminOrderHistory">Yuklanmoqda...</div>';
    mount.appendChild(section);
+   const diagnostic=document.createElement('div');
+   diagnostic.className='card';
+   diagnostic.innerHTML='<h2 class="card-title">🔌 Hamyon API · Do‘kon holati</h2>'+
+     '<div id="hamyonDiagnostic" class="notice">Do‘konning Telegram sessiyasi tekshirilmoqda...</div>'+
+     '<p class="muted small">1. <a href="https://t.me/HamyonAPIBot" target="_blank" rel="noopener">HamyonAPIBot</a> → do‘kon → <b>Sessiya</b>. Karta xabarlari keladigan akkauntni ulang. Kod yoki parolni Qalbim saytiga yubormang.</p>'+
+     '<p class="muted small">2. Hamyon do‘konida quyidagi callback manzillarini belgilang:</p>'+
+     '<div class="col"><button class="btn alt sm" data-a="copyHamyonPrepare">📋 Prepare URL nusxalash</button>'+
+     '<button class="btn alt sm" data-a="copyHamyonComplete">📋 Complete URL nusxalash</button>'+
+     '<button class="btn block" data-a="testHamyon">🔄 Hamyon ulanishini tekshirish</button></div>'+
+     '<p class="small muted">Tekshiruv bepul, ammo Hamyon’da 5 daqiqalik to‘lanmagan test buyurtmasi yaratiladi. Hech qanday karta pul yechmaydi; testdan keyin haqiqiy 5 000 so‘mlik to‘lovni o‘zingiz tekshirasiz.</p>';
+   mount.prepend(diagnostic);
+   api('/api/admin/hamyon/health').then(state=>{
+     const el=$('hamyonDiagnostic');if(!el)return;
+     const name=state.status==='connected'?'✅ API buyurtma yaratadi (testdan o‘tgan)':state.status==='session_disconnected'?'❌ Hamyon do‘kon sessiyasi ulanmagan':'⚠️ Hamyon do‘koni hali testdan o‘tmagan';
+     el.className='notice'+(state.status==='connected'?' good':'');
+     el.textContent=name+'. '+state.note;
+   }).catch(err=>ctx.notify(err.message));
    try{
      const [prices,orders,stars]=await Promise.all([api('/api/admin/prices'),api('/api/admin/payments'),api('/api/admin/stars')]);
      if(mount.contains(section)){
@@ -152,6 +180,22 @@ function proPage(){
  }
  async function action(a,node){
    if(a==='tgRegMode'||a==='tgLinkMode'){miniMode=a==='tgRegMode'?'register':'link';telegramWelcome();return true}
+   if(a==='copyHamyonPrepare'){await ctx.copy(location.origin+'/api/hamyon/prepare');return true}
+   if(a==='copyHamyonComplete'){await ctx.copy(location.origin+'/api/hamyon/complete');return true}
+   if(a==='testHamyon'){
+     const button=node;button.disabled=true;
+     const prior=button.textContent;button.textContent='⏳ Tekshirilmoqda...';
+     try{
+       const r=await api('/api/admin/hamyon/test',{method:'POST',body:{}});
+       ctx.notify('✅ Hamyon sessiyasi ishlayapti. Test buyurtma qabul qilindi!');
+       const info=$('hamyonDiagnostic');
+       if(info){info.className='notice good';info.textContent='✅ Hamyon sessiyasi API darajasida faol. Real to‘lovni alohida tekshiring.'}
+     }catch(err){
+       const info=$('hamyonDiagnostic');
+       if(info){info.className='notice';info.textContent='❌ '+err.message}
+     }finally{button.disabled=false;button.textContent=prior}
+     return true;
+   }
    if(a.startsWith('payInfo:')){
      const mini=needsTelegram();
      const day=Number(a.split(':')[1]);
@@ -159,7 +203,7 @@ function proPage(){
      const found=plans.plans.find(p=>p.days===day);
      const message=!found||!found.price
        ?(mini?'Telegram ichidagi Pro uchun Stars narxi admin panelda hali belgilanmagan. So‘mdagi tariflar oddiy sayt uchun alohida ishlaydi.':'Admin panelda tarif narxi hali belgilanmagan.')
-       :(mini?'Telegram Stars to‘lov integratsiyasi hozir ishlamayapti.':'Hamyon to‘lov webhook manzillari hali tasdiqlanmagan. Xavfsizlik uchun kartali to‘lov hozir o‘chirilgan.');
+       :(mini?'Telegram Stars to‘lov integratsiyasi hozir ishlamayapti.':'Hamyon sessiyasi tekshirilmagan yoki uzilgan. Do‘kon egasi @HamyonAPIBot → Sessiya bo‘limida ulab, admin panelda tekshirishi kerak.');
      ctx.modal('<div class="center"><div style="font-size:40px">🔒</div><h2 class="card-title">To‘lov hozircha yopiq</h2><p class="muted">'+e(message)+'</p></div>');
      return true;
    }
