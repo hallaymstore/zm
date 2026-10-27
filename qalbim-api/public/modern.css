@@ -204,3 +204,69 @@ html .scene-options button{font:700 11px var(--m-font)}
 @media(prefers-reduced-motion:reduce){
  html .home-welcome .hero-art-card,html .discover-card{transition:none}
 }
+
+/* Modern recipient invitation system — art directed, not emoji-based */
+html .brand-mark{display:inline-flex;align-items:center;margin-left:5px;color:#986cb4;vertical-align:3px}
+html .brand-mark .ui-icon{width:17px;height:17px;stroke-width:2.1}
+html .theme-switch .ui-icon{width:18px;height:18px}
+html .scene-thumb .thumb-art,html .scene-thumb .thumb-seal{display:flex;align-items:center;justify-content:center}
+html .scene-thumb .thumb-art .ui-icon{width:31px;height:31px;stroke-width:1.4}
+html .scene-thumb .thumb-seal .ui-icon{width:13px;height:13px;stroke-width:1.5}
+html .scene-symbol{display:flex;align-items:center;justify-content:center}
+html .scene-symbol .ui-icon{stroke-width:1.4}
+html .scene-action span{display:inline-flex;align-items:center;vertical-align:middle}
+html .scene-action span .ui-icon{width:19px;height:19px}
+html .magic-particle{display:inline-flex;align-items:center;justify-content:center}
+html .magic-particle .ui-icon{width:19px;height:19px;stroke-width:1.65}
+html .scene-gift .ui-icon,html .scene-options .ui-icon{margin-right:4px;flex-shrink:0}
+html .scene-secret-preview .ui-icon{margin-right:5px}
+html .letter-scene{
+ font-family:var(--m-font);border:1px solid color-mix(in srgb,var(--saccent) 20%,transparent);
+ box-shadow:0 20px 40px #17101d1b;
+}
+html .letter-scene .scene-composition{background:var(--sglass);backdrop-filter:none;box-shadow:0 18px 55px #271b2a17}
+html .letter-scene .scene-topline,html .letter-scene .scene-bottomline{font:800 9px/1.6 var(--m-font);letter-spacing:1.5px}
+html .letter-scene .scene-recipient{font:800 9px/1.5 var(--m-font);letter-spacing:2px}
+html .letter-scene .scene-story h2{font:400 clamp(31px,4vw,49px)/1.15 var(--m-display);letter-spacing:-.7px}
+html .letter-scene .scene-story p{font:400 clamp(15px,1.5vw,18px)/1.9 var(--m-font);letter-spacing:.08px}
+html .letter-scene .scene-signature{font:600 11px var(--m-font)}
+html .letter-scene .scene-signature em{font:italic 20px var(--m-display)}
+html .letter-scene .scene-action{font:800 11px var(--m-font);letter-spacing:.2px;box-shadow:none}
+html .scene-preview{border-radius:15px;box-shadow:none}
+html .scene-preview .scene-story h2{font-size:27px}
+html .scene-preview .scene-story p{font-size:12px}
+html .scene-preview .scene-composition{min-height:300px;box-shadow:0 14px 25px #12121e0d}
+html .letter-scene .scene-figure{opacity:.48}
+html .scene-atmosphere .atmo{opacity:.14;font-size:24px}
+html .letter-scene .scene-world-glow{opacity:.6}
+html .letter-scene.scene-1{--sbg:#f6dbe2;--sbg2:#f9eeea;--sfg:#683b51;--saccent:#a86582;--sglass:#fff9f5f3}
+html .letter-scene.scene-2{--sbg:#131b38;--sbg2:#353855;--sfg:#f4e7ce;--saccent:#e5cf9b;--sglass:#20233bdc}
+html .letter-scene.scene-3{--sbg:#efccb2;--sbg2:#c79892;--sfg:#6a3b3c;--saccent:#ac705b;--sglass:#fffbefec}
+html .letter-scene.scene-4{--sbg:#d6e5d5;--sbg2:#aac6b1;--sfg:#315943;--saccent:#4b7f62;--sglass:#fafff5e9}
+html .letter-scene.scene-5{--sbg:#e9dbf4;--sbg2:#edd3dd;--sfg:#62416a;--saccent:#a676ae;--sglass:#faf6ffed}
+html .letter-scene.scene-6{--sbg:#d9c6ae;--sbg2:#ede0c9;--sfg:#594735;--saccent:#8e6b4a;--sglass:#f8efe0ed}
+html .letter-scene.scene-7{--sbg:#d9cdec;--sbg2:#b4a6ce;--sfg:#51456b;--saccent:#8a74ae;--sglass:#fcf8ffea}
+html .letter-scene.scene-8{--sbg:#12172b;--sbg2:#2e2f50;--sfg:#f5e8cc;--saccent:#dbc5a0;--sglass:#1b2135e9}
+html .letter-scene.scene-9{--sbg:#ddd2c0;--sbg2:#c5b39f;--sfg:#5e4b3a;--saccent:#9a7867;--sglass:#f8f0e3ed}
+html .letter-scene.scene-10{--sbg:#f8e4ea;--sbg2:#e8bfd0;--sfg:#78465f;--saccent:#c080a5;--sglass:#fffafbec}
+html .letter-scene.scene-11{--sbg:#c5e2e5;--sbg2:#88b1c7;--sfg:#2d5669;--saccent:#3f8399;--sglass:#f2fdffee}
+html .letter-scene.scene-12{--sbg:#302525;--sbg2:#594843;--sfg:#f6dfb7;--saccent:#d0a774;--sglass:#3f3030ee}
+html .letter-scene.scene-13{--sbg:#e7e1e0;--sbg2:#d7d1ce;--sfg:#413e49;--saccent:#947a81;--sglass:#fffffffb}
+html .letter-scene.scene-14{--sbg:#1b1534;--sbg2:#45305e;--sfg:#fbe8f7;--saccent:#e1b4e9;--sglass:#2a2345e6}
+html .letter-scene.scene-15{--sbg:#edf4fa;--sbg2:#bbd1df;--sfg:#496879;--saccent:#759baa;--sglass:#f9fcffed}
+html .letter-scene.scene-16{--sbg:#16171e;--sbg2:#343038;--sfg:#ece1d5;--saccent:#bba58e;--sglass:#232329ed}
+html .letter-scene.scene-17{--sbg:#fff0cb;--sbg2:#eccbaa;--sfg:#77523d;--saccent:#b38e60;--sglass:#fffaf0f0}
+html .letter-scene.scene-18{--sbg:#fff;--sbg2:#f6f7f7;--sfg:#33313a;--saccent:#7e7b84;--sglass:#fff}
+html .letter-scene.scene-18 .scene-composition{background:transparent}
+html .scene-ceremony{border-radius:22px;box-shadow:var(--m-shadow)}
+html .scene-demo-overlay{background:#191420e9}
+html .scene-demo-toolbar{font:700 12px var(--m-font)}
+html .scene-demo-toolbar strong{font:400 23px var(--m-display)}
+@media(max-width:767px){
+ html .letter-scene{border-radius:17px;padding:24px 14px}
+ html .letter-scene .scene-composition{padding:25px 18px}
+ html .letter-scene .scene-story h2{font-size:32px}
+ html .letter-scene .scene-story p{font-size:15px}
+ html .scene-preview .scene-story h2{font-size:23px}
+ html .scene-preview .scene-story p{font-size:12px}
+}
