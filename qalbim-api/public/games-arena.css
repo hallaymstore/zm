@@ -1,0 +1,95 @@
+/* Qalbim Arcade II — Pro couple Arena + independent free mini-games */
+.arcade-pro-tag,.arcade-free-tag{position:absolute;top:13px;right:12px;border-radius:100px;background:#fff2;color:#fff;font-size:9px;font-weight:800;letter-spacing:.7px;padding:7px 10px;display:flex;align-items:center;gap:5px;backdrop-filter:blur(7px);border:1px solid #fff5}
+.arcade-pro-tag{background:#f0c2e348;color:#fff2ff;border-color:#ffd6fc8a}
+.arcade-free-tag{background:#e8fff023;color:#fff9;border-color:#ffffff5b}
+.arcade-pro-tag .ui-icon{height:14px;width:14px}
+.arcade-lobby,.arena-lobby{width:100%;margin-bottom:20px;border:1px solid var(--m-border,#e5e1ed);border-radius:18px;background:var(--m-card,#fff);overflow:hidden;box-shadow:0 8px 32px #2b203210}
+.arena-lobby[hidden]{display:none!important}
+.arena-lobby-content{display:flex;gap:16px;align-items:center;padding:19px 23px}
+.arena-lobby-content>.ui-icon{flex-shrink:0;color:var(--m-accent,#70569c)}
+.arena-lobby-content>div{flex:1;min-width:0}
+.arena-lobby-content strong{display:block;font-size:13px;color:var(--m-text,#282332)}
+.arena-lobby-content p{font-size:11px;line-height:1.7;color:var(--m-sub,#8c8890);margin:4px 0 0}
+.arena-lobby-content .btn{white-space:nowrap;min-width:95px}
+.arena-active-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:0 17px 17px}
+.arena-active-room{display:flex;gap:11px;align-items:center;border:1px solid var(--m-border,#e5e1ed);padding:14px;border-radius:13px;background:var(--m-soft,#f5f0fa);color:var(--m-text,#282332);min-width:0;text-align:left;cursor:pointer}
+.arena-active-room span{flex:1;min-width:0}
+.arena-active-room strong{display:block;font-size:12px}
+.arena-active-room small{display:block;font-size:10px;color:var(--m-sub,#8c8890);margin-top:3px}
+.arena-active-room .ui-icon{color:var(--m-accent,#70569c);flex:none}
+.arena-active-room .arena-accept{color:#8061ab;font-size:10px;white-space:nowrap}
+.arena-active-room:hover{border-color:#ba9dc7}
+.arena-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:15px;min-height:260px;text-align:center;border:1px dashed var(--m-border,#e5e1ed);border-radius:17px;padding:25px;background:var(--m-soft,#f5f0fa)}
+.arena-state>.ui-icon{color:var(--m-accent,#70569c)}
+.arena-state h3{font:400 clamp(24px,3vw,31px) 'DM Serif Display',Georgia,serif;color:var(--m-text,#282332);margin:0}
+.arena-room-info{display:flex;align-items:center;justify-content:space-between;gap:16px;border:1px solid var(--m-border,#e5e1ed);background:var(--m-soft,#f5f0fa);padding:20px 22px;border-radius:16px;margin-bottom:19px}
+.arena-room-info>div{flex:1}
+.arena-room-info h3{font:400 clamp(23px,3vw,30px) 'DM Serif Display',Georgia,serif;color:var(--m-text,#282332);margin:6px 0}
+.arena-room-info p{font-size:11px;color:var(--m-sub,#8c8890);line-height:1.65;max-width:440px;margin:0}
+.arena-room-info .btn{flex:none}
+.arena-room-footer{display:flex;align-items:center;flex-wrap:wrap;gap:11px;margin:21px 0 2px}
+.arena-room-footer>.arcade-best{margin-left:auto}
+.arena-solo-stats{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px auto 18px;flex-wrap:wrap}
+.arena-solo-stats span,.arena-solo-stats>b{display:inline-flex;align-items:center;gap:7px;padding:10px 15px;background:var(--m-soft,#f5f0fa);color:var(--m-text,#282332);border:1px solid var(--m-border,#e5e1ed);border-radius:12px;font-size:11px}
+.arena-solo-stats span>.ui-icon{color:var(--m-accent,#70569c)}
+.arena-solo-stats b{font-weight:800}
+.arena-xo-board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;max-width:440px;width:100%;margin:14px auto 20px}
+.arena-xo-cell{position:relative;display:grid;place-items:center;background:var(--m-soft,#f5f0fa);border:1px solid var(--m-border,#e5e1ed);border-radius:15px;aspect-ratio:1;color:#9164ad;cursor:pointer;transition:background .2s,transform .2s,border-color .2s}
+.arena-xo-cell:not(:disabled):hover{background:#eee4f8;border-color:#a77dc8;transform:translateY(-2px)}
+.arena-xo-cell.occupied{background:#e7d8ed;color:#745094}
+.arena-xo-cell.occupied:nth-child(2n){background:#efdef0}
+html[data-theme=dark] .arena-xo-cell.occupied{background:#463352;color:#e5c9fc}
+.arena-xo-cell:disabled{cursor:default}
+.arena-xo-cell .ui-icon{max-width:45%;max-height:45%}
+.arena-online-memory{max-width:550px}
+.arena-rule{font-size:11px;color:var(--m-sub,#8c8890);text-align:center;margin:18px auto}
+.arena-quiz-score{display:flex;gap:10px;justify-content:center;margin:15px auto}
+.arena-quiz-score span{background:var(--m-soft,#f5f0fa);border:1px solid var(--m-border,#e5e1ed);border-radius:11px;color:var(--m-text,#282332);padding:9px 14px;font-size:11px}
+.arena-match-question{padding:25px;max-width:650px;margin:12px auto 20px;border-radius:19px;background:var(--m-soft,#f5f0fa);border:1px solid var(--m-border,#e5e1ed);text-align:center}
+.arena-match-question h3{font:400 29px/1.2 'DM Serif Display',Georgia,serif;margin:2px auto 21px;color:var(--m-text,#282332)}
+.arena-match-question>p{display:flex;align-items:center;gap:8px;justify-content:center;color:var(--m-accent,#70569c);font-size:12px}
+.arena-last-result{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;font-size:11px;color:var(--m-accent,#70569c)}
+.arena-code-top{text-align:center;margin:12px auto 19px}
+.arena-code-top p{font-size:12px;color:var(--m-sub,#8c8890);line-height:1.7;max-width:420px;margin:13px auto}
+.arena-code-picks,.arena-code-symbols{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.arena-code-slot{display:grid;place-items:center;width:70px;height:70px;border:1.5px dashed #c7b6d7;border-radius:15px;background:var(--m-soft,#f5f0fa);color:#8d70ab}
+.arena-code-slot.filled{border:1.5px solid #9776b8;background:#e6d9f4;color:#62418a}
+.arena-code-symbols{margin:22px auto}
+.arena-code-symbols button{display:grid;place-items:center;width:58px;height:58px;border-radius:14px;border:1px solid var(--m-border,#e5e1ed);background:var(--m-card,#fff);color:var(--m-accent,#70569c);cursor:pointer}
+.arena-code-symbols button:hover:not(:disabled){background:var(--m-soft,#f5f0fa);transform:translateY(-2px)}
+.arena-code-symbols button:disabled{opacity:.37}
+.arena-code-actions{display:flex;justify-content:center;gap:10px;margin:9px auto 20px}
+.arena-code-history{display:flex;flex-direction:column;gap:9px;margin:14px auto;max-width:590px}
+.arena-code-attempt{display:flex;align-items:center;gap:11px;border:1px solid var(--m-border,#e5e1ed);border-radius:12px;background:var(--m-soft,#f5f0fa);padding:11px 13px}
+.arena-code-attempt>span{font-weight:800;color:var(--m-sub,#8c8890);font-size:10px;margin-right:6px}
+.arena-code-attempt>.ui-icon{color:var(--m-accent,#70569c)}
+.arena-code-attempt>strong{margin-left:auto;font-size:10px;color:var(--m-text,#282332)}
+#codeRestart{display:flex;margin:15px auto}
+#codeRestart[hidden]{display:none}
+@media(max-width:767px){
+ .arcade-grid{grid-template-columns:1fr}
+ .arcade-pro-tag,.arcade-free-tag{top:9px;right:7px;font-size:8px;padding:5px 7px}
+ .arena-lobby-content{padding:13px 11px;gap:10px}
+ .arena-lobby-content strong{font-size:11px}
+ .arena-lobby-content p{font-size:10px}
+ .arena-lobby-content>.ui-icon{width:18px;height:18px}
+ .arena-lobby-content .btn{min-width:0;font-size:10px;white-space:normal;padding:7px 9px}
+ .arena-active-list{grid-template-columns:1fr;padding:0 10px 11px}
+ .arena-room-info{flex-direction:column;align-items:stretch;padding:16px}
+ .arena-room-info h3{font-size:25px}
+ .arena-room-info .btn{width:100%}
+ .arena-room-footer>.arcade-best{margin-left:0}
+ .arena-solo-stats{gap:5px}
+ .arena-solo-stats span,.arena-solo-stats>b{padding:7px 9px;font-size:9px}
+ .arena-xo-board{max-width:380px;gap:7px}
+ .arena-xo-cell{border-radius:11px}
+ .arena-match-question{padding:17px 12px}
+ .arena-match-question h3{font-size:26px}
+ .arena-code-slot{height:57px;width:57px;border-radius:12px}
+ .arena-code-symbols{gap:7px}
+ .arena-code-symbols button{width:45px;height:45px;border-radius:11px}
+ .arena-code-symbols button>.ui-icon{height:21px;width:21px}
+ .arena-code-attempt{gap:7px;padding:9px 10px}
+ .arena-code-attempt>.ui-icon{width:19px;height:19px}
+ .arena-code-attempt>strong{font-size:9px}
+}
