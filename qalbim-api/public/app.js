@@ -94,7 +94,22 @@ function letter(){
  api('/api/letters/'+encodeURIComponent(id)).then(d=>{
    if(!$('letterStage'))return;
    letterData=d;
-   window.QalbimScenes.decorateIntro(d.letter.theme);
+   const mode=d.letter.experience||'direct';
+   const stage=$('letterStage');
+   if(mode==='story'){
+     stage.classList.add('moment-mode');
+     window.QalbimStory.mount(stage,d,{
+       onReact:async emoji=>{
+         if(!me)throw new Error('Reaksiya yuborish uchun tizimga kiring');
+         await api('/api/letters/'+d.letter.id+'/react',{method:'POST',body:{emoji}});
+         letterData.reactions[emoji]=(letterData.reactions[emoji]||0)+1;
+         notify('Reaksiya yuborildi');
+       },
+       onError:error=>notify(error.message||'Reaksiyani saqlab bo‘lmadi'),
+       onReadFull:()=>presentLetter()
+     });
+   }else if(mode==='direct')presentLetter();
+   else window.QalbimScenes.decorateIntro(d.letter.theme);
  }).catch(e=>{if($('openHint'))$('openHint').textContent=e.message});
 }
 function showLetter(){
@@ -225,7 +240,7 @@ async function act(action,node){
  if(action.startsWith('editLetter:')){
   let id=action.split(':')[1],v=await api('/api/letters/'+id),l=v.letter;
   if(l.ownerId!==me.id)return notify('Faqat o‘z maktubingizni tahrirlang');
-  modal('<form data-form="letterEdit"><input name="id" type="hidden" value="'+esc(id)+'"><label class="field"><span>Kimga</span><input class="input" name="to" value="'+esc(l.to)+'" required></label><label class="field"><span>Kimdan</span><input class="input" name="from" value="'+esc(l.from)+'" required></label><label class="field"><span>Sarlavha</span><input class="input" name="title" value="'+esc(l.title)+'" required></label><label class="field"><span>Maktub matni</span><textarea name="message" class="input" required>'+esc(l.message)+'</textarea></label><label class="field"><span>Sahifa dizayni (18 xil)</span><select name="theme" class="input">'+window.QalbimExperience.THEMES.map(t=>'<option value="'+t.id+'" '+(t.id===l.theme?'selected':'')+'>'+t.emoji+' '+t.name+'</option>').join('')+'</select></label><label class="field"><span>🎁 Syurpriz xabari (ixtiyoriy)</span><textarea name="secretNote" class="input" maxlength="220" placeholder="Olganda sovg‘a sifatida ochiladi...">'+esc(l.secretNote||'')+'</textarea></label><button type="submit" class="btn block">Saqlash</button></form>');return;
+  modal('<form data-form="letterEdit"><input name="id" type="hidden" value="'+esc(id)+'"><label class="field"><span>Kimga</span><input class="input" name="to" value="'+esc(l.to)+'" required></label><label class="field"><span>Kimdan</span><input class="input" name="from" value="'+esc(l.from)+'" required></label><label class="field"><span>Sarlavha</span><input class="input" name="title" value="'+esc(l.title)+'" required></label><label class="field"><span>Maktub matni</span><textarea name="message" class="input" required>'+esc(l.message)+'</textarea></label><label class="field"><span>Sahifa dizayni (18 xil)</span><select name="theme" class="input">'+window.QalbimExperience.THEMES.map(t=>'<option value="'+t.id+'" '+(t.id===l.theme?'selected':'')+'>'+t.emoji+' '+t.name+'</option>').join('')+'</select></label><label class="field"><span>Ochish tajribasi</span><select name="experience" class="input">'+[['story','Moments Story'],['direct','Darhol ochiladigan maktub'],['envelope','Klassik konvert']].map(x=>'<option value="'+x[0]+'" '+((l.experience||'direct')===x[0]?'selected':'')+'>'+x[1]+'</option>').join('')+'</select></label><label class="field"><span>Story muqovasidagi yozuv</span><input class="input" name="coverLine" maxlength="110" value="'+esc(l.coverLine||'')+'" placeholder="Bu hikoya faqat sen uchun"></label><label class="field"><span>🎁 Syurpriz xabari (ixtiyoriy)</span><textarea name="secretNote" class="input" maxlength="220" placeholder="Olganda sovg‘a sifatida ochiladi...">'+esc(l.secretNote||'')+'</textarea></label><button type="submit" class="btn block">Saqlash</button></form>');return;
  }
  if(action.startsWith('deleteLetter:')){if(!confirm('Maktub o‘chirilsinmi?'))return;await api('/api/letters/'+action.split(':')[1],{method:'DELETE'});return letters()}
  if(action==='invite'){let d=await api('/api/pairs/invite',{method:'POST',body:{}});let s=location.origin+'/invite/'+d.token;modal('<p class="muted">Sevgilingizga faqat shu maxsus havolani yuboring. Amal qilish muddati 72 soat.</p><textarea class="input" readonly>'+esc(s)+'</textarea><button class="btn block" data-a="copyInvite" data-link="'+esc(s)+'">🔗 Nusxalash</button>');return}
@@ -257,8 +272,8 @@ document.addEventListener('submit',async e=>{
  if(await extra.form(t,data))return;
  if(t==='register'){await api('/api/auth/register',{method:'POST',body:{name:data.name,phone:data.phone,password:data.password,termsAccepted:!!data.terms,privacyAccepted:!!data.privacy}});return go('/')}
  if(t==='login'){await api('/api/auth/login',{method:'POST',body:{phone:data.phone,password:data.password}});return go('/')}
- if(t==='letter'){let d=await api('/api/letters',{method:'POST',body:{to:data.to,from:data.from,title:data.title,message:data.message,secretNote:data.secretNote||'',theme,photoIds:draftPhotos.map(x=>x.id)}});draftPhotos=[];notify('Maktub tayyor!');return go('/l/'+d.letter.id)}
- if(t==='letterEdit'){await api('/api/letters/'+data.id,{method:'PATCH',body:{to:data.to,from:data.from,title:data.title,message:data.message,secretNote:data.secretNote||'',theme:Number(data.theme)}});closeModal();notify('Maktub yangilandi');return letters()}
+ if(t==='letter'){let d=await api('/api/letters',{method:'POST',body:{to:data.to,from:data.from,title:data.title,message:data.message,coverLine:data.coverLine||'',experience:data.experience||'story',secretNote:data.secretNote||'',theme,photoIds:draftPhotos.map(x=>x.id)}});draftPhotos=[];notify('Maktub tayyor!');return go('/l/'+d.letter.id)}
+ if(t==='letterEdit'){await api('/api/letters/'+data.id,{method:'PATCH',body:{to:data.to,from:data.from,title:data.title,message:data.message,coverLine:data.coverLine||'',experience:data.experience||'direct',secretNote:data.secretNote||'',theme:Number(data.theme)}});closeModal();notify('Maktub yangilandi');return letters()}
  if(t==='report'){await api('/api/reports',{method:'POST',body:{type:data.type,target:data.target,reason:data.reason}});closeModal();return notify('Shikoyat yuborildi')}
  if(t==='anniversary'){await api('/api/me',{method:'PATCH',body:{anniversary:data.anniversary}});await refresh();notify('♡ Muhim sana saqlandi');return pair()}
  if(t==='profile'){await api('/api/me',{method:'PATCH',body:{name:data.name,bio:data.bio,chatTtl:data.chatTtl}});await refresh();notify('Profil saqlandi');return profile()}
