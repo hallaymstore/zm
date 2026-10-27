@@ -70,9 +70,10 @@ function openGame(id,opts={}){
  root.scrollIntoView({block:'start',behavior:window.matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});
 }
 function back(){
- clean();window.QalbimArena?.refreshLobby();const root=rootEl();if(!root)return;
+ clean();const root=rootEl();if(!root)return;
  const shell=root.closest('.arcade-shell');root.replaceChildren();root.hidden=true;
  for(const key of ['.arcade-hero','.arcade-heading','.arcade-grid','.arcade-notice'])$(shell,key).hidden=false;const lobby=shell.querySelector('.arena-lobby');if(lobby)lobby.hidden=false;
+ window.QalbimArena?.refreshLobby();
 }
 document.addEventListener('click',e=>{
  const start=e.target.closest('[data-arcade-launch]');if(start){openGame(start.dataset.arcadeLaunch);return}
