@@ -110,7 +110,7 @@ module.exports=function installIntegrations(app,deps){
    return {price3:validPrice(s?.price3)?Number(s.price3):0,price7:validPrice(s?.price7)?Number(s.price7):0};
  }
  app.get('/api/payments/plans',ready,asyncRoute(async(req,res)=>{
-   const prices=await getPrices();res.json({plans:[{days:3,price:prices.price3},{days:7,price:prices.price7}],gatewayReady:!!(hamyon().id&&hamyon().key)});
+   const prices=await getPrices();res.json({plans:[{days:3,price:prices.price3},{days:7,price:prices.price7}],gatewayReady:!!(hamyon().id&&hamyon().key&&process.env.HAMYON_CALLBACKS_ENABLED==='true')});
  }));
  app.get('/api/payments/mine',deps.auth,asyncRoute(async(req,res)=>{
    const list=await c('payments').find({userId:req.user._id},{projection:{_id:0,orderId:1,days:1,amount:1,card:1,status:1,createdAt:1,expiresAt:1}}).sort({createdAt:-1}).limit(25).toArray();
@@ -127,6 +127,7 @@ module.exports=function installIntegrations(app,deps){
    const prices=await getPrices(),value=prices[key],h=hamyon();
    if(!value||value<1000)return reply(res,409,'Admin hali tarif narxini belgilamagan');
    if(!h.id||!h.key)return reply(res,503,'To‘lov API ulanmagan');
+   if(process.env.HAMYON_CALLBACKS_ENABLED!=='true')return reply(res,409,'Hamyon callback manzillari admin tomonidan hali tasdiqlanmagan');
    const current=await c('payments').findOne({userId:req.user._id,status:'pending',expiresAt:{$gt:now()}});
    if(current)return res.json({orderId:current.orderId,amount:current.amount,card:current.card,days:current.days,expiresAt:current.expiresAt,status:'pending',reused:true});
    let lock,amount;
