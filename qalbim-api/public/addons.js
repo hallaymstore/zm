@@ -107,7 +107,18 @@ function proPage(){
    '<div class="feature"><span class="emoji">🎁</span><div style="flex:1"><strong>Syurpriz quti</strong><small>Sevgi topshirig‘i.</small></div>'+btn('game:box','O‘ynash')+'</div>'+
    '<div class="card faint"><h3 class="card-title">To‘lovlar tarixi</h3><div id="orderHistory" class="muted small">Yuklanmoqda...</div></div>');
    Promise.all([api(mini?'/api/stars/plans':'/api/payments/plans'),api(mini?'/api/stars/mine':'/api/payments/mine')]).then(([p,h])=>{
-      if($('proPlans'))$('proPlans').innerHTML=p.plans.map(t=>'<div class="card center" style="margin:4px 0"><div style="font-size:32px">'+(t.days===3?'🌸':'👑')+'</div><h3>'+t.days+' kunlik Pro</h3><strong style="font-size:20px">'+(t.price?(mini?(t.price+' ⭐'):fmt(t.price)):'Hali narx belgilanmagan')+'</strong><p class="muted small">To‘lovdan keyin avtomatik faollashadi</p><button class="btn block" data-a="'+(mini?'payStars:':'payPro:')+t.days+'" '+(!t.price||!p.gatewayReady?'disabled':'')+'>💳 To‘lov qilish</button></div>').join('');
+      if($('proPlans'))$('proPlans').innerHTML=p.plans.map(t=>{
+        const priceReady=!!t.price,available=priceReady&&p.gatewayReady;
+        const regularDaily=(p.plans[0]&&p.plans[0].price)/3;
+        const savings=!mini&&t.days===7&&regularDaily>0&&t.price>0?Math.round((1-t.price/(regularDaily*7))*100):0;
+        const ribbon=savings>0?'<div style="margin:8px auto"><span class="pill">🎁 '+savings+'% tejamkor</span></div>':'';
+        const action=available?(mini?'payStars:':'payPro:')+t.days:'payInfo:'+t.days;
+        const buttonText=available?(mini?'⭐ Stars bilan to‘lash':'💳 To‘lov qilish'):'Nima uchun to‘lov yopiq?';
+        return '<div class="card center" style="margin:4px 0"><div style="font-size:32px">'+(t.days===3?'🌸':'👑')+'</div><h3>'+t.days+' kunlik Pro</h3>'+
+          '<strong style="font-size:20px">'+(priceReady?(mini?(t.price+' ⭐'):fmt(t.price)):'Hali narx belgilanmagan')+'</strong>'+ribbon+
+          '<p class="muted small">'+(available?'To‘lov tasdiqlansa Pro avtomatik faollashadi':!priceReady?(mini?'Administrator Telegram Stars narxini kiritishi kerak.':'Administrator narxni belgilashi kerak.'):'To‘lov provayderi sozlamasi yakunlanmagan.')+'</p>'+
+          '<button class="btn block'+(available?'':' alt')+'" data-a="'+action+'">'+buttonText+'</button></div>';
+      }).join('');
       if($('orderHistory'))$('orderHistory').innerHTML=h.payments.length?h.payments.map(o=>'<div class="letteritem row between"><div><strong>'+o.days+' kun · '+(mini?(o.stars+' ⭐'):fmt(o.amount))+'</strong><div class="muted small">'+e(o.status)+' · '+e(o.orderId)+'</div></div>'+(o.status==='pending'&&!mini?btn('resumePay:'+o.orderId,'Ochish'):'')+'</div>').join(''):'Hali buyurtmalar yo‘q.';
    }).catch(err=>ctx.notify(err.message));
  }
@@ -137,6 +148,17 @@ function proPage(){
  }
  async function action(a,node){
    if(a==='tgRegMode'||a==='tgLinkMode'){miniMode=a==='tgRegMode'?'register':'link';telegramWelcome();return true}
+   if(a.startsWith('payInfo:')){
+     const mini=needsTelegram();
+     const day=Number(a.split(':')[1]);
+     const plans=await api(mini?'/api/stars/plans':'/api/payments/plans');
+     const found=plans.plans.find(p=>p.days===day);
+     const message=!found||!found.price
+       ?(mini?'Telegram ichidagi Pro uchun Stars narxi admin panelda hali belgilanmagan. So‘mdagi tariflar oddiy sayt uchun alohida ishlaydi.':'Admin panelda tarif narxi hali belgilanmagan.')
+       :(mini?'Telegram Stars to‘lov integratsiyasi hozir ishlamayapti.':'Hamyon to‘lov webhook manzillari hali tasdiqlanmagan. Xavfsizlik uchun kartali to‘lov hozir o‘chirilgan.');
+     ctx.modal('<div class="center"><div style="font-size:40px">🔒</div><h2 class="card-title">To‘lov hozircha yopiq</h2><p class="muted">'+e(message)+'</p></div>');
+     return true;
+   }
    if(a==='checkPay'){await checkPayment();return true}
    if(a==='checkStars'){await starStatus();return true}
    if(a.startsWith('payStars:')){await payStars(Number(a.split(':')[1]));return true}
