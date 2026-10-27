@@ -64,7 +64,8 @@ function renderStudio({name,theme,photos=[]}){
  '<label class="field"><span>Kimdan?</span><input name="from" class="input" maxlength="80" value="'+esc(name)+'" required></label></div>'+
  '<label class="field"><span>Maktub sarlavhasi</span><input name="title" class="input" maxlength="90" value="Sen — qalbimdagi eng go‘zal hikoya" required></label>'+
  '<label class="field"><span>Maktub matni</span><textarea name="message" class="input" required maxlength="1400" rows="7">Sen hayotimga kirgan kundan beri oddiy lahzalar ham boshqacha ma’no kasb etdi. Har bir tabassuming — mening eng go‘zal xotiram. Seni juda qadrlayman. ♡</textarea><span class="char-indicator" id="messageLength">0 / 1400</span></label>'+
- '<div class="caption-hint">✨ Yozishga ilhom kerakmi? Tayyor g‘oyalardan foydalaning:</div><div class="idea-strip" role="group" aria-label="Maktub g‘oyalari">'+IDEAS.map((p,i)=>'<button class="idea-chip" type="button" data-idea="'+i+'">'+p.icon+' '+p.title+'</button>').join('')+'</div></section>'+
+ '<div class="caption-hint">✨ Yozishga ilhom kerakmi? Tayyor g‘oyalardan foydalaning:</div><div class="idea-strip" role="group" aria-label="Maktub g‘oyalari">'+IDEAS.map((p,i)=>'<button class="idea-chip" type="button" data-idea="'+i+'">'+p.icon+' '+p.title+'</button>').join('')+'</div>'+
+ '<div class="studio-secret-note"><strong>🎁 Maxfiy syurpriz xabari (ixtiyoriy)</strong><p>Oluvchi maktubni ochib, sovg‘a tugmasini bosganda alohida paydo bo‘ladi. Bu faqat vizual yashirin xabar — parol yoki maxfiy ma’lumot yozmang.</p><textarea class="input" name="secretNote" maxlength="220" rows="3" placeholder="Faqat ikkimiz biladigan eng yoqimli so‘zlar..."></textarea></div></section>'+
  '<section class="studio-section"><div class="studio-section-head"><span class="step-count">02</span><div><h2>O‘z uslubingizni tanlang</h2><p>18 xil alohida sahifa · har biri boshqacha</p></div></div>'+
  '<div class="filter-row" id="templateFilters"><button type="button" class="filter-chip selected" data-template-filter="all">Hammasi</button><button type="button" class="filter-chip" data-template-filter="romance">Romantik</button><button type="button" class="filter-chip" data-template-filter="nature">Tabiat</button><button type="button" class="filter-chip" data-template-filter="minimal">Minimal</button><button type="button" class="filter-chip" data-template-filter="royal">Premium uslub</button></div>'+
  '<div id="templateGallery">'+gallery(theme)+'</div></section>'+
@@ -84,10 +85,11 @@ function attachStudio({getTheme}){
    const container=document.getElementById('letterLivePreview');
    if(!container)return;
    const existing=container.querySelector('.letter-scene');
-   if(!existing||Number(existing.dataset.scene)!==theme){
+   const note=String(d.get('secretNote')||'');
+   if(!existing||Number(existing.dataset.scene)!==theme||Boolean(existing.querySelector('.scene-secret-preview'))!==Boolean(note.trim())){
      container.innerHTML=window.QalbimScenes.render({
        title:String(d.get('title')||''),message:String(d.get('message')||''),
-       theme,from:String(d.get('from')||''),to:String(d.get('to')||''),preview:true
+       theme,from:String(d.get('from')||''),to:String(d.get('to')||''),secretNote:note,preview:true
      });
    }else{
      const values={title:d.get('title')||'Senga yozilgan maktub',message:d.get('message')||'Yuragimdagi so‘zlar...',from:d.get('from')||'Men',to:d.get('to')||'Azizim'};
