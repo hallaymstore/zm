@@ -166,3 +166,11 @@ html[data-theme="dark"] .memory-tile{background:linear-gradient(140deg,#4e425c,#
 }
 @media(max-width:390px){.arcade-game-card{grid-template-columns:100px minmax(0,1fr)}.arcade-card-content h3{font-size:19px}.arcade-card-content p{font-size:9px}.arcade-hero h1{font-size:35px}.arcade-hero-art{right:-120px}.arcade-card-footer strong{gap:2px}}
 @media(prefers-reduced-motion:reduce){.arcade-shell *{animation:none!important;transition:none!important}.memory-tile .memory-tile-back,.memory-tile .memory-tile-front{transition:none!important}}
+
+/* Six-item navigation remains tappable even on narrow 320px devices. */
+@media(max-width:767px){
+ html .bottomnav:not([hidden]){gap:1px;padding-left:4px;padding-right:4px;padding-bottom:max(8px,env(safe-area-inset-bottom))}
+ html .bottomnav .navitem{flex:1 1 0;min-width:0;max-width:none;white-space:nowrap;overflow:hidden;gap:4px;font-size:9px;letter-spacing:-.2px;padding:9px 2px 7px;border-radius:10px}
+ html .bottomnav .navitem b{display:grid;place-items:center}
+ html .bottomnav .navitem b .ui-icon{width:20px;height:20px}
+}
