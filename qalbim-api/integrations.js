@@ -109,8 +109,23 @@ module.exports=function installIntegrations(app,deps){
    const s=await c('settings').findOne({_id:'prices'});
    return {price3:validPrice(s?.price3)?Number(s.price3):0,price7:validPrice(s?.price7)?Number(s.price7):0};
  }
+
+ async function gatewayHealth(){
+   const state=await c('settings').findOne({_id:'hamyonGateway'});
+   return {status:state?.status||'unverified',updatedAt:state?.checkedAt||null};
+ }
+ async function saveGateway(status){
+   await c('settings').updateOne({_id:'hamyonGateway'},{$set:{status,checkedAt:now()}},{upsert:true});
+ }
+ function sessionDisconnected(message){
+   return /sessiya|session|ulanmagan|not connected|bog.lanmagan/i.test(String(message||''));
+ }
+
  app.get('/api/payments/plans',ready,asyncRoute(async(req,res)=>{
-   const prices=await getPrices();res.json({plans:[{days:3,price:prices.price3},{days:7,price:prices.price7}],gatewayReady:!!(hamyon().id&&hamyon().key),verificationMode:'provider-polling'});
+   const prices=await getPrices(),health=await gatewayHealth();
+   res.json({plans:[{days:3,price:prices.price3},{days:7,price:prices.price7}],
+     gatewayReady:!!(hamyon().id&&hamyon().key&&health.status!=='session_disconnected'),
+     gatewayStatus:health.status,verificationMode:'provider-polling'});
  }));
  app.get('/api/payments/mine',deps.auth,asyncRoute(async(req,res)=>{
    const list=await c('payments').find({userId:req.user._id},{projection:{_id:0,orderId:1,days:1,amount:1,card:1,status:1,createdAt:1,expiresAt:1}}).sort({createdAt:-1}).limit(25).toArray();
@@ -185,6 +200,8 @@ module.exports=function installIntegrations(app,deps){
    const prices=await getPrices(),value=prices[key],h=hamyon();
    if(!value||value<1000)return reply(res,409,'Admin hali tarif narxini belgilamagan');
    if(!h.id||!h.key)return reply(res,503,'To‘lov API ulanmagan');
+   const health=await gatewayHealth();
+   if(health.status==='session_disconnected')return reply(res,503,'Hamyon do‘konining Telegram sessiyasi ulanmagan. Administrator @HamyonAPIBot → Sessiya bo‘limida ulab, so‘ng admin panelda Tekshirish tugmasini bosishi kerak.');
    // Signed callbacks are recommended, but secure provider-status verification is also supported.
    const current=await c('payments').findOne({userId:req.user._id,status:'pending',expiresAt:{$gt:now()}});
    if(current)return res.json({orderId:current.orderId,amount:current.amount,card:current.card,days:current.days,expiresAt:current.expiresAt,status:'pending',reused:true});
@@ -219,12 +236,17 @@ module.exports=function installIntegrations(app,deps){
        await c('payments').updateOne({orderId,status:'creating'},{$set:{paymentId,status:'unverified'}});
        return reply(res,503,'Hamyon buyurtmasining dastlabki holati tasdiqlanmadi. Pul o‘tkazmang.');
      }
+     await saveGateway('connected');
      await c('payments').updateOne({orderId,status:'creating'},{$set:{paymentId,card:String(data.card).slice(0,32),status:'pending'}});
      res.status(201).json({orderId,amount,card:String(data.card),days,expiresAt:doc.expiresAt,status:'pending'});
    }catch(e){
      await c('payments').updateOne({orderId,status:'creating'},{$set:{status:'failed',error:'Provider error'}});
      await c('paymentAmounts').deleteOne({amount:lock});
-     return reply(res,502,'To‘lov yaratib bo‘lmadi: '+String(e.message).slice(0,180));
+     if(sessionDisconnected(e.message)){
+       await saveGateway('session_disconnected');
+       return reply(res,503,'Hamyon do‘koni sessiyasi ulanmagan — HamyonAPIBot → Sessiya bo‘limida Telegram akkauntni ulang. Administrator ulanishni admin panelda qayta tekshirishi kerak.');
+     }
+     return reply(res,502,'Hamyon buyurtmasini yaratishda xatolik: '+String(e.message).slice(0,170));
    }
  }));
  function validSignature(body){
@@ -344,6 +366,52 @@ module.exports=function installIntegrations(app,deps){
    const list=await c('payments').find({},{projection:{_id:0,paymentId:0,card:0}}).sort({createdAt:-1}).limit(100).toArray();
    res.json({payments:list.map(p=>({...p,userId:String(p.userId)}))});
  }));
+ 
+ // Explicitly initiated, administrator-only merchant self-test.
+ // Creates ONE unpaid five-minute provider order without showing any card or charging a customer.
+ app.get('/api/admin/hamyon/health',deps.auth,deps.adm,asyncRoute(async(req,res)=>{
+   const health=await gatewayHealth();
+   res.json({...health,configured:!!(hamyon().id&&hamyon().key),
+     prepareUrl:root()+'/api/hamyon/prepare',completeUrl:root()+'/api/hamyon/complete',
+     note:health.status==='connected'?'API test buyurtmasi muvaffaqiyatli yaratilgan; to‘lovni qabul qilishni real o‘tkazma bilan sinash hali kerak.':'Hamyon Telegram sessiyasini ulang va Tekshirish tugmasini bosing.'});
+ }));
+ app.post('/api/admin/hamyon/test',deps.auth,deps.adm,deps.authRate,asyncRoute(async(req,res)=>{
+   const h=hamyon();
+   if(!h.id||!h.key)return reply(res,503,'Hamyon shop_id/shop_key kiritilmagan');
+   const last=await gatewayHealth();
+   if(last.updatedAt&&Date.now()-new Date(last.updatedAt).getTime()<30000)
+     return reply(res,429,'Tekshiruvni 30 soniyadan keyin takrorlang');
+   const amount=39100+crypto.randomInt(0,700);
+   const orderId='QAL-CHECK-'+crypto.randomBytes(9).toString('hex');
+   try{
+     const data=new URLSearchParams({shop_id:h.id,shop_key:h.key,amount:String(amount),order_id:orderId});
+     const response=await fetch('https://hamyon-api.uz/payment/create',{
+       method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:data,signal:AbortSignal.timeout(15000)});
+     const json=await response.json().catch(()=>({}));
+     if(!response.ok||!json.payment_id||!json.card||Number(json.amount)!==amount){
+       const msg=String(json.error||json.message||'Provider rejected the order');
+       if(sessionDisconnected(msg)){
+         await saveGateway('session_disconnected');
+         return reply(res,503,'Do‘kon sessiyasi ulanmagan. @HamyonAPIBot → Sessiya bo‘limida Telegram akkauntingizni ulang.');
+       }
+       await saveGateway('unverified');
+       return reply(res,502,'Hamyon sinov buyurtmasini rad etdi: '+msg.slice(0,130));
+     }
+     const state=await getHamyonStatus({paymentId:String(json.payment_id),orderId,amount});
+     if(!['pending','prepare','created','waiting'].includes(state)){
+       await saveGateway('unverified');
+       return reply(res,502,'Hamyon test buyurtmasi kutilmagan holatda: '+state.slice(0,30));
+     }
+     await saveGateway('connected');
+     res.json({ok:true,providerOrder:'accepted',providerStatus:state,
+       note:'Pul o‘tkazilmagan. Sinov buyurtmasi 5 daqiqadan keyin avtomatik tugaydi. Real to‘lovni alohida tekshiring.'});
+   }catch(e){
+     await saveGateway('unverified');
+     console.warn('Admin Hamyon self-check failed:',String(e.message).slice(0,110));
+     return reply(res,502,'Hamyon test so‘rovida xatolik: '+String(e.message).slice(0,130));
+   }
+ }));
+
  app.get('/api/admin/prices',deps.auth,deps.adm,asyncRoute(async(req,res)=>res.json({...await getPrices(),...await getStars()})));
  app.patch('/api/admin/prices',deps.auth,deps.adm,asyncRoute(async(req,res)=>{
    const price3=Number(req.body.price3),price7=Number(req.body.price7);
