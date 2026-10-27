@@ -243,3 +243,48 @@ html[data-theme=dark] .studio-paper-wrap{background:linear-gradient(135deg,#4730
  .welcome-letter,.welcome-orbit,.heart-burst span,.paper.experience-paper,#letterBody{animation:none!important}
  .envelope .flap{transition:none!important}
 }
+
+/* Override the legacy two-column form rule; the new studio manages its own editor and preview. */
+@media(min-width:768px){
+ #view[data-page="create"] form#letterStudio{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.87fr);align-items:start;gap:23px;width:100%;max-width:1450px;background:transparent;border:0;box-shadow:none;border-radius:0;padding:0;margin:0}
+ #view[data-page="create"] form#letterStudio>.studio-editor,#view[data-page="create"] form#letterStudio>.studio-preview-panel{grid-column:auto}
+ #view[data-page="create"] form#letterStudio .studio-persons .field{grid-column:auto}
+}
+@media(min-width:768px) and (max-width:1060px){
+ #view[data-page="create"] form#letterStudio{grid-template-columns:minmax(0,1fr)}
+ #view[data-page="create"] form#letterStudio>.studio-editor,#view[data-page="create"] form#letterStudio>.studio-preview-panel{grid-column:1}
+}
+.library-heading{display:flex;justify-content:space-between;align-items:center;gap:14px;margin:16px 0 16px}
+.library-heading h1{margin:7px 0}
+.library-heading p{margin:0}
+.library-tools{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:20px}
+.library-tools .field{margin:0;max-width:510px;width:100%}
+.library-tools .status{white-space:nowrap}
+.library-letter{overflow:hidden;min-width:0;background:var(--e-card);border:1px solid var(--e-line);border-radius:21px;display:grid;grid-template-columns:125px minmax(0,1fr);box-shadow:var(--e-shadow)}
+.library-cover{background:var(--paperbg);color:var(--paperink);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;min-height:190px}
+.library-cover span{font-size:42px}
+.library-cover small{font-size:10px;letter-spacing:1px;font-weight:800}
+.library-letter-body{min-width:0;padding:18px}
+.library-letter-body h2{color:var(--e-ink);font:600 22px/1.3 "Playfair Display",serif;letter-spacing:-.3px;margin:13px 0 7px}
+.library-letter-body p{margin:0 0 18px;color:var(--e-muted);font-size:12px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.library-actions{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.library-actions .btn{min-height:32px;padding:7px 10px;font-size:11px}
+.library-letter[hidden]{display:none!important}
+@media(max-width:767px){
+ .library-heading .btn{white-space:nowrap;font-size:11px}
+ .library-heading h1{font-size:25px}
+ .library-tools{align-items:center}
+ .library-letter{grid-template-columns:93px minmax(0,1fr);border-radius:16px}
+ .library-cover{min-height:188px}
+ .library-cover span{font-size:32px}
+ .library-letter-body{padding:12px}
+ .library-letter-body h2{font-size:17px;margin:8px 0 5px}
+ .library-letter-body p{font-size:11px;margin-bottom:9px}
+ .library-letter-body .row.between{flex-wrap:wrap;gap:3px}
+ .library-actions{gap:4px}
+ .library-actions .btn{min-height:28px;padding:6px 7px;font-size:10px}
+}
+@media(max-width:360px){
+ .library-letter{grid-template-columns:78px minmax(0,1fr)}
+ .library-actions .btn{font-size:9px}
+}
