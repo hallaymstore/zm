@@ -23,6 +23,8 @@ const I=[
 {id:18,name:'Oq minimal',icon:'🤍',tag:'Timeless Poetry',family:'minimal',action:'Yurakchani ko‘rsatish',orn:'♡'}
 ];
 const $=id=>document.getElementById(id);
+const sceneIcons={1:'flower',2:'moon',3:'sunrise',4:'leaf',5:'heart',6:'feather',7:'flower',8:'star',9:'mail',10:'flower',11:'waves',12:'crown',13:'camera',14:'zap',15:'snow',16:'gem',17:'sun',18:'heart'};
+const shapeIcon=(theme,size=20)=>window.QalbimIcons.svg(sceneIcons[Number(theme)]||'heart',size);
 const escapeText=x=>String(x==null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const choice=n=>I[Math.min(18,Math.max(1,Number(n)||1))-1];
 const decoration={
@@ -86,19 +88,19 @@ function render({title,message,theme,from,to,secretNote='',preview=false}={}){
  return '<section class="letter-scene scene-'+t.id+' '+(p?'scene-preview':'scene-full')+'" '+attrib+' aria-label="'+escapeText(t.name)+' — maktub dizayni">'+
  '<div class="scene-world" aria-hidden="true"><span class="scene-world-glow"></span><span class="scene-world-detail"></span></div>'+
  ornaments(t)+FIGURES[t.id]+
- '<div class="scene-composition"><div class="scene-topline"><span class="scene-symbol">'+escapeText(mark)+'</span><span class="scene-kicker">'+escapeText(LABELS[t.id])+'</span><span class="scene-symbol">'+escapeText(mark)+'</span></div>'+
+ '<div class="scene-composition"><div class="scene-topline"><span class="scene-symbol">'+shapeIcon(t.id,17)+'</span><span class="scene-kicker">'+escapeText(LABELS[t.id])+'</span><span class="scene-symbol">'+escapeText(mark)+'</span></div>'+
  '<div class="scene-story"><div class="scene-recipient">SENGA · <span data-field="to">'+escapeText(to||'Azizim')+'</span></div>'+
  '<div class="scene-rule"></div><h2 data-field="title">'+escapeText(title||'Senga bir maktubim bor')+'</h2>'+
  '<p class="scene-message" data-field="message">'+escapeText(message||'Yuragimdagi so‘zlar shu yerda paydo bo‘ladi...')+'</p>'+
  '<div class="scene-signature">Mehr bilan, <em data-field="from">'+escapeText(from||'Men')+'</em><span>♡</span></div></div>'+
  '<div class="scene-bottomline"><span>'+escapeText(t.tag)+'</span><span>'+String(t.id).padStart(2,'0')+' / 18</span></div>'+window.QalbimMagic.surprise(secretNote,p)+'</div>'+
- (p?'':'<button type="button" class="scene-action" data-scene-action aria-label="'+escapeText(t.action)+'"><span>'+escapeText(mark)+'</span> '+escapeText(t.action)+'</button>'+window.QalbimMagic.controls())+
+ (p?'':'<button type="button" class="scene-action" data-scene-action aria-label="'+escapeText(t.action)+'"><span>'+shapeIcon(t.id,19)+'</span> '+escapeText(t.action)+'</button>'+window.QalbimMagic.controls())+
  '</section>';
 }
 function thumb(theme){
  const t=choice(theme);
  return '<span class="scene-thumb scene-'+t.id+'" data-scene="'+t.id+'" aria-hidden="true">'+
- '<span class="thumb-art">'+t.orn+'</span><span class="thumb-rule"></span><span class="thumb-letterline"></span><span class="thumb-letterline short"></span><span class="thumb-seal">♡</span></span>';
+ '<span class="thumb-art">'+shapeIcon(t.id,31)+'</span><span class="thumb-rule"></span><span class="thumb-letterline"></span><span class="thumb-letterline short"></span><span class="thumb-seal">♡</span></span>';
 }
 function sceneIntro(theme){
  const t=choice(theme);
@@ -117,7 +119,7 @@ function decorateIntro(theme){
  const hint=document.getElementById('openHint');
  if(hint)hint.textContent='✦ '+t.name+' — konvertni oching';
  const seal=ceremony.querySelector('.envelope .seal');
- if(seal)seal.textContent=t.orn;
+ if(seal)seal.innerHTML=shapeIcon(t.id,24);
 }
 function activate(button){
  window.QalbimMagic.activate(button);
@@ -131,7 +133,7 @@ function activate(button){
  if(!button.dataset.label)button.dataset.label=original;
  /* The theme-specific particle and sound effects are handled by QalbimMagic. */
  const feedback=document.createElement('span');
- feedback.className='scene-feedback';feedback.textContent='✧';
+ feedback.className='scene-feedback';feedback.innerHTML=shapeIcon(stage.dataset.scene,32);
  stage.appendChild(feedback);
  setTimeout(()=>feedback.remove(),1350);
 }
