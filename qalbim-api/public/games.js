@@ -8,7 +8,12 @@ const icon=(name,size=22)=>window.QalbimIcons.svg(name,size);
 const GAMES=[
  {id:'catch',name:'Yuraklarni tut',eyebrow:'ARCADE / TEZLIK',summary:'Harakatlanuvchi savatcha bilan yuraklarni tuting. 40 soniya ichida rekord o‘rnating.',detail:'1 o‘yinchi',tone:'violet',symbol:'heart',index:'01'},
  {id:'memory',name:'Xotira kartalari',eyebrow:'PUZZLE / XOTIRA',summary:'Kartalarni oching va 6 ta mos juftlikni eng kam yurishda toping.',detail:'1–2 o‘yinchi',tone:'mint',symbol:'gem',index:'02'},
- {id:'quiz',name:'Biz qanchalik mosmiz?',eyebrow:'COUPLE / SAVOL-JAVOB',summary:'Birinchi odam javobni tanlaydi, ikkinchisi topadi. 8 raundlik juftlik o‘yini.',detail:'2 kishi · bitta telefon',tone:'rose',symbol:'heart',index:'03'}
+ {id:'quiz',name:'Biz qanchalik mosmiz?',eyebrow:'COUPLE / SAVOL-JAVOB',summary:'Birinchi odam javobni tanlaydi, ikkinchisi topadi. 8 raundlik juftlik o‘yini.',detail:'2 kishi · bitta telefon',tone:'rose',symbol:'heart',index:'03'},
+ {id:'xoai',name:'XO · AI raqib',eyebrow:'STRATEGIYA / MINI',summary:'Kompyuterga qarshi yurakli XO o‘ynang. Yutish uchun to‘g‘ri katakni tanlang.',detail:'1 o‘yinchi',tone:'mint',symbol:'star',index:'04'},
+ {id:'secret',name:'Sirli yurak kodi',eyebrow:'MANTIQ / KOD',summary:'7 urinishda uchta yashirin belgining tartibini toping.',detail:'1 o‘yinchi',tone:'violet',symbol:'lock',index:'05'},
+ {id:'xo',name:'Yurak XO · 1v1',eyebrow:'PRO / ONLAYN DUEL',summary:'Juftingiz bilan ikki telefonda navbatma-navbat XO o‘ynang.',detail:'2 telefon · jonli',tone:'rose',symbol:'heart',index:'06',pro:true},
+ {id:'memory',name:'Memory Duel · 1v1',eyebrow:'PRO / XOTIRA BELLASHUVI',summary:'Kartalarni birga oching, juftliklarni toping va ko‘proq ball yig‘ing.',detail:'2 telefon · jonli',tone:'mint',symbol:'gem',index:'07',pro:true},
+ {id:'match',name:'Moslik dueli · 1v1',eyebrow:'PRO / MAXFIY JAVOBLAR',summary:'Ikkalangiz javob bering, o‘xshash fikrlaringizni real vaqtda biling.',detail:'2 telefon · jonli',tone:'violet',symbol:'users',index:'08',pro:true}
 ];
 const QUESTIONS=[
  {q:'Ideal yakshanba qanday o‘tadi?',opts:['Sayr va kafe','Uyda film ko‘rish','Yangi joyga sayohat']},
@@ -34,13 +39,13 @@ function hub(){
  '<div class="arcade-kicker">'+icon('sparkle',15)+' QALBIM / PLAY SPACE</div>'+
  '<h1>Birga o‘ynash —<br><em>yana bir xotira.</em></h1>'+
  '<p>Yengil, tez ochiladigan va oddiygina quvonch ulashadigan mini-o‘yinlar. Hech narsa o‘rnatish shart emas.</p>'+
- '<div class="arcade-hero-pills"><span>'+icon('check',15)+' HTML5</span><span>'+icon('zap',15)+' Kichik hajm</span><span>'+icon('heart',15)+' Bepul</span></div></div>'+
+ '<div class="arcade-hero-pills"><span>'+icon('check',15)+' HTML5</span><span>'+icon('zap',15)+' Kichik hajm</span><span>'+icon('heart',15)+' 5 bepul + 3 Pro</span></div></div>'+
  '<div class="arcade-hero-art" aria-hidden="true"><div class="arcade-orbit"><span class="arcade-heart">'+icon('heart',72)+'</span><span class="arcade-orbit-dot"></span><span class="arcade-orbit-dot orbit-dot-2"></span></div><span class="arcade-hero-mini one">'+icon('star',22)+'</span><span class="arcade-hero-mini two">'+icon('gem',25)+'</span></div></div>'+
- '<div class="arcade-heading"><div><span>O‘YINLAR KOLLEKSIYASI</span><h2>O‘yin tanlang</h2></div><strong>03 / 03</strong></div>'+
+ '<div class="arcade-heading"><div><span>O‘YINLAR KOLLEKSIYASI</span><h2>O‘yin tanlang</h2></div><strong>08 / 08</strong></div><div id="arenaLobby" class="arena-lobby" hidden></div>'+
  '<div class="arcade-grid">'+GAMES.map(g=>'<button type="button" class="arcade-game-card tone-'+g.tone+'" data-arcade-launch="'+g.id+'">'+
- '<div class="arcade-card-banner"><span class="arcade-card-no">'+g.index+' / 03</span><span class="arcade-card-graphic">'+icon(g.symbol,63)+'</span><span class="arcade-card-particle">'+icon('sparkle',25)+'</span></div>'+
+ '<div class="arcade-card-banner"><span class="arcade-card-no">'+g.index+' / 08</span>'+(g.pro?'<span class="arcade-pro-tag">'+icon('crown',14)+' PRO 1v1</span>':'<span class="arcade-free-tag">BEPUL</span>')+'<span class="arcade-card-graphic">'+icon(g.symbol,63)+'</span><span class="arcade-card-particle">'+icon('sparkle',25)+'</span></div>'+
  '<div class="arcade-card-content"><div class="arcade-card-category">'+g.eyebrow+'</div><h3>'+g.name+'</h3><p>'+g.summary+'</p>'+
- '<div class="arcade-card-footer"><span>'+icon('users',15)+' '+g.detail+'</span><strong>'+icon('arrowup',18)+' O‘ynash</strong></div></div></button>').join('')+'</div>'+
+ '<div class="arcade-card-footer"><span>'+icon('users',15)+' '+g.detail+'</span><strong>'+icon('arrowup',18)+(g.pro?' Ochish':' O‘ynash')+'</strong></div></div></button>').join('')+'</div>'+
  '<div class="arcade-notice">'+icon('shield',19)+' <p>O‘yinlardagi shaxsiy natijalar faqat shu qurilma brauzerida saqlanadi. Juftlik viktorinasida ikkala odam navbat bilan bir telefondan foydalanadi.</p></div><div id="arcadePlayArea" hidden></div></div>';
 }
 let current=null;
@@ -61,11 +66,11 @@ function openGame(id){
  '<div class="arcade-playtop"><button class="arcade-back" data-arcade-back>'+icon('arrow',17)+' Barcha o‘yinlar</button>'+
  '<span>'+g.eyebrow+'</span></div><div class="arcade-game-stage"><div class="arcade-stage-head"><span class="arcade-stage-icon tone-'+g.tone+'">'+icon(g.symbol,28)+'</span>'+
  '<div><h2>'+g.name+'</h2><p>'+g.summary+'</p></div></div><div class="arcade-game-body"></div></div>';
- const body=$(root,'.arcade-game-body');if(id==='catch')current=catchGame(body);if(id==='memory')current=memoryGame(body);if(id==='quiz')current=quizGame(body);
+ const body=$(root,'.arcade-game-body');if(id==='catch')current=catchGame(body);if(id==='memory')current=memoryGame(body);if(id==='quiz')current=quizGame(body);if(['xoai','secret'].includes(id))current=window.QalbimArena.launchFree(id,body);if(g.pro)current=window.QalbimArena.launchPro(id,body);
  root.scrollIntoView({block:'start',behavior:window.matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});
 }
 function back(){
- clean();const root=rootEl();if(!root)return;
+ clean();window.QalbimArena?.refreshLobby();const root=rootEl();if(!root)return;
  const shell=root.closest('.arcade-shell');root.replaceChildren();root.hidden=true;
  for(const key of ['.arcade-hero','.arcade-heading','.arcade-grid','.arcade-notice'])$(shell,key).hidden=false;
 }
