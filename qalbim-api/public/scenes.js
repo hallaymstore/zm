@@ -145,21 +145,27 @@ function closeDemo(){
  previousFocus=null;
 }
 function openDemo(){
- const form=document.getElementById('letterStudio');
- if(!form)return;
+ const form=document.getElementById('letterStudio');if(!form)return;
  closeDemo();
  const d=new FormData(form);
- const current=document.querySelector('#letterLivePreview .letter-scene');
- const theme=Number(current?.dataset.scene)||1;
- const html=render({title:d.get('title'),message:d.get('message'),from:d.get('from'),to:d.get('to'),secretNote:d.get('secretNote'),theme,preview:false});
+ const scene=document.querySelector('#letterLivePreview .letter-scene');
+ const story=document.querySelector('#letterLivePreview .moment-player');
+ const theme=Number(scene?.dataset.scene||story?.dataset.theme)||1;
+ const mode=String(d.get('experience')||'story');
+ const payload={title:d.get('title'),message:d.get('message'),from:d.get('from'),to:d.get('to'),
+   secretNote:d.get('secretNote'),coverLine:d.get('coverLine'),theme};
  const overlay=document.createElement('div');overlay.className='scene-demo-overlay';
- overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','Yuboriladigan maktubning to‘liq ko‘rinishi');
- overlay.innerHTML='<div class="scene-demo-toolbar"><strong>✦ Maktub oluvchisi ko‘radigan sahifa</strong>'+
+ overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');
+ overlay.setAttribute('aria-label','Yuboriladigan maktubning to‘liq ko‘rinishi');
+ overlay.innerHTML='<div class="scene-demo-toolbar"><strong>Maktub oluvchisi ko‘radigan sahifa</strong>'+
  '<button type="button" class="btn alt sm" data-scene-demo-close>✕ Yopish</button></div>'+
- '<div class="scene-demo-content">'+html+'</div>'+
- '<p class="scene-demo-caption">Bu shablonning haqiqiy yuboriladigan sahifasi. Maktub hali saqlanmagan. Suratlar va reaksiyalar maktub yuborilgach ko‘rinadi.</p>';
+ '<div class="scene-demo-content"></div>'+
+ '<p class="scene-demo-caption">Bu faqat ko‘rinishni sinash uchun. Maktub hali saqlanmagan va reaksiyalar yuborilmaydi.</p>';
  previousFocus=document.activeElement;
  document.body.appendChild(overlay);document.body.style.overflow='hidden';
+ const container=overlay.querySelector('.scene-demo-content');
+ if(mode==='story')window.QalbimStory.mount(container,payload,{preview:true});
+ else container.innerHTML=render({...payload,preview:false});
  const close=overlay.querySelector('[data-scene-demo-close]');if(close)close.focus();
 }
 document.addEventListener('click',e=>{
