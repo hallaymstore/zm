@@ -46,10 +46,15 @@ const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;
 const allowReduced=()=>window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let currentStudio=null;
 function card(title,content,theme,from,to){
- return '<div class="paper experience-paper" data-theme="'+Number(theme||1)+'"><div class="paper-deco" aria-hidden="true">'+(THEMES[Number(theme||1)-1]||THEMES[0]).emoji+'</div><span class="to">MUHABBAT BILAN · '+esc(to||'Senga')+'</span><h2>'+esc(title||'Senga yozilgan maktub')+'</h2><p>'+esc(content||'Bu yerda yuragingizdagi samimiy gaplar paydo bo‘ladi...')+'</p><div class="from">Yurakdan, '+esc(from||'Siz')+' ♡</div></div>';
+ return window.QalbimScenes.render({title,message:content,theme,from,to,preview:true});
 }
 function gallery(active,filter='all'){
- return '<div class="template-grid" role="group" aria-label="Maktub dizaynlari">'+THEMES.filter(t=>filter==='all'||t.group===filter).map(t=>'<button type="button" class="template-option '+(t.id===active?'chosen':'')+'" data-a="theme" data-id="'+t.id+'" aria-pressed="'+(t.id===active)+'" title="'+esc(t.name)+'"><span class="template-swatch" data-theme="'+t.id+'"><span>'+t.emoji+'</span></span><strong>'+t.name+'</strong><small>'+t.label+'</small></button>').join('')+'</div>';
+ return '<div class="template-grid" role="group" aria-label="Maktub yuboriladigan sahifa dizaynlari">'+
+ THEMES.filter(t=>filter==='all'||t.group===filter).map(t=>
+ '<button type="button" class="template-option '+(t.id===active?'chosen':'')+'" data-a="theme" data-id="'+t.id+
+ '" aria-pressed="'+(t.id===active)+'" title="'+esc(t.name)+'">'+
+ window.QalbimScenes.thumb(t.id)+
+ '<strong>'+esc(t.name)+'</strong><small>'+esc(t.label)+'</small></button>').join('')+'</div>';
 }
 function renderStudio({name,theme,photos=[]}){
  return '<div class="studio-heading"><div><div class="eyebrow">MAKTUB USTAXONASI · 18 DIZAYN</div><h1 class="page-title">Hislaringizga shakl bering <span aria-hidden="true">✦</span></h1><p class="muted">Har bir so‘z, har bir rang — sevgan insoningiz uchun.</p></div><div class="studio-help">✦ <span>Real vaqtda ko‘rinish</span></div></div>'+
@@ -60,7 +65,7 @@ function renderStudio({name,theme,photos=[]}){
  '<label class="field"><span>Maktub sarlavhasi</span><input name="title" class="input" maxlength="90" value="Sen — qalbimdagi eng go‘zal hikoya" required></label>'+
  '<label class="field"><span>Maktub matni</span><textarea name="message" class="input" required maxlength="1400" rows="7">Sen hayotimga kirgan kundan beri oddiy lahzalar ham boshqacha ma’no kasb etdi. Har bir tabassuming — mening eng go‘zal xotiram. Seni juda qadrlayman. ♡</textarea><span class="char-indicator" id="messageLength">0 / 1400</span></label>'+
  '<div class="caption-hint">✨ Yozishga ilhom kerakmi? Tayyor g‘oyalardan foydalaning:</div><div class="idea-strip" role="group" aria-label="Maktub g‘oyalari">'+IDEAS.map((p,i)=>'<button class="idea-chip" type="button" data-idea="'+i+'">'+p.icon+' '+p.title+'</button>').join('')+'</div></section>'+
- '<section class="studio-section"><div class="studio-section-head"><span class="step-count">02</span><div><h2>O‘z uslubingizni tanlang</h2><p>18 xil shablon · hammasi jonli</p></div></div>'+
+ '<section class="studio-section"><div class="studio-section-head"><span class="step-count">02</span><div><h2>O‘z uslubingizni tanlang</h2><p>18 xil alohida sahifa · har biri boshqacha</p></div></div>'+
  '<div class="filter-row" id="templateFilters"><button type="button" class="filter-chip selected" data-template-filter="all">Hammasi</button><button type="button" class="filter-chip" data-template-filter="romance">Romantik</button><button type="button" class="filter-chip" data-template-filter="nature">Tabiat</button><button type="button" class="filter-chip" data-template-filter="minimal">Minimal</button><button type="button" class="filter-chip" data-template-filter="royal">Premium uslub</button></div>'+
  '<div id="templateGallery">'+gallery(theme)+'</div></section>'+
  '<section class="studio-section"><div class="studio-section-head"><span class="step-count">03</span><div><h2>Xotiralar qo‘shing</h2><p>Shaxsiy suratlar maktubni jonlantiradi</p></div></div>'+
@@ -75,20 +80,25 @@ function attachStudio({getTheme}){
  currentStudio={form,getTheme,filter:'all'};
  const sync=()=>{
    if(!currentStudio||currentStudio.form!==form)return;
-   const d=new FormData(form);
-   const t=Number(currentStudio.getTheme());
-   const paper=document.querySelector('#letterLivePreview .paper');
-   if(!paper)return;
-   paper.dataset.theme=String(t);
-   const model=THEMES[t-1]||THEMES[0];
-   paper.querySelector('.paper-deco').textContent=model.emoji;
-   paper.querySelector('.to').textContent='MUHABBAT BILAN · '+(d.get('to')||'Senga');
-   paper.querySelector('h2').textContent=d.get('title')||'Senga yozilgan maktub';
-   paper.querySelector('p').textContent=d.get('message')||'Bu yerda yuragingizdagi samimiy gaplar paydo bo‘ladi...';
-   paper.querySelector('.from').textContent='Yurakdan, '+(d.get('from')||'Siz')+' ♡';
+   const d=new FormData(form),theme=Number(currentStudio.getTheme());
+   const container=document.getElementById('letterLivePreview');
+   if(!container)return;
+   const existing=container.querySelector('.letter-scene');
+   if(!existing||Number(existing.dataset.scene)!==theme){
+     container.innerHTML=window.QalbimScenes.render({
+       title:String(d.get('title')||''),message:String(d.get('message')||''),
+       theme,from:String(d.get('from')||''),to:String(d.get('to')||''),preview:true
+     });
+   }else{
+     const values={title:d.get('title')||'Senga yozilgan maktub',message:d.get('message')||'Yuragimdagi so‘zlar...',from:d.get('from')||'Men',to:d.get('to')||'Azizim'};
+     for(const [key,value] of Object.entries(values)){
+       const el=existing.querySelector('[data-field="'+key+'"]');
+       if(el)el.textContent=value;
+     }
+   }
    const len=form.querySelector('[name=message]').value.length;
    const count=document.getElementById('messageLength');if(count)count.textContent=len+' / 1400';
-   const themeNode=document.getElementById('previewTheme');if(themeNode)themeNode.textContent=model.name;
+   const themeNode=document.getElementById('previewTheme');if(themeNode)themeNode.textContent=(THEMES[theme-1]||THEMES[0]).name;
  };
  form.addEventListener('input',sync);
  sync();
