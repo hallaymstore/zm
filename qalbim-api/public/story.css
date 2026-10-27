@@ -150,3 +150,25 @@ html #view[data-page="letter"] .letter-stage.moment-mode{margin-top:clamp(10px,2
 .moment-player[data-theme="16"]{--mbg:#16171b;--mbg2:#575153;--mink:#f8eee2;--mtint:#d9c6b5}
 .moment-player[data-theme="17"]{--mbg:#694b35;--mbg2:#e1b27d;--mink:#fff6df;--mtint:#f4d6ab}
 .moment-player[data-theme="18"]{--mbg:#2b2933;--mbg2:#aaa8af;--mink:#ffffff;--mtint:#e6e1f0}
+
+/* Optional personal photo chapter: existing server Pro/privacy gating remains authoritative */
+.moment-memory h2{font:400 clamp(30px,4.5vw,42px)/1.12 'DM Serif Display',Georgia,serif;margin:8px 0 4px;color:var(--mink)}
+.moment-memory>p{color:#fffdd;font-size:12px;line-height:1.6;margin:0 0 8px}
+.moment-photo-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:min(100%,350px);max-height:min(48svh,345px)}
+.moment-photo-grid.count-1{grid-template-columns:minmax(0,1fr)}
+.moment-photo-grid.count-3 .moment-photo:first-child{grid-row:span 2}
+.moment-photo{position:relative;min-width:0;aspect-ratio:1;overflow:hidden;border-radius:13px;border:1px solid #ffffff65;padding:0;background:#ffffff24;color:#fff;cursor:pointer}
+.moment-photo-grid.count-1 .moment-photo{aspect-ratio:4/3}
+.moment-photo img{position:absolute;inset:0;height:100%;width:100%;display:block;object-fit:cover}
+.moment-photo img[hidden]{display:none!important}
+.moment-photo-lock{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px;background:#ffffff18}
+.moment-photo-lock small{font-size:10px;padding:0 8px}
+.moment-photo-tip{font-size:9px;opacity:.7;margin-top:7px;max-width:290px;line-height:1.5}
+.moment-photo-overlay{position:absolute;inset:0;z-index:20;background:#17141eeb;display:flex;justify-content:center;align-items:center;padding:25px;backdrop-filter:blur(10px)}
+.moment-photo-overlay img{max-height:90%;max-width:100%;object-fit:contain;border-radius:10px}
+.moment-photo-close{position:absolute;top:23px;right:20px;z-index:21;width:42px;height:42px;border-radius:50%;border:1px solid #ffffff88;background:#ffffff25;color:#fff;display:grid;place-items:center;cursor:pointer}
+@media(max-width:767px){
+ .moment-photo-grid{max-height:40svh;gap:8px}
+ .moment-photo-tip{font-size:9px}
+ .moment-memory h2{font-size:30px}
+}
