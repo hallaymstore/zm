@@ -190,7 +190,7 @@ module.exports=function installIntegrations(app,deps){
    if(current)return res.json({orderId:current.orderId,amount:current.amount,card:current.card,days:current.days,expiresAt:current.expiresAt,status:'pending',reused:true});
    let lock,amount;
    for(let i=0;i<200;i++){
-     const added=(crypto.randomInt(0,500)+i)%500;
+     const added=i===0?0:i;
      amount=value+added;
      try{
        await c('paymentAmounts').insertOne({amount,createdAt:now(),expiresAt:new Date(Date.now()+900000)});
