@@ -24,7 +24,7 @@ module.exports=function installIntegrations(app,deps){
    if([...p.keys()].length!==new Set([...p.keys()]).size)throw new Error('Telegram initData takroriy maydon');
    const provided=p.get('hash');
    if(!provided||!/^[a-fA-F0-9]{64}$/.test(provided))throw new Error('Telegram imzosi topilmadi');
-   const canonical=[...p.entries()].filter(([k])=>k!=='hash'&&k!=='signature').sort(([a],[b])=>a.localeCompare(b)).map(([k,v])=>k+'='+v).join('\n');
+   const canonical=[...p.entries()].filter(([k])=>k!=='hash').sort(([a],[b])=>a<b?-1:a>b?1:0).map(([k,v])=>k+'='+v).join('\n');
    const key=crypto.createHmac('sha256','WebAppData').update(secret()).digest();
    const calc=crypto.createHmac('sha256',key).update(canonical).digest('hex');
    if(!crypto.timingSafeEqual(Buffer.from(provided.toLowerCase(),'hex'),Buffer.from(calc,'hex')))throw new Error('Telegram imzosi noto‘g‘ri');
