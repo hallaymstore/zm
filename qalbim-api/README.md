@@ -62,10 +62,14 @@ Mini App auth uses Telegram's HMAC-SHA256 verified initData, fresh auth_date and
 ## Hamyon API — ONLY the standalone website
 HAMYON_SHOP_ID=<merchant ID>
 HAMYON_SHOP_KEY=<rotated merchant key>
-HAMYON_CALLBACKS_ENABLED=true  # SET ONLY AFTER both callbacks are configured in @HamyonAPIBot
+# HAMYON_CALLBACKS_ENABLED is no longer needed: provider payment-status verification serves as a fallback when callbacks are not configured.
 The shop settings in @HamyonAPIBot must be configured with:
   prepare_url: https://qalbim-juftlik.onrender.com/api/hamyon/prepare
   complete_url: https://qalbim-juftlik.onrender.com/api/hamyon/complete
+
+Payment creation requires an admin-set 3-day and 7-day price. Live website checkout uses Hamyon payment/create, then securely queries GET /payment/status using the stored provider payment_id. If the provider confirms 'paid', the server credits Pro exactly once in MongoDB; callbacks remain strongly recommended, but are not strictly required while the buyer has their checkout open to trigger polling. Never mark an order paid based on the browser/client response. The checkout shows the exact card and payment amount, and its validity is five minutes. The first order uses the exact published tariff; amount adjustments are used only if another order with that value is already pending. Keep the checkout open for the first real-card test; if closed, revisit the pending order to initiate another verification.
+
+**ROTATE the exposed Hamyon shop_key before accepting real money.** Keep both prepare and complete URLs configured in the Hamyon store as soon as feasible, to support unattended settlement and retries. Do not send payment to any card seen in a prior screenshot: use only the card returned by a newly created, valid order.
 
 Payment creation requires an admin-set 3-day and 7-day price. Default 0 means *disabled, not free*. Web checkout uses /payment/create on hamyon-api.uz. The callback validates merchant MD5 signature, merchant and recorded order/payment/amount, and independently checks paid status with /payment/status. Entitlements are granted only once via a MongoDB transaction. There is no live payment test until merchant callbacks are configured and a real order is paid. Never transfer funds during integration testing without checking the destination/card.
 
