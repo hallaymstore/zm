@@ -110,15 +110,73 @@ module.exports=function installIntegrations(app,deps){
    return {price3:validPrice(s?.price3)?Number(s.price3):0,price7:validPrice(s?.price7)?Number(s.price7):0};
  }
  app.get('/api/payments/plans',ready,asyncRoute(async(req,res)=>{
-   const prices=await getPrices();res.json({plans:[{days:3,price:prices.price3},{days:7,price:prices.price7}],gatewayReady:!!(hamyon().id&&hamyon().key&&process.env.HAMYON_CALLBACKS_ENABLED==='true')});
+   const prices=await getPrices();res.json({plans:[{days:3,price:prices.price3},{days:7,price:prices.price7}],gatewayReady:!!(hamyon().id&&hamyon().key),verificationMode:'provider-polling'});
  }));
  app.get('/api/payments/mine',deps.auth,asyncRoute(async(req,res)=>{
    const list=await c('payments').find({userId:req.user._id},{projection:{_id:0,orderId:1,days:1,amount:1,card:1,status:1,createdAt:1,expiresAt:1}}).sort({createdAt:-1}).limit(25).toArray();
    res.json({payments:list});
  }));
+
+ async function getHamyonStatus(order){
+   const response=await fetch('https://hamyon-api.uz/payment/status?payment_id='+encodeURIComponent(order.paymentId),{
+     headers:{Accept:'application/json'},signal:AbortSignal.timeout(11000)
+   });
+   if(!response.ok)throw new Error('Hamyon holat so‘rovi HTTP '+response.status);
+   const body=await response.json();
+   const payload=body.payment&&typeof body.payment==='object'?body.payment:body.data&&typeof body.data==='object'?body.data:body;
+   const state=String(payload.status||payload.payment_status||body.status||body.payment_status||'').trim().toLowerCase();
+   if(!state)throw new Error('Hamyon holat javobida status mavjud emas');
+   const gotId=payload.payment_id??body.payment_id;
+   const gotOrderId=payload.order_id??body.order_id;
+   const gotAmount=payload.amount??body.amount;
+   const gotShop=payload.shop_id??body.shop_id;
+   if(gotId!==undefined&&String(gotId)!==String(order.paymentId))throw new Error('Hamyon payment_id mos kelmaydi');
+   if(gotOrderId!==undefined&&String(gotOrderId)!==String(order.orderId))throw new Error('Hamyon order_id mos kelmaydi');
+   if(gotAmount!==undefined&&Number(gotAmount)!==order.amount)throw new Error('Hamyon amount mos kelmaydi');
+   if(gotShop!==undefined&&String(gotShop)!==hamyon().id)throw new Error('Hamyon shop_id mos kelmaydi');
+   return state;
+ }
+ async function markPaymentPaid(order){
+   if(order.status==='paid')return;
+   const session=deps.mongoClient().startSession();
+   try{
+     await session.withTransaction(async()=>{
+       const result=await c('payments').updateOne({_id:order._id,status:'pending'},{$set:{status:'paid',paidAt:now()}},{session});
+       if(result.modifiedCount===1){
+         const user=await c('users').findOne({_id:order.userId},{session});
+         if(!user||user.banned)throw new Error('User unavailable to activate Pro');
+         const from=Math.max(Date.now(),user.proUntil?new Date(user.proUntil).getTime():0);
+         await c('users').updateOne({_id:user._id},{$set:{proUntil:new Date(from+order.days*day)}},{session});
+       }
+     },{maxCommitTimeMS:12000});
+   }finally{await session.endSession()}
+   await c('paymentAmounts').deleteOne({amount:order.amount});
+ }
+ async function updatePaymentFromHamyon(order){
+   if(order.status!=='pending'||!order.paymentId)return;
+   let state;
+   try{state=await getHamyonStatus(order)}
+   catch(e){
+     console.warn('Hamyon status verification unavailable for order '+order.orderId+': '+e.message.slice(0,100));
+     return;
+   }
+   if(state==='paid')await markPaymentPaid(order);
+   else if(state==='cancel'||state==='cancelled'||state==='canceled'){
+     await c('payments').updateOne({_id:order._id,status:'pending'},{$set:{status:'cancel',updatedAt:now()}});
+     await c('paymentAmounts').deleteOne({amount:order.amount});
+   }
+ }
  app.get('/api/payments/status/:orderId',deps.auth,asyncRoute(async(req,res)=>{
-   const doc=await c('payments').findOne({orderId:String(req.params.orderId),userId:req.user._id});
+   const filter={orderId:String(req.params.orderId),userId:req.user._id};
+   let doc=await c('payments').findOne(filter);
    if(!doc)return reply(res,404,'Buyurtma topilmadi');
+   if(doc.status==='pending'&&doc.paymentId){
+     // Prevent parallel browser polls from hammering Hamyon, at most one request per ~6 s/order.
+     const sixSecondsAgo=new Date(Date.now()-6000);
+     const lease=await c('payments').updateOne({...filter,status:'pending',$or:[{lastProviderCheckAt:{$exists:false}},{lastProviderCheckAt:{$lt:sixSecondsAgo}}]},{$set:{lastProviderCheckAt:now()}});
+     if(lease.modifiedCount)await updatePaymentFromHamyon(doc);
+     doc=await c('payments').findOne(filter);
+   }
    res.json({orderId:doc.orderId,status:doc.status,amount:doc.amount,days:doc.days,expiresAt:doc.expiresAt,card:doc.card||null});
  }));
  app.post('/api/payments/create',deps.auth,deps.authRate,asyncRoute(async(req,res)=>{
@@ -127,7 +185,7 @@ module.exports=function installIntegrations(app,deps){
    const prices=await getPrices(),value=prices[key],h=hamyon();
    if(!value||value<1000)return reply(res,409,'Admin hali tarif narxini belgilamagan');
    if(!h.id||!h.key)return reply(res,503,'To‘lov API ulanmagan');
-   if(process.env.HAMYON_CALLBACKS_ENABLED!=='true')return reply(res,409,'Hamyon callback manzillari admin tomonidan hali tasdiqlanmagan');
+   // Signed callbacks are recommended, but secure provider-status verification is also supported.
    const current=await c('payments').findOne({userId:req.user._id,status:'pending',expiresAt:{$gt:now()}});
    if(current)return res.json({orderId:current.orderId,amount:current.amount,card:current.card,days:current.days,expiresAt:current.expiresAt,status:'pending',reused:true});
    let lock,amount;
@@ -182,28 +240,9 @@ module.exports=function installIntegrations(app,deps){
    if(status!=='paid')return reply(res,400,'Payment status unsupported');
    if(order.status==='paid')return res.json({ok:true,alreadyProcessed:true});
    if(order.status!=='pending')return reply(res,409,'Payment is not pending');
-   // Independent verification prevents crediting Pro from a forged or stale callback alone.
-   const r=await fetch('https://hamyon-api.uz/payment/status?payment_id='+encodeURIComponent(paymentId),{signal:AbortSignal.timeout(12000)});
-   if(!r.ok)return reply(res,503,'Cannot verify payment with provider');
-   const verified=await r.json();
-   const providerStatus=String(verified.status||verified.payment?.status||'').toLowerCase();
-   if(providerStatus!=='paid')return reply(res,409,'Payment not confirmed by provider');
-   if(verified.payment_id&&String(verified.payment_id)!==paymentId)return reply(res,403,'Payment identity mismatch');
-   if(verified.amount!==undefined&&Number(verified.amount)!==amount)return reply(res,403,'Payment amount mismatch');
-   const mongoClient=deps.mongoClient();
-   const session=mongoClient.startSession();
-   try{
-     await session.withTransaction(async()=>{
-       const changed=await c('payments').updateOne({_id:order._id,status:'pending'},{$set:{status:'paid',paidAt:now()}},{session});
-       if(changed.modifiedCount===1){
-         const u=await c('users').findOne({_id:order.userId},{session});
-         if(!u||u.banned)throw new Error('User unavailable to activate Pro');
-         const baseTime=Math.max(Date.now(),u.proUntil?new Date(u.proUntil).getTime():0);
-         await c('users').updateOne({_id:u._id},{$set:{proUntil:new Date(baseTime+order.days*day)}},{session});
-       }
-     },{maxCommitTimeMS:12000});
-   }finally{await session.endSession()}
-   await c('paymentAmounts').deleteOne({amount});
+   const providerStatus=await getHamyonStatus(order);
+   if(providerStatus!=='paid')return reply(res,409,'Payment not confirmed by Hamyon provider');
+   await markPaymentPaid(order);
    res.json({ok:true});
  }
  app.post('/api/hamyon/prepare',ready,asyncRoute((req,res)=>callback(req,res,false)));
