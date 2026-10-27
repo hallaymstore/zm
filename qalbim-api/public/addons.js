@@ -5,7 +5,7 @@ window.QalbimIntegrations=function(ctx){
  const initData=tg&&typeof tg.initData==='string'?tg.initData:'';
  let miniMode='register',activeOrder='',checkTimer=null,lastCard='',lastAmount=0;
  const e=v=>ctx.esc(v),api=ctx.api,btn=ctx.btn,fmt=x=>Number(x||0).toLocaleString('uz-UZ')+' so‘m';
- const needsTelegram=()=>!!initData;
+ const needsTelegram=()=>!!(tg&&(initData||(tg.platform&&tg.platform!=='unknown')));
  const cleanTimer=()=>{if(checkTimer){clearInterval(checkTimer);checkTimer=null}};
  function telegramWelcome(){
   let unsafe=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user||{};
@@ -26,7 +26,7 @@ window.QalbimIntegrations=function(ctx){
     '<p class="muted small center">Telegram shaxsingiz imzo orqali tasdiqlanadi; telefon SMS orqali hali tasdiqlanmaydi.</p></div></div></div>');
  }
  async function preLogin(){
-   if(!needsTelegram())return false;
+   if(!initData)return false;
    try{tg.ready();tg.expand()}catch(err){}
    try{
      const d=await api('/api/telegram/auth',{method:'POST',body:{initData,action:'login'}});
