@@ -124,12 +124,18 @@ app.post('/api/pairs/accept',auth,wrap(async(req,res)=>{
 app.post('/api/pairs/disconnect',auth,wrap(async(req,res)=>{
  let partner=req.user.partnerId;if(!partner)return res.json({ok:true});
  await colUser().updateOne({_id:req.user._id},{$set:{partnerId:null}});await colUser().updateOne({_id:partner,partnerId:req.user._id},{$set:{partnerId:null}});
- await c('messages').deleteMany({$or:[{from:req.user._id,to:partner},{from:partner,to:req.user._id}]});res.json({ok:true});
+ await c('messages').deleteMany({$or:[{from:req.user._id,to:partner},{from:partner,to:req.user._id}]});
+ await c('couple_game_rooms').deleteMany({participants:req.user._id});
+ res.json({ok:true});
 }));
 const ttl={view:7*86400000,'6h':6*3600000,'12h':12*3600000,'18h':18*3600000,'24h':24*3600000};
 app.get('/api/chats',auth,wrap(async(req,res)=>{
  let p=req.user.partnerId?await colUser().findOne({_id:req.user.partnerId}):null;
- res.json({chats:p?[{id:String(p._id),name:p.name,avatarId:p.avatarId||null}]:[]});
+ let invites=0;
+ if(p&&p.partnerId&&String(p.partnerId)===String(req.user._id)){
+   invites=await c('couple_game_rooms').countDocuments({participants:req.user._id,owner:p._id,status:'waiting',expiresAt:{$gt:date()}});
+ }
+ res.set('Cache-Control','no-store').json({chats:p?[{id:String(p._id),name:p.name,avatarId:p.avatarId||null,pendingGames:invites}]:[]});
 }));
 app.post('/api/chats/messages',auth,wrap(async(req,res)=>{
  let to=oid(req.body.to),msg=clean(req.body.text,1600),mode=String(req.body.mode||req.user.chatTtl||'view');
@@ -144,7 +150,22 @@ app.get('/api/chats/messages',auth,wrap(async(req,res)=>{
  await c('messages').deleteMany({to:req.user._id,mode:'view',readVisit:{$exists:true,$ne:visit}});
  await c('messages').updateMany({to:req.user._id,mode:'view',readVisit:{$exists:false},expiresAt:{$gt:date()}},{$set:{readVisit:visit,readAt:date()}});
  let list=await c('messages').find({$or:[{from:req.user._id,to:other},{from:other,to:req.user._id}],expiresAt:{$gt:date()}}).sort({createdAt:-1}).limit(100).toArray();
- res.json({messages:list.reverse().filter(m=>m.mode!=='view'||m.from.equals(req.user._id)||m.readVisit===visit).map(m=>({id:String(m._id),from:String(m.from),text:m.text,mode:m.mode,createdAt:m.createdAt}))});
+ const active=list.reverse().filter(m=>m.mode!=='view'||m.from.equals(req.user._id)||m.readVisit===visit);
+ const ids=active.filter(m=>m.kind==='game'&&m.gameId).map(m=>m.gameId);
+ const rooms=ids.length?await c('couple_game_rooms').find({_id:{$in:ids},participants:req.user._id,expiresAt:{$gt:date()}}).toArray():[];
+ const roomMap=new Map(rooms.map(r=>[String(r._id),r]));
+ const games={xo:'Yurak XO',memory:'Memory Duel',match:'Moslik dueli'};
+ res.set('Cache-Control','no-store').json({messages:active.map(m=>{
+  if(m.kind==='game'){
+   const game=roomMap.get(String(m.gameId));
+   return {id:String(m._id),from:String(m.from),kind:'game',gameId:game?String(game._id):null,
+     gameType:game?.type||m.gameType,gameName:games[game?.type||m.gameType]||'Juftlik o‘yini',
+     gameStatus:game?.status||'expired',gameOwner:game?String(game.owner):null,
+     gameWinner:game?.winner===null?null:String(game?.winner||''),gameVersion:game?.version||0,
+     createdAt:m.createdAt,mode:'game'};
+  }
+  return {id:String(m._id),from:String(m.from),text:m.text,mode:m.mode,createdAt:m.createdAt};
+ })});
 }));
 app.post('/api/chats/leave',auth,wrap(async(req,res)=>{
  let visit=clean(req.body.visit,90);if(visit)await c('messages').deleteMany({to:req.user._id,mode:'view',readVisit:visit});res.json({ok:true});
