@@ -84,7 +84,7 @@ function renderStudio({name,theme,photos=[]}){
  '<aside class="studio-preview-panel"><div class="studio-preview-top"><span>◎ JONLI KO‘RINISH</span><span id="previewTheme">'+esc(THEMES[theme-1]?.name||'Atirgul')+'</span></div><div class="studio-paper-wrap" id="letterLivePreview">'+card('Sen — qalbimdagi eng go‘zal hikoya','Sen hayotimga kirgan kundan beri oddiy lahzalar ham boshqacha ma’no kasb etdi. Har bir tabassuming — mening eng go‘zal xotiram. Seni juda qadrlayman. ♡',theme,name,'Sevgilim')+'</div><button type="button" class="scene-preview-button" data-scene-demo>⛶ To‘liq ekranda ko‘rish</button><div id="livePhotoCount" class="preview-footnote">💗 Maktubingiz tayyorlanmoqda</div><p class="muted small">Ko‘rib turgan dizayningiz maktubni olgan insonda ham ochiladi.</p></aside>'+
  '</form>';
 }
-function attachStudio({getTheme}){
+function attachStudio({getTheme,getPhotos=()=>[]}){
  const form=document.getElementById('letterStudio');if(!form)return;
  currentStudio={form,getTheme,filter:'all',story:null};
  const sync=()=>{
@@ -97,7 +97,7 @@ function attachStudio({getTheme}){
    const payload={
       title:String(d.get('title')||''),message:String(d.get('message')||''),
       coverLine:String(d.get('coverLine')||''),
-      theme,from:String(d.get('from')||''),to:String(d.get('to')||''),secretNote:note
+      theme,from:String(d.get('from')||''),to:String(d.get('to')||''),secretNote:note,photoIds:getPhotos()
    };
    container.classList.toggle('story-studio-preview',mode==='story');
    if(mode==='story'){
