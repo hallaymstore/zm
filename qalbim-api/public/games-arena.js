@@ -19,7 +19,7 @@ function launchFree(type,root){
  return {dispose(){}};
 }
 function soloXO(root){
- let board,finished,aiTimeout=null,disposed=false,losses=0,wins=0,draws=0;
+ let board,finished,waitingAI=false,aiTimeout=null,disposed=false,losses=0,wins=0,draws=0;
  const winning=s=>LINES.some(line=>line.every(i=>board[i]===s));
  root.innerHTML='<div class="arena-solo-stats"><span>'+I('heart',18)+' Siz <b id="soloWin">0</b></span><span>'+I('star',18)+' Raqib <b id="soloLoss">0</b></span><span>'+I('gem',18)+' Durang <b id="soloDraw">0</b></span></div>'+
  '<div class="arena-xo-board" id="soloBoard"></div><div class="arcade-game-message" id="soloStatus" aria-live="polite"></div>'+
@@ -36,7 +36,7 @@ function soloXO(root){
   return empty[Math.floor(Math.random()*empty.length)];
  }
  function draw(){
-  boardEl.innerHTML=board.map((v,i)=>'<button class="arena-xo-cell '+(v?'occupied':'')+'" data-solo-cell="'+i+'" aria-label="'+(i+1)+'-katak" '+(v||finished?'disabled':'')+'>'+
+  boardEl.innerHTML=board.map((v,i)=>'<button class="arena-xo-cell '+(v?'occupied':'')+'" data-solo-cell="'+i+'" aria-label="'+(i+1)+'-katak" '+(v||finished||waitingAI?'disabled':'')+'>'+
    (v?I(v,44):'')+'</button>').join('');
  }
  function finish(winner){
@@ -44,14 +44,14 @@ function soloXO(root){
   root.querySelector('#soloWin').textContent=wins;root.querySelector('#soloLoss').textContent=losses;root.querySelector('#soloDraw').textContent=draws;
   status.textContent=winner==='heart'?'Yutdingiz!':winner==='star'?'Bu safar AI yutdi.':'Durang!';draw();
  }
- function reset(){clearTimeout(aiTimeout);board=Array(9).fill(null);finished=false;status.textContent='Sizning yurishingiz · katakni bosing';draw()}
+ function reset(){clearTimeout(aiTimeout);board=Array(9).fill(null);finished=false;waitingAI=false;status.textContent='Sizning yurishingiz · katakni bosing';draw()}
  root.addEventListener('click',e=>{
   if(e.target.closest('#soloRestart')){reset();return}
-  const b=e.target.closest('[data-solo-cell]');if(!b||finished)return;
+  const b=e.target.closest('[data-solo-cell]');if(!b||finished||waitingAI)return;
   const i=Number(b.dataset.soloCell);if(board[i]!==null)return;
   board[i]='heart';if(winning('heart')){finish('heart');return}if(board.every(Boolean)){finish('draw');return}
-  status.textContent='Raqib o‘ylayapti…';draw();
-  aiTimeout=setTimeout(()=>{if(disposed||finished)return;const pick=chooseBot();if(pick>=0)board[pick]='star';
+  waitingAI=true;status.textContent='Raqib o‘ylayapti…';draw();
+  aiTimeout=setTimeout(()=>{if(disposed||finished)return;const pick=chooseBot();waitingAI=false;if(pick>=0)board[pick]='star';
     if(winning('star')){finish('star');return}if(board.every(Boolean)){finish('draw');return}
     status.textContent='Sizning yurishingiz';draw();
   },350);
@@ -99,6 +99,7 @@ function secretCode(root){
 }
 async function refreshLobby(){
  const host=document.getElementById('arenaLobby');if(!host||!host.closest('.arcade-shell'))return;
+ if(document.getElementById('arcadePlayArea')?.hidden===false)return;
  const user=read();
  if(!user){host.hidden=false;host.innerHTML='<div class="arena-lobby-content">'+I('users',24)+
  '<div><strong>Juftingiz bilan masofadan o‘ynang</strong><p>1v1 uchun akkauntga kirish va juftlikni bog‘lash kerak.</p></div><a class="btn sm" href="/">Kirish</a></div>';return}
