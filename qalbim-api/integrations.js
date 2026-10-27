@@ -124,7 +124,7 @@ module.exports=function installIntegrations(app,deps){
  app.get('/api/payments/plans',ready,asyncRoute(async(req,res)=>{
    const prices=await getPrices(),health=await gatewayHealth();
    res.json({plans:[{days:3,price:prices.price3},{days:7,price:prices.price7}],
-     gatewayReady:!!(hamyon().id&&hamyon().key&&health.status!=='session_disconnected'),
+     gatewayReady:!!(hamyon().id&&hamyon().key&&health.status==='connected'),
      gatewayStatus:health.status,verificationMode:'provider-polling'});
  }));
  app.get('/api/payments/mine',deps.auth,asyncRoute(async(req,res)=>{
@@ -202,6 +202,7 @@ module.exports=function installIntegrations(app,deps){
    if(!h.id||!h.key)return reply(res,503,'To‘lov API ulanmagan');
    const health=await gatewayHealth();
    if(health.status==='session_disconnected')return reply(res,503,'Hamyon do‘konining Telegram sessiyasi ulanmagan. Administrator @HamyonAPIBot → Sessiya bo‘limida ulab, so‘ng admin panelda Tekshirish tugmasini bosishi kerak.');
+   if(health.status!=='connected')return reply(res,503,'Hamyon ulanishi hali admin paneldagi API sinovidan o‘tmagan. Pul o‘tkazishdan oldin administrator ulanishni tekshirishi kerak.');
    // Signed callbacks are recommended, but secure provider-status verification is also supported.
    const current=await c('payments').findOne({userId:req.user._id,status:'pending',expiresAt:{$gt:now()}});
    if(current)return res.json({orderId:current.orderId,amount:current.amount,card:current.card,days:current.days,expiresAt:current.expiresAt,status:'pending',reused:true});
