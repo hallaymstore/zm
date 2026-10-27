@@ -59,16 +59,20 @@ window.QalbimIntegrations=function(ctx){
      if(['cancel','failed'].includes(info.status)){
        cleanTimer();const x=$('paymentStatus');if(x)x.textContent='❌ To‘lov yakunlanmadi yoki muddati o‘tdi. Yangi buyurtma yarating.';return;
      }
-     const x=$('paymentStatus');if(x)x.textContent='⏳ To‘lov kutilmoqda. O‘tkazmadan keyin Pro avtomatik ochiladi.';
+     const x=$('paymentStatus');
+     if(x){
+       const expired=info.expiresAt&&new Date(info.expiresAt).getTime()<Date.now();
+       x.textContent=expired?'⌛ Buyurtmaning 5 daqiqalik muddati tugadi. Endi pul o‘tkazmang. Agar avval to‘lagan bo‘lsangiz, tekshiruv davom etmoqda.':'⏳ Hamyon’dan tasdiq kutilyapti. To‘lov aniqlangach Pro avtomatik ochiladi.';
+     }
    }catch(err){const x=$('paymentStatus');if(x)x.textContent='Holatni tekshirish: '+err.message}
  }
  function paymentModal(p){
    cleanTimer();activeOrder=p.orderId;lastCard=p.card||'';lastAmount=p.amount;
    ctx.modal('<div class="center"><div style="font-size:38px">💳</div><h2 class="card-title">To‘lov ma’lumotlari</h2><p class="muted small">Hamyon API kartaga tushgan pulni tekshiradi. To‘lov tasdiqlangach Pro avtomatik faollashadi.</p></div>'+
    '<div class="card"><div class="small muted">Karta</div><div class="row between wrap"><strong style="font-size:20px">'+e(lastCard)+'</strong>'+btn('copyPayCard','Nusxalash')+'</div><div class="divide"></div>'+
-   '<div class="small muted">Aniq summa</div><div class="row between wrap"><strong style="font-size:22px">'+fmt(lastAmount)+'</strong>'+btn('copyPayAmount','Nusxalash')+'</div><p class="muted small">'+p.days+' kunlik Pro uchun aynan ko‘rsatilgan summani 5 daqiqada o‘tkazing. Farqli summa avtomatik aniqlanmasligi mumkin.</p>'+
+   '<div class="small muted">Aniq summa</div><div class="row between wrap"><strong style="font-size:22px">'+fmt(lastAmount)+'</strong>'+btn('copyPayAmount','Nusxalash')+'</div><p class="muted small">'+p.days+' kunlik Pro uchun aynan ko‘rsatilgan summani 5 daqiqada o‘tkazing. Karta raqami va summani ko‘rsatilganicha ko‘chirib, 5 daqiqa ichida o‘tkazing. Pulni faqat ushbu yangi buyurtma ko‘rsatilgach yuboring.</p>'+
    '<div class="muted small">Buyurtma: '+e(p.orderId)+'</div></div><div class="notice" id="paymentStatus">⏳ To‘lov kutilmoqda...</div><button class="btn block" data-a="checkPay">🔄 Holatni tekshirish</button>');
-   checkTimer=setInterval(checkPayment,5500);
+   checkTimer=setInterval(checkPayment,7500);
  }
  async function pay(days){
    try{const r=await api('/api/payments/create',{method:'POST',body:{days}});paymentModal(r)}catch(err){ctx.notify(err.message)}
