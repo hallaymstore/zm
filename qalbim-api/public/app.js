@@ -1,7 +1,7 @@
 'use strict';
 (function(){
 const $=id=>document.getElementById(id), view=$('view'), host=$('modalHost'), nav=$('nav');
-let me=null,partner=null,config={telegram:'',dbReady:false},draftPhotos=[],theme=1,chatTimer=null,chatVisit='',chatPartner='',chatSignature='',authMode='login',letterData=null;
+let me=null,partner=null,config={telegram:'',dbReady:false},draftPhotos=[],theme=1,chatTimer=null,chatVisit='',chatPartner='',chatSignature='',chatKnownGameInvites=null,authMode='login',letterData=null;
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const media=id=>'/api/photos/'+encodeURIComponent(id);
 const moneyDate=d=>d?new Date(d).toLocaleString('uz-UZ',{day:'2-digit',month:'2-digit',year:'numeric'}):'';
@@ -184,7 +184,7 @@ function chat(){
  }
  chatPartner=partner.id;
  chatVisit=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+'a'+Math.random().toString(36).slice(2));
- chatSignature='';
+ chatSignature='';chatKnownGameInvites=null;
  window.QalbimArena.setup({api,notify,go,getMe:()=>me,getPartner:()=>partner});
  window.QalbimChatGames.setup({api,notify,go,getMe:()=>me,getPartner:()=>partner,reloadMessages:loadMessages});
  section('<div class="chatplay-chat-container">'+
@@ -214,6 +214,9 @@ async function loadMessages(){
   const data=await api('/api/chats/messages?with='+encodeURIComponent(chatPartner)+'&visit='+encodeURIComponent(chatVisit));
   const pane=$('chatMessages');if(!pane)return;
   const signature=JSON.stringify(data.messages.map(m=>[m.id,m.mode,m.text,m.gameStatus,m.gameVersion,m.gameWinner]));
+  const invites=data.messages.filter(m=>m.kind==='game'&&m.from!==me.id&&m.gameStatus==='waiting').map(m=>m.id);
+  if(chatKnownGameInvites&&invites.some(id=>!chatKnownGameInvites.has(id))){notify('Juftingiz sizni o‘yinga taklif qildi');}
+  chatKnownGameInvites=new Set(invites);
   if(signature===chatSignature)return;
   const atBottom=pane.scrollHeight-pane.scrollTop-pane.clientHeight<115;
   const scroll=pane.scrollTop;
@@ -227,7 +230,7 @@ async function loadMessages(){
   pane.scrollTop=atBottom?pane.scrollHeight:scroll;
  }catch(e){if($('chatMessages'))$('chatMessages').textContent=e.message}
 }
-function leaveChat(){window.QalbimChatGames?.close();chatSignature='';if(chatTimer){clearInterval(chatTimer);chatTimer=null}if(chatVisit){let body=new URLSearchParams({visit:chatVisit});if(navigator.sendBeacon)navigator.sendBeacon('/api/chats/leave',body);chatVisit=''}}
+function leaveChat(){window.QalbimChatGames?.close();chatSignature='';chatKnownGameInvites=null;if(chatTimer){clearInterval(chatTimer);chatTimer=null}if(chatVisit){let body=new URLSearchParams({visit:chatVisit});if(navigator.sendBeacon)navigator.sendBeacon('/api/chats/leave',body);chatVisit=''}}
 function proPage(){return extra.proPage()}
 function arcade(){window.QalbimArena.setup({api,notify,go,getMe:()=>me,getPartner:()=>partner});section(window.QalbimGames.mount());window.QalbimArena.activateHub()}
 function games(kind){
