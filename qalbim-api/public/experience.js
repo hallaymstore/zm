@@ -59,7 +59,15 @@ function gallery(active,filter='all'){
 function renderStudio({name,theme,photos=[]}){
  return '<div class="studio-heading"><div><div class="eyebrow">QALBIM STUDIO / YANGI MAKTUB</div><h1 class="page-title">Maktubingizni yarating <span aria-hidden="true">✦</span></h1><p class="muted">Bir necha qadamda unutilmas, shaxsiy raqamli maktub.</p></div><div class="studio-help">✦ <span>Real vaqtda ko‘rinish</span></div></div>'+
  '<form data-form="letter" id="letterStudio" class="studio-layout">'+
- '<div class="studio-editor"><section class="studio-section"><div class="studio-section-head"><span class="step-count">01</span><div><h2>Hikoyangiz</h2><p>Siz yozasiz, biz go‘zallashtiramiz</p></div></div>'+
+ '<div class="studio-editor"><section class="studio-section"><div class="studio-section-head"><span class="step-count">00</span><div><h2>Qanday taqdim etamiz?</h2><p>Maktub oluvchining sahifasida qanday ochilishini tanlang</p></div></div>'+
+ '<input type="hidden" name="experience" value="story"><div class="experience-chooser" role="group" aria-label="Maktub ochilish uslubi">'+
+ [{id:'story',name:'Moments Story',icon:'heart',hint:'3 bosqichli interaktiv hikoya'}, {id:'direct',name:'Darhol ochilsin',icon:'book',hint:'Konvertsiz, tayyor maktub'}, {id:'envelope',name:'Klassik konvert',icon:'mail',hint:'Konvertni bosib ochish'}].map((opt)=>
+ '<button type="button" class="experience-option '+(opt.id==='story'?'chosen':'')+'" data-experience="'+opt.id+'" aria-pressed="'+(opt.id==='story')+'">'+
+ window.QalbimIcons.svg(opt.icon,22)+'<strong>'+opt.name+'</strong><small>'+opt.hint+'</small></button>').join('')+'</div>'+
+ '<div id="experienceInfo" class="experience-tip">3 sahifali hikoya: shaxsiy muqova → maktub → syurpriz. Telefon ekranida surib boshqariladi.</div>'+
+ '<label class="field moment-cover-line" id="coverLineField"><span>Story muqovasidagi yozuv</span>'+
+ '<input class="input" name="coverLine" maxlength="110" value="Bu hikoya faqat sen uchun" placeholder="Masalan, Senga aytolmagan gaplarim..." /></label></section>'+
+ '<section class="studio-section"><div class="studio-section-head"><span class="step-count">01</span><div><h2>Hikoyangiz</h2><p>Siz yozasiz, biz go‘zallashtiramiz</p></div></div>'+
  '<div class="studio-persons"><label class="field"><span>Kimga yuborasiz?</span><input name="to" class="input" maxlength="80" autocomplete="off" placeholder="Masalan, mening baxtim..." required></label>'+
  '<label class="field"><span>Kimdan?</span><input name="from" class="input" maxlength="80" value="'+esc(name)+'" required></label></div>'+
  '<label class="field"><span>Maktub sarlavhasi</span><input name="title" class="input" maxlength="90" value="Sen — qalbimdagi eng go‘zal hikoya" required></label>'+
@@ -78,29 +86,40 @@ function renderStudio({name,theme,photos=[]}){
 }
 function attachStudio({getTheme}){
  const form=document.getElementById('letterStudio');if(!form)return;
- currentStudio={form,getTheme,filter:'all'};
+ currentStudio={form,getTheme,filter:'all',story:null};
  const sync=()=>{
    if(!currentStudio||currentStudio.form!==form)return;
    const d=new FormData(form),theme=Number(currentStudio.getTheme());
+   const mode=String(d.get('experience')||'story');
    const container=document.getElementById('letterLivePreview');
    if(!container)return;
-   const existing=container.querySelector('.letter-scene');
    const note=String(d.get('secretNote')||'');
-   if(!existing||Number(existing.dataset.scene)!==theme||Boolean(existing.querySelector('.scene-secret-preview'))!==Boolean(note.trim())){
-     container.innerHTML=window.QalbimScenes.render({
-       title:String(d.get('title')||''),message:String(d.get('message')||''),
-       theme,from:String(d.get('from')||''),to:String(d.get('to')||''),secretNote:note,preview:true
-     });
+   const payload={
+      title:String(d.get('title')||''),message:String(d.get('message')||''),
+      coverLine:String(d.get('coverLine')||''),
+      theme,from:String(d.get('from')||''),to:String(d.get('to')||''),secretNote:note
+   };
+   container.classList.toggle('story-studio-preview',mode==='story');
+   if(mode==='story'){
+     if(!currentStudio.story||!currentStudio.story.root.isConnected)
+       currentStudio.story=window.QalbimStory.mount(container,payload,{preview:true});
+     else currentStudio.story.update(payload);
    }else{
-     const values={title:d.get('title')||'Senga yozilgan maktub',message:d.get('message')||'Yuragimdagi so‘zlar...',from:d.get('from')||'Men',to:d.get('to')||'Azizim'};
-     for(const [key,value] of Object.entries(values)){
-       const el=existing.querySelector('[data-field="'+key+'"]');
-       if(el)el.textContent=value;
+     currentStudio.story=null;
+     const existing=container.querySelector('.letter-scene');
+     if(!existing||Number(existing.dataset.scene)!==theme||Boolean(existing.querySelector('.scene-secret-preview'))!==Boolean(note.trim())){
+       container.innerHTML=window.QalbimScenes.render({...payload,preview:true});
+     }else{
+       const values={title:payload.title||'Senga yozilgan maktub',message:payload.message||'Yuragimdagi so‘zlar...',from:payload.from||'Men',to:payload.to||'Azizim'};
+       for(const [key,value] of Object.entries(values)){
+         const el=existing.querySelector('[data-field="'+key+'"]');
+         if(el)el.textContent=value;
+       }
      }
    }
-   const len=form.querySelector('[name=message]').value.length;
-   const count=document.getElementById('messageLength');if(count)count.textContent=len+' / 1400';
-   const themeNode=document.getElementById('previewTheme');if(themeNode)themeNode.textContent=(THEMES[theme-1]||THEMES[0]).name;
+   const count=document.getElementById('messageLength');
+   if(count)count.textContent=form.querySelector('[name=message]').value.length+' / 1400';
+   const label=document.getElementById('previewTheme');if(label)label.textContent=(THEMES[theme-1]||THEMES[0]).name;
  };
  form.addEventListener('input',sync);
  sync();
@@ -123,6 +142,25 @@ function attachGlobalHandlers(){
   const count=document.getElementById('libraryCount');if(count)count.textContent=visible+' ta maktub';
  });
  document.addEventListener('click',event=>{
+   const modeButton=event.target.closest('[data-experience]');
+   if(modeButton&&currentStudio&&currentStudio.form.isConnected){
+     const mode=modeButton.dataset.experience;
+     if(!['story','direct','envelope'].includes(mode))return;
+     currentStudio.form.querySelector('[name=experience]').value=mode;
+     document.querySelectorAll('[data-experience]').forEach(btn=>{
+       btn.classList.toggle('chosen',btn===modeButton);
+       btn.setAttribute('aria-pressed',String(btn===modeButton));
+     });
+     const field=document.getElementById('coverLineField');if(field)field.hidden=mode!=='story';
+     const label=document.getElementById('experienceInfo');
+     if(label)label.textContent={
+       story:'3 sahifali hikoya: shaxsiy muqova → maktub → syurpriz. Telefon ekranida surib boshqariladi.',
+       direct:'Maktub havolaga kirganda hech qanday konvertsiz ochiladi.',
+       envelope:'Avval konvert ko‘rinadi; bir marta bosilgach o‘sha joyda maktub chiqadi.'
+     }[mode];
+     currentStudio.form.dispatchEvent(new Event('input',{bubbles:true}));
+     return;
+   }
    const filter=event.target.closest('[data-template-filter]');
    if(filter&&currentStudio&&document.contains(currentStudio.form)){
      const group=filter.dataset.templateFilter;
