@@ -1,0 +1,58 @@
+/* Qalbim Magic v4 — immersive, mobile-first, configurable motion */
+.letter-scene{touch-action:pan-y}
+.magic-particle{position:absolute;left:0;top:0;z-index:5;pointer-events:none;color:var(--saccent);font-size:clamp(15px,2.7vw,30px);filter:drop-shadow(0 3px 5px #0002);animation:magicTravel var(--duration,1150ms) cubic-bezier(.1,.36,.26,1) forwards;will-change:transform,opacity;transform:translate3d(-50%,-50%,0)}
+@keyframes magicTravel{0%{opacity:0;transform:translate3d(-50%,-50%,0) rotate(0deg) scale(.55)}13%{opacity:1}70%{opacity:.85}100%{opacity:0;transform:translate3d(calc(-50% + var(--mx,0px)),calc(-50% + var(--my,-90px)),0) rotate(var(--turn,40deg)) scale(1.5)}}
+.letter-scene.scene-10 .magic-particle,.letter-scene.scene-1 .magic-particle{color:#d96a93}
+.letter-scene.scene-11 .magic-particle{color:#f6ffff;font-size:22px;text-shadow:0 0 7px #fff}
+.letter-scene.scene-14 .magic-particle{color:#ff8cea;text-shadow:0 0 18px #f98cf5,0 0 7px #ff8ee8}
+.letter-scene.scene-15 .magic-particle{color:#fff;text-shadow:0 0 5px #fff}
+.letter-scene.scene-12 .magic-particle,.letter-scene.scene-16 .magic-particle{color:#e5bc72;text-shadow:0 0 10px #edce8d66}
+.letter-scene.scene-8 .magic-particle,.letter-scene.scene-2 .magic-particle{color:#ffecb7;text-shadow:0 0 15px #fff0cb}
+.letter-scene.magic-active .scene-world-glow{animation:magicGlow 2.2s ease-in-out both}
+.letter-scene.magic-active .scene-composition{animation:magicHeart 1.15s ease-in-out}
+.letter-scene.scene-6.magic-active .ink-stamp{animation:stampPress 1.15s ease-in-out}
+.letter-scene.scene-9.magic-active .post-stamp{animation:stampPress 1.15s ease-in-out}
+.letter-scene.scene-13.magic-active .polaroid-front{animation:photoFlip 1.2s ease-in-out}
+.letter-scene.scene-14.magic-active .neon-heart{animation:neonBeat .5s ease-in-out 4}
+.letter-scene.scene-11.magic-active .ocean-waves,.letter-scene.scene-11.magic-active .scene-world-detail{animation:waveMove 1.25s ease-in-out 2}
+.letter-scene.scene-8.magic-active .cosmos-orbit{animation:constellationSpin 2s ease-in-out}
+.letter-scene.scene-17.magic-active .day-rays{animation:constellationSpin 2s ease-in-out}
+.letter-scene.scene-18.magic-active .scene-story h2{animation:poetryReveal 1.5s ease-in-out}
+@keyframes stampPress{0%,100%{transform:rotate(0) scale(1)}40%{transform:rotate(-16deg) scale(.7)}55%{transform:rotate(6deg) scale(1.2)}}
+@keyframes photoFlip{50%{transform:rotate(-9deg) scale(1.2) rotateY(120deg)}100%{transform:rotate(12deg) scale(1)}}
+@keyframes neonBeat{50%{opacity:.55;filter:brightness(2);transform:scale(1.12)}}
+@keyframes constellationSpin{50%{transform:rotate(30deg) scale(1.1)}}
+@keyframes poetryReveal{0%{opacity:.1;letter-spacing:-3px}50%{letter-spacing:1px}100%{opacity:1;letter-spacing:normal}}
+@keyframes magicGlow{50%{filter:brightness(1.35);transform:scale(1.2)}}
+@keyframes magicHeart{50%{box-shadow:0 17px 51px #0003;transform:translateY(-4px) scale(1.012)}}
+.scene-options{display:flex;justify-content:center;gap:9px;position:relative;z-index:9;margin-top:12px;flex-wrap:wrap}
+.scene-options button{border:1px solid var(--sline);background:var(--sglass);color:var(--sfg);border-radius:999px;font-size:11px;font-weight:700;padding:9px 12px;cursor:pointer;min-height:35px;transition:transform .2s,background-color .2s}
+.scene-options button:active{transform:scale(.96)}
+.scene-options button[aria-pressed="false"]{opacity:.72}
+.scene-options button:focus-visible,.scene-gift:focus-visible{outline:3px solid var(--saccent);outline-offset:3px}
+.scene-secret{margin:19px 0 0;z-index:4;position:relative}
+.scene-gift{background:linear-gradient(110deg,var(--sbg),var(--sbg2));color:var(--sfg);padding:12px 15px;border:1px dashed var(--saccent);border-radius:13px;display:flex;align-items:center;gap:8px;justify-content:center;width:100%;font-size:12px;font-weight:750;cursor:pointer;transition:box-shadow .2s,transform .2s}
+.scene-gift span{margin-left:auto;font-size:20px;line-height:1}
+.scene-gift:hover{box-shadow:0 5px 14px #0001;transform:translateY(-2px)}
+.scene-gift-card{border-radius:13px;margin-top:9px;padding:27px 20px;background:var(--sbg2);border:1px solid var(--sline);text-align:center;animation:giftReveal .64s cubic-bezier(.15,.8,.3,1)}
+.scene-gift-card[hidden]{display:none!important}
+.gift-star{font-size:37px;color:var(--saccent)}
+.gift-caption{font-size:10px;font-weight:800;letter-spacing:2px;color:var(--saccent);margin:10px auto}
+.scene-gift-card p{white-space:pre-wrap;overflow-wrap:anywhere;font:italic 19px/1.6 var(--sfont);color:var(--sfg);margin:8px auto}
+.gift-sign{font:italic 15px var(--sfont);color:var(--saccent);display:block;margin-top:15px}
+.scene-secret-preview{border:1px dashed var(--saccent);border-radius:7px;padding:7px;font-size:10px;color:var(--saccent);text-align:center;margin-top:11px}
+@keyframes giftReveal{0%{opacity:0;transform:rotateX(50deg) translateY(20px) scale(.9)}100%{opacity:1;transform:rotateX(0) translateY(0) scale(1)}}
+.studio-secret-note{margin-top:10px;border-top:1px solid var(--e-line);padding-top:17px}
+.studio-secret-note strong{font-size:13px;color:var(--e-ink)}
+.studio-secret-note p{color:var(--e-muted);font-size:11px;line-height:1.6}
+.studio-secret-note textarea{min-height:75px!important;max-height:180px}
+@media(max-width:767px){
+ .scene-gift{font-size:11px;padding:10px 11px}
+ .scene-gift-card p{font-size:17px}
+ .scene-options button{font-size:10px;padding:8px 10px}
+ .scene-secret{margin-top:13px}
+}
+@media(prefers-reduced-motion:reduce){
+ .magic-particle{display:none!important;animation:none!important}
+ .letter-scene.magic-active *,.scene-gift-card{animation:none!important}
+}
