@@ -55,24 +55,24 @@ function clean(){
  current=null;
 }
 function rootEl(){return document.getElementById('arcadePlayArea')}
-function openGame(id){
+function openGame(id,opts={}){
  const g=GAMES.find(x=>x.id===id);if(!g)return;
  clean();
  const root=rootEl();if(!root)return;
  const shell=root.closest('.arcade-shell');
  shell.querySelector('.arcade-hero').hidden=true;shell.querySelector('.arcade-heading').hidden=true;
- shell.querySelector('.arcade-grid').hidden=true;shell.querySelector('.arcade-notice').hidden=true;
+ shell.querySelector('.arcade-grid').hidden=true;shell.querySelector('.arcade-notice').hidden=true;const lobby=shell.querySelector('.arena-lobby');if(lobby)lobby.hidden=true;
  root.hidden=false;root.innerHTML=
  '<div class="arcade-playtop"><button class="arcade-back" data-arcade-back>'+icon('arrow',17)+' Barcha o‘yinlar</button>'+
  '<span>'+g.eyebrow+'</span></div><div class="arcade-game-stage"><div class="arcade-stage-head"><span class="arcade-stage-icon tone-'+g.tone+'">'+icon(g.symbol,28)+'</span>'+
  '<div><h2>'+g.name+'</h2><p>'+g.summary+'</p></div></div><div class="arcade-game-body"></div></div>';
- const body=$(root,'.arcade-game-body');if(id==='catch')current=catchGame(body);if(id==='memory')current=memoryGame(body);if(id==='quiz')current=quizGame(body);if(['xoai','secret'].includes(id))current=window.QalbimArena.launchFree(id,body);if(g.pro)current=window.QalbimArena.launchPro(id,body);
+ const body=$(root,'.arcade-game-body');if(id==='catch')current=catchGame(body);if(id==='memory')current=memoryGame(body);if(id==='quiz')current=quizGame(body);if(['xoai','secret'].includes(id))current=window.QalbimArena.launchFree(id,body);if(g.pro)current=window.QalbimArena.launchPro(id,body,opts);
  root.scrollIntoView({block:'start',behavior:window.matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});
 }
 function back(){
  clean();window.QalbimArena?.refreshLobby();const root=rootEl();if(!root)return;
  const shell=root.closest('.arcade-shell');root.replaceChildren();root.hidden=true;
- for(const key of ['.arcade-hero','.arcade-heading','.arcade-grid','.arcade-notice'])$(shell,key).hidden=false;
+ for(const key of ['.arcade-hero','.arcade-heading','.arcade-grid','.arcade-notice'])$(shell,key).hidden=false;const lobby=shell.querySelector('.arena-lobby');if(lobby)lobby.hidden=false;
 }
 document.addEventListener('click',e=>{
  const start=e.target.closest('[data-arcade-launch]');if(start){openGame(start.dataset.arcadeLaunch);return}
