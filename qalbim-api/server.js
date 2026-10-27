@@ -188,7 +188,8 @@ const integrations=require('./integrations')(app,{
  db:()=>db,mongoClient:()=>mongoClient,auth,adm,
  showUser,cookie,phone,clean,authRate:rate
 });
-const dir=path.join(__dirname,'public');app.use(express.static(dir,{extensions:['html']}));
+const dir=path.join(__dirname,'public');require('./couple-games')({app,auth,wrap,c,pro,oid,bad});
+app.use(express.static(dir,{extensions:['html']}));
 app.get(['/l/:id','/invite/:token','/u/:id','/'],(req,res)=>res.sendFile(path.join(dir,'index.html')));
 app.get('*',(req,res)=>res.sendFile(path.join(dir,'index.html')));
 app.use((e,req,res,next)=>{console.error('Server error:',e.message);bad(res,e.code==='LIMIT_FILE_SIZE'?413:500,e.code==='LIMIT_FILE_SIZE'?'Rasm 5 MB dan katta':'Server xatosi')});
@@ -196,7 +197,7 @@ async function connect(){
  if(!process.env.MONGODB_URI){dbError='MongoDB sozlanmagan: Render Environment bo‘limida MONGODB_URI kerak';console.warn(dbError);return}
  try{
   const client=new MongoClient(process.env.MONGODB_URI,{serverSelectionTimeoutMS:12000,maxPoolSize:10});await client.connect();mongoClient=client;db=client.db(process.env.MONGODB_DB||'qalbim');
-  await Promise.all([colUser().createIndex({phone:1},{unique:true}),c('messages').createIndex({expiresAt:1},{expireAfterSeconds:0}),c('invites').createIndex({expiresAt:1},{expireAfterSeconds:0}),c('reactions').createIndex({letterId:1,userId:1},{unique:true}),c('letters').createIndex({owner:1}),c('photos').createIndex({owner:1})]);
+  await Promise.all([colUser().createIndex({phone:1},{unique:true}),c('messages').createIndex({expiresAt:1},{expireAfterSeconds:0}),c('invites').createIndex({expiresAt:1},{expireAfterSeconds:0}),c('reactions').createIndex({letterId:1,userId:1},{unique:true}),c('letters').createIndex({owner:1}),c('photos').createIndex({owner:1}),c('couple_game_rooms').createIndex({expiresAt:1},{expireAfterSeconds:0}),c('couple_game_rooms').createIndex({pairKey:1,status:1,createdAt:-1})]);
   if(process.env.ADMIN_PASSWORD&&process.env.ADMIN_PHONE){
     const requestedPhone=process.env.ADMIN_PHONE==='admin'?'admin':phone(process.env.ADMIN_PHONE);
     const adminPassword=process.env.ADMIN_PASSWORD;
