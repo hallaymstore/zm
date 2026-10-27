@@ -62,6 +62,7 @@ Mini App auth uses Telegram's HMAC-SHA256 verified initData, fresh auth_date and
 ## Hamyon API — ONLY the standalone website
 HAMYON_SHOP_ID=<merchant ID>
 HAMYON_SHOP_KEY=<rotated merchant key>
+HAMYON_CALLBACKS_ENABLED=true  # SET ONLY AFTER both callbacks are configured in @HamyonAPIBot
 The shop settings in @HamyonAPIBot must be configured with:
   prepare_url: https://qalbim-juftlik.onrender.com/api/hamyon/prepare
   complete_url: https://qalbim-juftlik.onrender.com/api/hamyon/complete
