@@ -115,11 +115,9 @@ function proPage(){
    ctx.section('<h1 class="page-title">✦ Qalbim Pro</h1><p class="muted small">Yagona Pro obuna: Mini App va oddiy saytda birgalikda ishlaydi.</p>'+
    (me&&me.isPro?'<div class="notice good">✦ Pro faol. Tugash sanasi: '+e(new Date(me.proUntil).toLocaleDateString('uz-UZ'))+'</div>':'')+
    '<div class="twocol" id="proPlans"><div class="card center">Tariflar yuklanmoqda...</div></div>'+
-   '<div class="card"><p>🔐 <strong>Maxfiy rasmlarni ko‘rish</strong></p><p>🎲 <strong>Juftliklar uchun o‘yinlar</strong></p><p>🎁 <strong>Syurprizlar</strong></p><p class="small muted">'+(mini?'Telegram Mini App ichida raqamli obunalar faqat ⭐ Telegram Stars bilan sotiladi.':'Oddiy saytda Hamyon API kartaga tushgan to‘lovni tasdiqlaydi. Buyurtma 5 daqiqa faol.')+'</p></div>'+
-   '<h2 class="page-title">Pro mini-o‘yinlar</h2>'+
-   '<div class="feature"><span class="emoji">💘</span><div style="flex:1"><strong>Sevgi testi</strong><small>Juftingizni qanchalik bilasiz?</small></div>'+btn('game:quiz','O‘ynash')+'</div>'+
-   '<div class="feature"><span class="emoji">🎲</span><div style="flex:1"><strong>Sirli savol</strong><small>Bir-biringizni yanada yaqinroq biling.</small></div>'+btn('game:question','O‘ynash')+'</div>'+
-   '<div class="feature"><span class="emoji">🎁</span><div style="flex:1"><strong>Syurpriz quti</strong><small>Sevgi topshirig‘i.</small></div>'+btn('game:box','O‘ynash')+'</div>'+
+   '<div class="card"><p><strong>Maxfiy rasmlar</strong> — Pro orqali ochiladi</p><p><strong>3 ta onlayn 1v1 o‘yin</strong> — juftingiz bilan haqiqiy navbatli o‘yin</p><p><strong>Syurprizlar</strong> — maxsus tabriklarni ochish</p><p class="small muted">'+(mini?'Telegram Mini App ichida raqamli obunalar faqat ⭐ Telegram Stars bilan sotiladi.':'Oddiy saytda Hamyon API kartaga tushgan to‘lovni tasdiqlaydi. Buyurtma 5 daqiqa faol.')+'</p></div>'+
+   '<h2 class="page-title">Juftliklar uchun Pro 1v1</h2>'+
+   '<div class="card"><div class="row between"><div><h3 class="card-title">Masofadan birga o‘ynang</h3><p class="muted small">Yurak XO, Memory Duel va Moslik dueli. Ikki telefon — bitta juftlik. O‘yin ochuvchida Pro bo‘lsa, jufti bepul qo‘shiladi.</p></div>'+btn('games','O‘yinlarni ochish')+'</div></div>'+
    '<div class="card faint"><h3 class="card-title">To‘lovlar tarixi</h3><div id="orderHistory" class="muted small">Yuklanmoqda...</div></div>');
    Promise.all([api(mini?'/api/stars/plans':'/api/payments/plans'),api(mini?'/api/stars/mine':'/api/payments/mine')]).then(([p,h])=>{
       if($('proPlans'))$('proPlans').innerHTML=p.plans.map(t=>{
