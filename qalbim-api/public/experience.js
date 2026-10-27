@@ -57,9 +57,9 @@ function gallery(active,filter='all'){
  '<strong>'+esc(t.name)+'</strong><small>'+esc(t.label)+'</small></button>').join('')+'</div>';
 }
 function renderStudio({name,theme,photos=[]}){
- return '<div class="studio-heading"><div><div class="eyebrow">MAKTUB USTAXONASI · 18 DIZAYN</div><h1 class="page-title">Hislaringizga shakl bering <span aria-hidden="true">✦</span></h1><p class="muted">Har bir so‘z, har bir rang — sevgan insoningiz uchun.</p></div><div class="studio-help">✦ <span>Real vaqtda ko‘rinish</span></div></div>'+
+ return '<div class="studio-heading"><div><div class="eyebrow">QALBIM STUDIO / YANGI MAKTUB</div><h1 class="page-title">Maktubingizni yarating <span aria-hidden="true">✦</span></h1><p class="muted">Bir necha qadamda unutilmas, shaxsiy raqamli maktub.</p></div><div class="studio-help">✦ <span>Real vaqtda ko‘rinish</span></div></div>'+
  '<form data-form="letter" id="letterStudio" class="studio-layout">'+
- '<div class="studio-editor"><section class="studio-section"><div class="studio-section-head"><span class="step-count">01</span><div><h2>Hikoyangiz</h2><p>Eng samimiy so‘zlardan boshlang</p></div></div>'+
+ '<div class="studio-editor"><section class="studio-section"><div class="studio-section-head"><span class="step-count">01</span><div><h2>Hikoyangiz</h2><p>Siz yozasiz, biz go‘zallashtiramiz</p></div></div>'+
  '<div class="studio-persons"><label class="field"><span>Kimga yuborasiz?</span><input name="to" class="input" maxlength="80" autocomplete="off" placeholder="Masalan, mening baxtim..." required></label>'+
  '<label class="field"><span>Kimdan?</span><input name="from" class="input" maxlength="80" value="'+esc(name)+'" required></label></div>'+
  '<label class="field"><span>Maktub sarlavhasi</span><input name="title" class="input" maxlength="90" value="Sen — qalbimdagi eng go‘zal hikoya" required></label>'+
@@ -72,8 +72,8 @@ function renderStudio({name,theme,photos=[]}){
  '<section class="studio-section"><div class="studio-section-head"><span class="step-count">03</span><div><h2>Xotiralar qo‘shing</h2><p>Shaxsiy suratlar maktubni jonlantiradi</p></div></div>'+
  '<label class="upload-zone" for="letterPhoto"><span class="upload-mark">🖼️</span><strong>Surat tanlang</strong><small>JPG, PNG yoki WebP · 5 MB · ko‘pi bilan 4 ta</small><input id="letterPhoto" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Surat tanlash"></label>'+
  '<label class="checkline"><input type="checkbox" id="privatePhoto"><span>Yangi rasm maxfiy bo‘lsin (egasi va Pro foydalanuvchilar ko‘radi)</span></label><div id="attached" class="photo-row"></div>'+
- '<button type="submit" class="btn block studio-submit">💌 Maktubni yaratish va havola olish</button><p class="small muted studio-legal">Yaratilgan maktub havolasini bilgan insonlar uning ochiq matnini ko‘rishi mumkin.</p></section></div>'+
- '<aside class="studio-preview-panel"><div class="studio-preview-top"><span>◎ JONLI KO‘RINISH</span><span id="previewTheme">'+esc(THEMES[theme-1]?.name||'Atirgul')+'</span></div><div class="studio-paper-wrap" id="letterLivePreview">'+card('Sen — qalbimdagi eng go‘zal hikoya','Sen hayotimga kirgan kundan beri oddiy lahzalar ham boshqacha ma’no kasb etdi. Har bir tabassuming — mening eng go‘zal xotiram. Seni juda qadrlayman. ♡',theme,name,'Sevgilim')+'</div><button type="button" class="scene-preview-button" data-scene-demo>⛶ Oluchi ko‘radigan sahifani to‘liq ochish</button><div id="livePhotoCount" class="preview-footnote">💗 Maktubingiz tayyorlanmoqda</div><p class="muted small">Har bir shablonda sahifa kompozitsiyasi va animatsiya alohida yaratilgan. To‘liq ko‘rinishni ochib sinab ko‘ring.</p></aside>'+
+ '<button type="submit" class="btn block studio-submit">Maktubni yaratish ↗</button><p class="small muted studio-legal">Yaratilgan maktub havolasini bilgan insonlar uning ochiq matnini ko‘rishi mumkin.</p></section></div>'+
+ '<aside class="studio-preview-panel"><div class="studio-preview-top"><span>◎ JONLI KO‘RINISH</span><span id="previewTheme">'+esc(THEMES[theme-1]?.name||'Atirgul')+'</span></div><div class="studio-paper-wrap" id="letterLivePreview">'+card('Sen — qalbimdagi eng go‘zal hikoya','Sen hayotimga kirgan kundan beri oddiy lahzalar ham boshqacha ma’no kasb etdi. Har bir tabassuming — mening eng go‘zal xotiram. Seni juda qadrlayman. ♡',theme,name,'Sevgilim')+'</div><button type="button" class="scene-preview-button" data-scene-demo>⛶ To‘liq ekranda ko‘rish</button><div id="livePhotoCount" class="preview-footnote">💗 Maktubingiz tayyorlanmoqda</div><p class="muted small">Ko‘rib turgan dizayningiz maktubni olgan insonda ham ochiladi.</p></aside>'+
  '</form>';
 }
 function attachStudio({getTheme}){
@@ -164,15 +164,26 @@ function burst(target,amount=16){
  setTimeout(()=>box.remove(),1800);
 }
 function homeWidget(user,partner){
- const initials=esc((user.name||'Siz').slice(0,1).toUpperCase());
- return '<div class="home-welcome"><div class="home-welcome-glow" aria-hidden="true">♡</div><div class="home-welcome-copy"><span class="eyebrow">QALBIM · SIZNING MAKONINGIZ</span><h2>Xush kelibsiz, '+esc(user.name.split(' ')[0])+' <span>✦</span></h2><p>Samimiy bir maktub butun bir kunni o‘zgartirishi mumkin.</p><div class="row wrap">'+
- '<button class="btn" data-a="create">💌 Maktub yaratish</button><button class="btn alt" data-a="'+(partner?'chat':'pair')+'">'+(partner?'💬 Juftingizga yozish':'💕 Juftingizni taklif qilish')+'</button></div></div>'+
- '<div class="welcome-visual" aria-hidden="true"><span class="welcome-orbit orbit-one">✧</span><span class="welcome-orbit orbit-two">♥</span><div class="welcome-letter"><i>♡</i><span>FOR YOU</span></div></div></div>'+
- '<div class="dashboard-heading"><div><span class="eyebrow">BUGUNGI ILOM</span><h2>Sevgi mayda e’tiborlarda</h2></div><span class="status">'+(partner?'♥ Juftligingiz ulangan':'♡ Juftingizni bog‘lang')+'</span></div>'+
- '<div class="discover-grid"><button class="discover-card" data-a="create"><span class="discover-icon">✉️</span><div><strong>18 xil maktub uslubi</strong><p>Yurak so‘zlarini chiroyli shaklga keltiring</p></div><span class="discover-arrow">↗</span></button>'+
- '<button class="discover-card" data-a="letters"><span class="discover-icon">📖</span><div><strong>Mening hikoyalarim</strong><p>Yaratgan maktublaringizni qayta toping</p></div><span class="discover-arrow">↗</span></button>'+
- '<button class="discover-card" data-a="pair"><span class="discover-icon">💞</span><div><strong>Ikki qalb bir makonda</strong><p>Birgalikdagi lahzalar va syurprizlar</p></div><span class="discover-arrow">↗</span></button>'+
- '<button class="discover-card" data-a="pro"><span class="discover-icon">✦</span><div><strong>Qalbim Pro</strong><p>Yashirin sovg‘alar va romantik o‘yinlar</p></div><span class="discover-arrow">↗</span></button></div>';
+ const first=esc((user.name||'Do‘stim').split(' ')[0]);
+ return '<div class="home-welcome"><div class="home-welcome-copy">'+
+ '<div class="home-eyebrow"><span class="live-spark"></span> QALBIM STUDIO <span class="eyebrow-divider"></span> HISLAR UCHUN MAKON</div>'+
+ '<h2>Har bir sevgi<br>hikoyaga <em>loyiq.</em></h2>'+
+ '<p>'+first+', eng samimiy so‘zlaringizni oddiy xabardan ko‘ra chiroyliroq qilib yuboring.</p>'+
+ '<div class="row wrap"><button class="btn hero-primary" data-a="create">Maktub yaratish <span aria-hidden="true">↗</span></button>'+
+ '<button class="btn alt hero-secondary" data-a="'+(partner?'chat':'pair')+'">'+(partner?'Juftingiz bilan suhbat':'Juftlikni bog‘lash')+' <span aria-hidden="true">→</span></button></div>'+
+ '<div class="hero-bottom"><span><strong>18</strong> dizayn kolleksiyasi</span><span class="hero-bottom-separator"></span><span>Bir havolada butun hikoya</span></div></div>'+
+ '<div class="hero-art" aria-hidden="true"><div class="hero-art-halo"></div><div class="hero-art-card card-behind"></div>'+
+ '<div class="hero-art-card card-front"><span class="art-top">QALBIM <span>— 01 / 18</span></span>'+
+ '<div class="art-center"><div class="art-orb"><div class="art-orb-inner">♡</div></div><span class="art-small">A LETTER, JUST FOR YOU</span>'+
+ '<strong>Words become<br><em>memories.</em></strong></div><div class="art-bottom"><span>With love, always.</span><span>✦</span></div></div>'+
+ '<div class="hero-art-orbit orbit-a"></div><div class="hero-art-orbit orbit-b"></div></div></div>'+
+ '<div class="dashboard-heading"><div><span class="eyebrow">SIZNING MAKONINGIZ</span><h2>Hammasi bir joyda<span class="heading-dot">.</span></h2></div>'+
+ '<span class="status">'+(partner?'● Juftlik ulangan':'○ Juftlik hali ulanmagan')+'</span></div>'+
+ '<div class="discover-grid">'+
+ '<button class="discover-card" data-a="create"><span class="discover-icon">✎</span><div><small>01 / CREATE</small><strong>Maktub yozish</strong><p>Yangi hislaringizni sahifaga aylantiring</p></div><span class="discover-arrow">↗</span></button>'+
+ '<button class="discover-card" data-a="letters"><span class="discover-icon">▤</span><div><small>02 / LIBRARY</small><strong>Maktublarim</strong><p>Barcha yaratgan xotiralaringiz</p></div><span class="discover-arrow">↗</span></button>'+
+ '<button class="discover-card" data-a="pair"><span class="discover-icon">♡</span><div><small>03 / TOGETHER</small><strong>Bizning hikoya</strong><p>Ikki qalb uchun umumiy makon</p></div><span class="discover-arrow">↗</span></button>'+
+ '<button class="discover-card" data-a="pro"><span class="discover-icon">✦</span><div><small>04 / EXCLUSIVE</small><strong>Qalbim Pro</strong><p>Ko‘proq imkoniyat, ko‘proq sehr</p></div><span class="discover-arrow">↗</span></button></div>';
 }
 function anniversaryWidget(user){
  const current=user.anniversary;
