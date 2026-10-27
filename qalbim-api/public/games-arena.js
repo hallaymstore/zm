@@ -159,8 +159,9 @@ function launchPro(type,root,opts={}){
   const status=room.status==='waiting'?(iCreated?'Juftingiz taklifni qabul qilishini kuting':'Juftingiz o‘ynashga taklif qildi'):
     room.status==='playing'?(myTurn?'Sizning navbatingiz':'Juftingiz navbati'):room.status==='finished'?(win||'O‘yin yakunlandi'):'O‘yin yopilgan';
   let html='<div class="arena-room-info"><div><span class="arcade-card-category">PRO · IKKI TELEFON</span><h3>'+E(status)+'</h3>'+
-   '<p>'+(room.status==='waiting'?'Juftlik xonasi 24 soat faol. Faqat bog‘langan ikki akkaunt kira oladi.':'O‘yin holati taxminan har 2,5 soniyada yangilanadi.')+'</p></div>'+
-   (room.status==='waiting'&&iCreated?'<button class="btn" data-room-share>'+I('link',17)+' Taklif havolasini yuborish</button>':'')+
+   '<p>'+(room.status==='waiting'?(iCreated?'Taklif juftingizning chatiga yuborildi. O‘yin 24 soatgacha faol.':'Chatdagi taklifni qabul qilib darhol o‘ynashingiz mumkin.'):'O‘yin holati taxminan har 2,5 soniyada yangilanadi.')+'</p></div>'+
+   (room.status==='waiting'&&iCreated?'<div class="arena-invite-sent">'+I('check-circle',18)+' Chatga yuborildi'+
+     '<button class="btn alt sm" data-room-share>'+I('link',16)+' Havola (ixtiyoriy)</button></div>':'')+
    (room.status==='waiting'&&!iCreated?'<button class="btn" data-room-accept>'+I('check',17)+' Taklifni qabul qilish</button>':'')+'</div>';
   if(room.status==='playing'||room.status==='finished'){
    if(type==='xo'){
