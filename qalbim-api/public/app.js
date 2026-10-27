@@ -24,6 +24,7 @@ async function refresh(){try{const v=await api('/api/me');me=v.user;partner=v.pa
 function page(){let p=location.pathname,tab=new URLSearchParams(location.search).get('view');if(p.startsWith('/l/'))return 'letter';if(p.startsWith('/invite/'))return 'invite';if(p.includes('admin'))return 'admin';if(p.includes('chats.html'))return 'chats';if(p.includes('chat.html'))return 'chat';if(p.startsWith('/u/'))return 'publicProfile';if(p.includes('profile'))return 'profile';return tab||'home'}
 function go(where){let routes={home:'/',letters:'/?view=letters',create:'/?view=create',pro:'/?view=pro',chats:'/chats.html',chat:'/chat.html',profile:'/profile.html',admin:'/admin.html'};location.href=routes[where]||where}
 function hero(txt,sub){return '<div class="hero"><div class="spark">💌</div><p class="eyebrow">Ikki qalb — bir hikoya</p><h1>'+txt+'</h1><p>'+sub+'</p></div>'}
+const extra=window.QalbimIntegrations({api,section,hero,btn,esc,notify,go,copy,modal,closeModal,refresh,getMe:()=>me});
 function auth(){
  nav.hidden=true;$('profileButton').hidden=true;$('proBadge').hidden=true;
  let register=authMode==='register';
@@ -36,7 +37,7 @@ function auth(){
  (register?'<label class="checkline"><input type="checkbox" name="terms" required><span><a href="/terms.html" target="_blank">Foydalanish shartlari</a> bilan tanishdim va roziman.</span></label><label class="checkline"><input type="checkbox" name="privacy" required><span><a href="/privacy.html" target="_blank">Maxfiylik siyosati</a> bilan tanishdim va roziman.</span></label>':'')+
  '<button class="btn block" type="submit">'+(register?'Hisob yaratish ♡':'Kirish ♡')+'</button></form></div>'+
  (!config.dbReady?'<div class="notice">⚙️ Administrator hali MongoDB ulanishini sozlamagan. Ro‘yxatdan o‘tish vaqtincha yopiq; mavjud dizaynni ko‘rishingiz mumkin.</div>':'')+
- '<div class="center muted small auth-note">18+ · Ismingiz va raqamingiz begonalarga ko‘rsatilmaydi</div></div></div>');
+ '<div class="center muted small auth-note">18+ · Ismingiz va raqamingiz begonalarga ko‘rsatilmaydi</div><p class="center small"><a href="https://t.me/maktubimbot?startapp" target="_blank" rel="noopener">✈ Telegram Mini App orqali kirish</a></p></div></div>');
 }
 function home(){
  section(hero('Sevgini boshqacha izhor eting','Samimiy maktublar, shaxsiy suhbat va faqat ikkitingizga atalgan lahzalar.')+
@@ -107,18 +108,7 @@ async function loadMessages(){if(!chatPartner||!chatVisit||!$('chatMessages'))re
  pane.innerHTML=data.messages.length?data.messages.map(m=>'<div class="chatbubble '+(m.from===me.id?'mine':'')+'">'+esc(m.text)+'<small>'+new Date(m.createdAt).toLocaleTimeString('uz-UZ',{hour:'2-digit',minute:'2-digit'})+' · '+(m.mode==='view'?'👁':m.mode)+'</small></div>').join(''):'<div class="center muted small" style="margin:auto">Birinchi xabarni yozing. 💌</div>';if(atBottom)pane.scrollTop=pane.scrollHeight;
  }catch(e){if($('chatMessages'))$('chatMessages').textContent=e.message}}
 function leaveChat(){if(chatTimer){clearInterval(chatTimer);chatTimer=null}if(chatVisit){let body=new URLSearchParams({visit:chatVisit});if(navigator.sendBeacon)navigator.sendBeacon('/api/chats/leave',body);chatVisit=''}}
-function proPage(){
- const tg=config.telegram;
- section('<h1 class="page-title">✦ Qalbim Pro</h1><p class="muted small">Siz uchun biroz ko‘proq sehr va samimiyat.</p>'+
- (isPro()?'<div class="notice good">✦ Pro faol! Tugash kuni: '+moneyDate(me.proUntil)+'</div>':'')+
- '<div class="twocol"><div class="card center" style="margin:4px 0"><div style="font-size:31px">🌸</div><h3>3 kun</h3><div class="muted small">Sinab ko‘rish</div></div><div class="card center" style="margin:4px 0"><div style="font-size:31px">👑</div><h3>7 kun</h3><div class="muted small">Ko‘proq lahzalar</div></div></div>'+
- '<div class="card"><p>🔐 <strong>Maxfiy suratlarni ochish</strong></p><p>🎲 <strong>Juftlik o‘yinlari</strong></p><p>🎁 <strong>Yashirin syurprizlar</strong></p><p class="muted small">To‘lov va tarif narxini administrator bilan oldindan kelishib oling. Faollashtirish admin panel orqali amalga oshiriladi.</p>'+
- (tg?'<a target="_blank" rel="noopener" class="btn block" style="display:block;text-align:center" href="'+esc(tg)+'">✈ Telegram orqali Pro so‘rash</a>':'<div class="notice">Administrator hali Telegram manzilini kiritmagan. To‘lov qilmang.</div>')+'</div>'+
- '<h2 class="page-title">O‘yinlar <span class="onlypro">✦ PRO</span></h2>'+
- '<div class="feature"><span class="emoji">💘</span><div style="flex:1"><strong>Sevgi testi</strong><small>Juftingizni qanchalik bilasiz?</small></div>'+btn('game:quiz','O‘ynash')+'</div>'+
- '<div class="feature"><span class="emoji">🎲</span><div style="flex:1"><strong>Sirli savol</strong><small>Romantik suhbatga yangi sabab.</small></div>'+btn('game:question','O‘ynash')+'</div>'+
- '<div class="feature"><span class="emoji">🎁</span><div style="flex:1"><strong>Syurpriz quti</strong><small>Tasodifiy sevgili topshiriq.</small></div>'+btn('game:box','Ochish')+'</div>');
-}
+function proPage(){return extra.proPage()}
 function games(kind){
  if(!isPro()){notify('Bu o‘yin faqat Pro foydalanuvchilar uchun');go('pro');return}
  const data={quiz:['Sevgilingizni qanday xursand qilasiz?','Qaysi kichik e’tibor unga yoqadi?','Birgalikda eng chiroyli xotirangiz qaysi?'],question:['Birinchi uchrashuvimizdagi eng esda qolarli lahza nima?','Kelajakdagi birgalikdagi orzuimiz qaysi?','Mendan eshitishni xohlagan gaping nima?','Menga aytmay yurgan yoqimli sirin bormi?'],box:['Bugun unga 3 ta samimiy iltifot yozing.','Juftingizga 10 soniyali shirin ovozli xabar yuboring.','Birgalikdagi eng yaxshi suratni toping.','Bir-biringiz uchun 5 ta iliq so‘z ayting.']};
@@ -145,6 +135,7 @@ function adminPage(){
  '<div class="card"><h2 class="card-title">Maktublar</h2><div id="adminLetters"></div></div>'+
  '<div class="card"><h2 class="card-title">Shikoyatlar</h2><div id="reports"></div></div>'+
  '<div class="card"><h2 class="card-title">Chatlar statistikasi</h2><div id="chatStats" class="small muted">Xabar matnlari admin interfeysiga chiqarilmaydi.</div></div>');
+ extra.adminWidgets();
  Promise.all([api('/api/admin/stats'),api('/api/admin/config'),api('/api/admin/letters'),api('/api/admin/reports'),api('/api/admin/chats')]).then(x=>{
  const s=x[0];$('stats').innerHTML=[['👤','users','Foydalanuvchilar'],['✉','letters','Maktublar'],['💬','messages','Xabarlar'],['🖼','photos','Rasmlar'],['✦','pro','Faol Pro'],['💞','couples','Juftliklar'],['⚑','reports','Shikoyatlar']].map(a=>'<div class="stat"><span>'+a[0]+' '+a[2]+'</span><strong>'+s[a[1]]+'</strong></div>').join('');
  document.querySelector('[name=telegram]').value=x[1].telegram;
@@ -156,6 +147,7 @@ function adminPage(){
 function loadAdminUsers(q){api('/api/admin/users?q='+encodeURIComponent(q||'')).then(d=>{let el=$('usersList');if(!el)return;el.innerHTML=d.users.map(u=>'<div class="letteritem"><div class="row between"><div style="min-width:0"><strong>'+esc(u.name)+'</strong><div class="small muted">'+esc(u.phone)+' · '+moneyDate(u.createdAt)+'</div><span class="mini-tag">'+(u.isPro?'✦ Pro':'Oddiy')+(u.banned?' · BLOK':'')+'</span></div></div><div class="row wrap" style="margin-top:9px">'+btn('userPro3:'+u.id,'+3 kun')+btn('userPro7:'+u.id,'+7 kun')+btn('userPro0:'+u.id,'Pro ✕')+btn('userEdit:'+u.id,'Tahrir')+btn('userBan:'+u.id+':'+(u.banned?'0':'1'),u.banned?'Ochish':'Blok','danger')+(u.role!=='admin'?btn('userDelete:'+u.id,'O‘chirish','danger'):'')+'</div></div>').join('')||'<p class="muted small">Topilmadi</p>'}).catch(err)}
 async function act(action,node){
  try{
+ if(await extra.action(action,node))return;
  if(action==='closeModal')return closeModal();
  if(action==='loginMode'||action==='registerMode'){authMode=action==='loginMode'?'login':'register';return auth()}
  if(['home','letters','create','pro','chats','chat','profile','admin'].includes(action)){leaveChat();return go(action)}
@@ -202,6 +194,7 @@ document.addEventListener('change',async e=>{
 document.addEventListener('submit',async e=>{
  let f=e.target.closest('[data-form]');if(!f)return;e.preventDefault();let data=Object.fromEntries(new FormData(f).entries());let t=f.dataset.form,button=f.querySelector('[type=submit]');if(button)button.disabled=true;
  try{
+ if(await extra.form(t,data))return;
  if(t==='register'){await api('/api/auth/register',{method:'POST',body:{name:data.name,phone:data.phone,password:data.password,termsAccepted:!!data.terms,privacyAccepted:!!data.privacy}});return go('/')}
  if(t==='login'){await api('/api/auth/login',{method:'POST',body:{phone:data.phone,password:data.password}});return go('/')}
  if(t==='letter'){let d=await api('/api/letters',{method:'POST',body:{to:data.to,from:data.from,title:data.title,message:data.message,theme,photoIds:draftPhotos.map(x=>x.id)}});draftPhotos=[];notify('Maktub tayyor!');return go('/l/'+d.letter.id)}
@@ -222,6 +215,7 @@ document.addEventListener('visibilitychange',()=>{if(page()!=='chat')return;if(d
 document.addEventListener('error',e=>{if(e.target.tagName==='IMG'&&e.target.src.includes('/api/photos/')){e.target.replaceWith(Object.assign(document.createElement('span'),{textContent:'🔐 Pro rasm'}))}},true);
 (async function init(){
  try{config=await api('/api/config')}catch(e){}
+ if(await extra.preLogin())return;
  await refresh();
  const p=page();
  if(p==='letter')return letter();
