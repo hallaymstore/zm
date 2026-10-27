@@ -207,6 +207,18 @@ module.exports=function installIntegrations(app,deps){
      const data=await reqPayment.json().catch(()=>({}));
      if(!reqPayment.ok||!data.payment_id||!data.card||Number(data.amount)!==amount)throw new Error(String(data.error||data.message||'Hamyon to‘lov yaratishda xato'));
      const paymentId=String(data.payment_id);
+     const checkOrder={...doc,paymentId};
+     let providerStatus;
+     try{providerStatus=await getHamyonStatus(checkOrder)}
+     catch(err){
+       console.warn('Hamyon preflight verification unavailable: '+err.message.slice(0,120));
+       await c('payments').updateOne({orderId,status:'creating'},{$set:{paymentId,status:'unverified',lastVerificationError:now()}});
+       return reply(res,503,'Hamyon buyurtmani mustaqil tekshirish imkonsiz. Xavfsizlik uchun karta ko‘rsatilmaydi va pul o‘tkazmang.');
+     }
+     if(!['pending','prepare','created','waiting'].includes(providerStatus)){
+       await c('payments').updateOne({orderId,status:'creating'},{$set:{paymentId,status:'unverified'}});
+       return reply(res,503,'Hamyon buyurtmasining dastlabki holati tasdiqlanmadi. Pul o‘tkazmang.');
+     }
      await c('payments').updateOne({orderId,status:'creating'},{$set:{paymentId,card:String(data.card).slice(0,32),status:'pending'}});
      res.status(201).json({orderId,amount,card:String(data.card),days,expiresAt:doc.expiresAt,status:'pending'});
    }catch(e){
