@@ -40,49 +40,67 @@ function auth(){
  '<div class="center muted small auth-note">18+ · Ismingiz va raqamingiz begonalarga ko‘rsatilmaydi</div><p class="center small"><a href="https://t.me/maktubimbot?startapp" target="_blank" rel="noopener">✈ Telegram Mini App orqali kirish</a></p></div></div>');
 }
 function home(){
- section(hero('Sevgini boshqacha izhor eting','Samimiy maktublar, shaxsiy suhbat va faqat ikkitingizga atalgan lahzalar.')+
- '<div class="card"><div class="profile">'+avatar(me.avatarId,me.name)+'<div style="flex:1;min-width:0"><div class="small muted">Xush kelibsiz</div><strong>'+esc(me.name)+'</strong><div><span class="mini-tag">'+(isPro()?'✦ PRO foydalanuvchi':'♡ Oddiy hisob')+'</span></div></div>'+btn('profile','Profil')+'</div></div>'+
- '<div class="home-grid"><div class="feature"><span class="emoji">💌</span><div style="flex:1"><strong>Sehrli maktub yarating</strong><small>6 xil dizayn, rasmlar va shaxsiy havola.</small></div>'+btn('create','Yaratish','')+'</div>'+
- '<div class="feature"><span class="emoji">💕</span><div style="flex:1"><strong>Juftingiz bilan bog‘laning</strong><small>Bir martalik taklif bilan ikki qalbni birlashtiring.</small></div>'+btn('pair','Ulash','')+'</div>'+
- '<div class="feature"><span class="emoji">💬</span><div style="flex:1"><strong>Sirli suhbat</strong><small>Ko‘rilgach yoki belgilangan muddatdan keyin o‘chadigan xabarlar.</small></div>'+btn('chats','Chat')+'</div>'+
- '<div class="feature"><span class="emoji">✨</span><div style="flex:1"><strong>Pro sehrli dunyo</strong><small>Maxfiy suratlar, juftlik o‘yinlari va alohida imkoniyatlar.</small></div>'+btn('pro','Ko‘rish')+'</div></div>'+
- (me.role==='admin'?'<div class="card">'+btn('admin','⚙️ Admin panel','')+'</div>':'')+
- '<div class="center muted small" style="margin-top:21px">Muhabbat — katta gaplarda emas, kichkina e’tiborda. ♡</div>');
+ const E=window.QalbimExperience;
+ section(E.homeWidget(me,partner)+
+   '<div class="card faint" id="homeQuickStats"><div class="row between"><span class="muted small">♡ Sizning xotiralaringiz</span><strong>Yuklanmoqda...</strong></div></div>'+
+   (me.role==='admin'?'<div class="card">'+btn('admin','⚙️ Admin panel','')+'</div>':''));
+ api('/api/letters/mine').then(d=>{
+   const el=$('homeQuickStats');
+   if(el)el.innerHTML='<div class="row between"><div><span class="eyebrow">SIZNING HIKOYANGIZ</span><h3 style="margin:7px 0 0;font:600 20px Playfair Display,serif">'+d.letters.length+' ta maktub yaratgansiz</h3></div>'+btn('letters','Maktublarni ko‘rish')+'</div>';
+ }).catch(()=>{const el=$('homeQuickStats');if(el)el.hidden=true});
 }
 function avatar(id,name,large=false){return id?'<img class="avatar '+(large?'lg':'')+'" src="'+media(id)+'" alt="Profil surati">':'<div class="avatar '+(large?'lg':'')+'">'+esc((name||'♡').slice(0,1).toUpperCase())+'</div>'}
-function themeButtons(){return '<div class="themes">'+[['🌹','Atirgul'],['🌙','Oy nuri'],['🍂','Shafaq'],['🌿','Bahor'],['💗','Orzu'],['✒️','Klassik']].map((x,i)=>'<button type="button" class="theme '+(theme===i+1?'chosen':'')+'" data-a="theme" data-id="'+(i+1)+'"><span style="font-size:19px">'+x[0]+'</span>'+x[1]+'</button>').join('')+'</div>'}
+function themeButtons(){
+ return window.QalbimExperience.THEMES.map(x=>x.name).join(', ');
+}
 function studio(){
- section('<h1 class="page-title">💌 Yangi maktub</h1><p class="muted small">Bitta havola orqali yetkaziladigan unutilmas maktub.</p>'+
- '<form class="card" data-form="letter"><label class="field"><span>Kimga?</span><input name="to" class="input" maxlength="80" placeholder="Sevgilimga..." required></label>'+
- '<label class="field"><span>Kimdan?</span><input name="from" class="input" maxlength="80" value="'+esc(me.name)+'" required></label>'+
- '<label class="field"><span>Maktub sarlavhasi</span><input name="title" class="input" value="Sen — qalbimdagi eng go‘zal hikoya" required maxlength="90"></label>'+
- '<label class="field"><span>Yurak so‘zlari</span><textarea name="message" class="input" required maxlength="1400">Sen hayotimga kirgan kundan beri oddiy lahzalar ham boshqacha ma’no kasb etdi. Har bir tabassuming — mening eng go‘zal xotiram. Seni juda qadrlayman. ♡</textarea></label>'+
- '<div class="field"><span>6 xil maktub shabloni</span>'+themeButtons()+'</div>'+
- '<label class="field"><span>Suratlar (4 tagacha; 5 MB/rasm)</span><input class="input" style="padding:9px" id="letterPhoto" type="file" accept="image/jpeg,image/png,image/webp"></label>'+
- '<label class="checkline"><input type="checkbox" id="privatePhoto"><span>Yangi yuklanadigan surat faqat menga va Pro foydalanuvchilarga ko‘rinsin.</span></label>'+
- '<div id="attached" class="photo-row"></div><button type="submit" class="btn block">♡ Maktubni yaratish</button></form>');
+ theme=1;
+ section(window.QalbimExperience.renderStudio({name:me.name,theme,photos:draftPhotos}));
+ window.QalbimExperience.attachStudio({getTheme:()=>theme});
  renderPhotos();
 }
-function renderPhotos(){let el=$('attached');if(el)el.innerHTML=draftPhotos.map(x=>'<div><img class="thumb" src="'+media(x.id)+'" alt="surat"><div class="mini-tag">'+(x.private?'✦ Maxfiy':'Ochiq')+'</div></div>').join('')}
+function renderPhotos(){
+ let el=$('attached');if(el)el.innerHTML=draftPhotos.map(x=>'<div class="upload-thumb"><img class="thumb" src="'+media(x.id)+'" alt="surat"><div class="mini-tag">'+(x.private?'🔒 Maxfiy':'Ochiq')+'</div></div>').join('');
+ window.QalbimExperience.updatePhotoCount(draftPhotos);
+}
 function letters(){
  section('<h1 class="page-title">Mening maktublarim</h1><div class="row between"><p class="muted small">Yurakdan chiqqan so‘zlaringiz.</p>'+btn('create','+ Yangi','')+'</div><div id="lettersList" class="letterlist"><div class="muted">Yuklanmoqda...</div></div>');
  api('/api/letters/mine').then(d=>{$('lettersList').innerHTML=d.letters.length?d.letters.map(l=>'<div class="letteritem"><div class="row between"><span class="mini-tag">✉ '+esc(l.to)+'</span><span class="small muted">'+moneyDate(l.createdAt)+'</span></div><h3 style="margin:8px 0;font:600 19px Playfair Display,serif">'+esc(l.title)+'</h3><p class="muted small">'+esc(l.message.slice(0,100))+'</p><div class="row wrap">'+btn('openLetter:'+l.id,'Ko‘rish')+btn('editLetter:'+l.id,'Tahrirlash')+btn('copyLetter:'+l.id,'Havola')+btn('deleteLetter:'+l.id,'O‘chirish','danger')+'</div></div>').join(''):'<div class="card center">Hozircha maktub yo‘q. Birinchi maktubingizni yarating! 💌</div>'}).catch(err);
 }
 function letter(){
- const id=location.pathname.split('/').pop();section('<div class="center"><p class="eyebrow">Faqat sen uchun</p><h1 class="page-title">Sizga maktub bor 💌</h1><div class="envelope" id="envelope"><div class="base"></div><div class="flap"></div><div class="fold"></div><div class="seal">♥</div></div><p class="muted small" id="openHint">Konvertga bosing ♡</p></div><div id="letterBody" hidden></div>');
- api('/api/letters/'+encodeURIComponent(id)).then(d=>{letterData=d;}).catch(e=>{$('openHint').textContent=e.message});
+ const id=location.pathname.split('/').pop();
+ letterData=null;
+ section('<div class="letter-ceremony"><div class="eyebrow">QALBINGIZGA ATALGAN</div><h1 class="page-title">Sizga bir maktub bor ♡</h1>'+
+ '<button type="button" class="envelope" id="envelope" aria-label="Sevgi maktubini ochish"><span class="base"></span><span class="flap"></span><span class="fold"></span><span class="seal">♥</span></button>'+
+ '<p id="openHint" aria-live="polite">Yurakchani bosing — maktubingizni oching ✦</p></div><div id="letterBody" hidden></div>');
+ api('/api/letters/'+encodeURIComponent(id)).then(d=>{letterData=d;}).catch(e=>{if($('openHint'))$('openHint').textContent=e.message});
 }
 function showLetter(){
- if(!letterData)return;const l=letterData.letter;$('envelope').hidden=true;$('openHint').hidden=true;
- const html='<div class="paper" data-theme="'+l.theme+'"><span class="to">💌 '+esc(l.to)+' uchun</span><h2>'+esc(l.title)+'</h2><p>'+esc(l.message)+'</p><div class="from">Muhabbat bilan, '+esc(l.from)+' ♡</div></div>'+
- (l.photoIds.length?'<div class="card"><strong>Bizning xotiralarimiz ♡</strong><div class="photo-row">'+l.photoIds.map(id=>'<img class="paperphoto" src="'+media(id)+'" alt="Maktub surati">').join('')+'</div><div class="muted small">✦ Maxfiy rasmlar faqat Pro obunachilarga ochiq.</div></div>':'')+
- '<div class="card center"><p class="muted small">Bu maktub sizda qanday tuyg‘u uyg‘otdi?</p><div class="row wrap" style="justify-content:center">'+['❤️','🥹','😍','💌','🌹','😘'].map(e=>'<button class="reaction" data-a="react" data-emoji="'+e+'">'+e+' '+(letterData.reactions[e]||'')+'</button>').join('')+'</div><div class="divide"></div><button class="btn sm alt" data-a="copyCurrent">🔗 Havolani ulashish</button> '+btn('reportCurrent','⚑ Shikoyat')+'</div>';
- $('letterBody').innerHTML=html;$('letterBody').hidden=false;
+ if(!letterData)return notify('Maktub yuklanmoqda, yana bir bor bosing.');
+ const env=$('envelope');
+ if(env&&!env.hidden&&!env.dataset.opening){
+   env.dataset.opening='1';env.classList.add('is-opening');
+   window.QalbimExperience.burst(env,18);
+   setTimeout(()=>{if($('envelope'))presentLetter()},430);
+   return;
+ }
+ presentLetter();
+}
+function presentLetter(){
+ if(!letterData)return;
+ const l=letterData.letter;
+ if($('envelope'))$('envelope').hidden=true;
+ if($('openHint'))$('openHint').hidden=true;
+ const html='<div class="letter-content-layout">'+window.QalbimExperience.paper(l.title,l.message,l.theme,l.from,l.to)+
+ (l.photoIds.length?'<div class="card"><h3 class="card-title">📸 Bizning xotiralarimiz</h3><div class="photo-row">'+l.photoIds.map(id=>'<img class="paperphoto" src="'+media(id)+'" alt="Maktub xotirasi" loading="lazy">').join('')+'</div><p class="muted small">🔐 Maxfiy rasmlar faqat egasi va faol Pro foydalanuvchiga ko‘rinadi.</p></div>':'')+
+ '<div class="card center"><h3 class="card-title">Maktub yuragingizga yetib bordimi?</h3><p class="muted small">Birgina belgi bilan hislaringizni ifodalang ♡</p><div class="row wrap" style="justify-content:center">'+['❤️','🥹','😍','💌','🌹','😘'].map(e=>'<button class="reaction" data-a="react" data-emoji="'+e+'" aria-label="'+e+' reaksiyasi">'+e+' '+(letterData.reactions[e]||'')+'</button>').join('')+'</div><div class="divide"></div><div class="row wrap" style="justify-content:center">'+btn('shareNative','↗ Ulashish')+btn('copyCurrent','🔗 Havolani nusxalash')+btn('reportCurrent','⚑ Shikoyat')+'</div></div></div>';
+ if($('letterBody')){$('letterBody').innerHTML=html;$('letterBody').hidden=false}
 }
 function pair(){
  section('<h1 class="page-title">💕 Bizning juftligimiz</h1>'+
- (partner?'<div class="card"><div class="profile">'+avatar(partner.avatarId,partner.name,true)+'<div><div class="mini-tag">Ulangan juftlik ♡</div><h2 style="margin:4px 0">'+esc(partner.name)+'</h2><div class="small muted">Faqat ikkitingizning shaxsiy makoningiz.</div></div></div><div class="divide"></div><div class="row wrap">'+btn('chat','💬 Suhbatni boshlash','')+btn('disconnect','Bog‘lanishni uzish','danger')+'</div></div>':
- '<div class="card center"><div style="font-size:51px;margin:13px">💞</div><h2 class="card-title">Ikki qalbni bog‘lang</h2><p class="muted small">Maxsus havolani sevgilingizga yuboring. U hisobiga kirib taklifni qabul qilsa, sizlarga shaxsiy chat ochiladi.</p><button class="btn block" data-a="invite">🔗 Juftlik havolasini yaratish</button></div>'));
+ (partner?'<div class="card"><div class="profile">'+avatar(partner.avatarId,partner.name,true)+'<div><div class="mini-tag">Ulangan juftlik ♡</div><h2 style="margin:4px 0">'+esc(partner.name)+'</h2><div class="small muted">Faqat ikkitingiz uchun shaxsiy makon.</div></div></div><div class="divide"></div><div class="row wrap">'+btn('chat','💬 Suhbatni boshlash','')+btn('disconnect','Bog‘lanishni uzish','danger')+'</div></div>':
+ '<div class="card center"><div style="font-size:51px;margin:13px">💞</div><h2 class="card-title">Ikki qalbni bog‘lang</h2><p class="muted small">Maxsus havolani sevgan insoningizga yuboring. U taklifni qabul qilgach, faqat sizlarga atalgan chat ochiladi.</p><button class="btn block" data-a="invite">🔗 Juftlik havolasini yaratish</button></div>')+
+ window.QalbimExperience.anniversaryWidget(me));
 }
 function invite(){
  const tok=location.pathname.split('/').pop();
@@ -154,14 +172,15 @@ async function act(action,node){
  if(action==='loginGo')return go('/');
  if(action==='pair')return pair();
  if(action==='logout'){await api('/api/auth/logout',{method:'POST'});me=null;go('/');return}
- if(action==='theme'){theme=Number(node.dataset.id);document.querySelectorAll('.theme').forEach(b=>b.classList.toggle('chosen',b===node));return}
+ if(action==='theme'){theme=Number(node.dataset.id);window.QalbimExperience.changeTheme(theme);return}
  if(action==='openLetter')return showLetter();
  if(action.startsWith('openLetter:'))return go('/l/'+action.split(':')[1]);
  if(action.startsWith('copyLetter:'))return copy(location.origin+'/l/'+action.split(':')[1]);
  if(action==='copyCurrent')return copy(location.href);
+ if(action==='shareNative'){if(navigator.share){try{await navigator.share({title:'Senga maktubim bor ♡',url:location.href});return}catch(e){if(e.name==='AbortError')return}}return copy(location.href)}
  if(action==='shareProfile')return copy(location.origin+'/u/'+me.id);
  if(action==='reportCurrent'){if(!me)return notify('Shikoyat uchun tizimga kiring');modal('<form data-form="report"><input name="type" value="letter" type="hidden"><input name="target" value="'+esc(letterData.letter.id)+'" type="hidden"><label class="field"><span>Shikoyat sababi</span><textarea class="input" name="reason" minlength="10" placeholder="Kamida 10 belgi" required></textarea></label><button class="btn block" type="submit">Yuborish</button></form>');return}
- if(action==='react'){if(!me)return notify('Reaksiya uchun hisobga kiring');await api('/api/letters/'+letterData.letter.id+'/react',{method:'POST',body:{emoji:node.dataset.emoji}});notify('Reaksiya yuborildi ❤️');letterData.reactions[node.dataset.emoji]=(letterData.reactions[node.dataset.emoji]||0)+1;showLetter();return}
+ if(action==='react'){if(!me)return notify('Reaksiya uchun hisobga kiring');window.QalbimExperience.burst(node,12);await api('/api/letters/'+letterData.letter.id+'/react',{method:'POST',body:{emoji:node.dataset.emoji}});notify('Reaksiya yuborildi ❤️');letterData.reactions[node.dataset.emoji]=(letterData.reactions[node.dataset.emoji]||0)+1;showLetter();return}
  if(action.startsWith('editLetter:')){
   let id=action.split(':')[1],v=await api('/api/letters/'+id),l=v.letter;
   if(l.ownerId!==me.id)return notify('Faqat o‘z maktubingizni tahrirlang');
@@ -200,6 +219,7 @@ document.addEventListener('submit',async e=>{
  if(t==='letter'){let d=await api('/api/letters',{method:'POST',body:{to:data.to,from:data.from,title:data.title,message:data.message,theme,photoIds:draftPhotos.map(x=>x.id)}});draftPhotos=[];notify('Maktub tayyor!');return go('/l/'+d.letter.id)}
  if(t==='letterEdit'){await api('/api/letters/'+data.id,{method:'PATCH',body:{to:data.to,from:data.from,title:data.title,message:data.message,theme:Number(data.theme)}});closeModal();notify('Maktub yangilandi');return letters()}
  if(t==='report'){await api('/api/reports',{method:'POST',body:{type:data.type,target:data.target,reason:data.reason}});closeModal();return notify('Shikoyat yuborildi')}
+ if(t==='anniversary'){await api('/api/me',{method:'PATCH',body:{anniversary:data.anniversary}});await refresh();notify('♡ Muhim sana saqlandi');return pair()}
  if(t==='profile'){await api('/api/me',{method:'PATCH',body:{name:data.name,bio:data.bio,chatTtl:data.chatTtl}});await refresh();notify('Profil saqlandi');return profile()}
  if(t==='password'){await api('/api/me/password',{method:'POST',body:data});f.reset();return notify('Parol yangilandi')}
  if(t==='avatar'){let form=new FormData(f);form.append('kind','avatar');await api('/api/photos',{method:'POST',body:form});await refresh();notify('Surat saqlandi');return profile()}
