@@ -238,7 +238,7 @@ function catchGame(root){
   for(const e of effects){c.globalAlpha=Math.max(0,e.life);heart(e.x,e.y,12+12*(1-e.life),e.bad?'#a7a0b4':'#ffdfef')}c.globalAlpha=1;
   const x=basketX,y=H-42;
   c.fillStyle='#f8eaf6';c.strokeStyle='#e0b6f0';c.lineWidth=3;
-  c.beginPath();c.roundRect(x-49,y,98,20,[4,4,13,13]);c.fill();c.stroke();
+  c.beginPath();c.moveTo(x-45,y);c.lineTo(x+45,y);c.quadraticCurveTo(x+49,y,x+49,y+4);c.lineTo(x+49,y+10);c.quadraticCurveTo(x+49,y+20,x+39,y+20);c.lineTo(x-39,y+20);c.quadraticCurveTo(x-49,y+20,x-49,y+10);c.lineTo(x-49,y+4);c.quadraticCurveTo(x-49,y,x-45,y);c.closePath();c.fill();c.stroke();
   c.strokeStyle='#d6b8ec';c.lineWidth=4;c.beginPath();c.moveTo(x-43,y+1);c.quadraticCurveTo(x,H-55,x+43,y+1);c.stroke();
   c.fillStyle='#6a4d85';c.fillRect(x-30,y+9,60,3);
  }
