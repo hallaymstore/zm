@@ -1,7 +1,7 @@
 'use strict';
 (function(){
 const $=id=>document.getElementById(id), view=$('view'), host=$('modalHost'), nav=$('nav');
-let me=null,partner=null,config={telegram:'',dbReady:false},draftPhotos=[],theme=1,chatTimer=null,chatVisit='',chatPartner='',authMode='login',letterData=null;
+let me=null,partner=null,config={telegram:'',dbReady:false},draftPhotos=[],theme=1,chatTimer=null,chatVisit='',chatPartner='',chatSignature='',authMode='login',letterData=null;
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const media=id=>'/api/photos/'+encodeURIComponent(id);
 const moneyDate=d=>d?new Date(d).toLocaleString('uz-UZ',{day:'2-digit',month:'2-digit',year:'numeric'}):'';
@@ -165,24 +165,69 @@ function invite(){
  api('/api/pairs/invite/'+encodeURIComponent(tok)).then(v=>{$('inviteBody').innerHTML='<div class="spark">💞</div><h2 class="card-title">'+esc(v.from)+' sizni taklif qildi</h2>'+(me?'<button class="btn block" data-a="acceptInvite" data-token="'+esc(tok)+'">♡ Juftlikka bog‘lanish</button>':'<p class="muted">Taklifni qabul qilish uchun avval kirishingiz kerak.</p><button class="btn block" data-a="loginGo">Kirish / Ro‘yxatdan o‘tish</button>')}).catch(e=>{$('inviteBody').textContent=e.message});
 }
 function chats(){
- section('<h1 class="page-title">💬 Suhbatlar</h1><p class="muted small">Faqat siz va juftingiz. Xabarlar avtomatik tozalanadi.</p><div id="chatList">Yuklanmoqda...</div>');
- api('/api/chats').then(d=>{$('chatList').innerHTML=d.chats.length?d.chats.map(c=>'<div class="card"><div class="profile">'+avatar(c.avatarId,c.name)+'<div style="flex:1"><strong>'+esc(c.name)+'</strong><div class="small muted">♡ Sizning juftingiz</div></div>'+btn('chat','Yozish','')+'</div></div>').join(''):'<div class="card center"><p style="font-size:34px">💗</p><h3>Juftingizni taklif qiling</h3><p class="muted small">Chat ochilishi uchun ikkala inson ham bir-biriga bog‘langan bo‘lishi kerak.</p><button class="btn block" data-a="pair">Ulashish ♡</button></div>'}).catch(err);
+ section('<div class="row between"><div><span class="eyebrow">QALBIM / SUHBATLAR</span><h1 class="page-title">Shaxsiy suhbatlar</h1><p class="muted small">Ikki qalb — bitta suhbat. Xabarlar va birgalikdagi o‘yinlar.</p></div>'+
+ '<button type="button" class="btn alt sm" data-a="games">'+window.QalbimIcons.svg('gamepad',17)+' O‘yinlar</button></div>'+
+ '<div id="chatList" class="card">Suhbatlar yuklanmoqda...</div>');
+ api('/api/chats').then(d=>{
+   const pane=$('chatList');if(!pane)return;
+   pane.innerHTML=d.chats.length?d.chats.map(c=>
+     '<div class="profile">'+avatar(c.avatarId,c.name)+'<div style="flex:1"><strong>'+esc(c.name)+'</strong>'+
+     '<div class="small muted">Ulangan juftingiz'+(c.pendingGames?' · '+c.pendingGames+' ta o‘yin taklifi':'')+'</div></div>'+
+     '<button type="button" class="btn sm" data-a="chat">'+window.QalbimIcons.svg('message-square',15)+' Chatni ochish'+
+     (c.pendingGames?'<span class="chatplay-pending-count">'+c.pendingGames+'</span>':'')+'</button></div>').join(''):
+   '<div class="center"><h3>Juftlik yaratish</h3><p class="muted small">O‘yin va chat uchun avval sevgan insoningizga ulaning.</p><button class="btn" data-a="pair">Juftlikni bog‘lash</button></div>';
+ }).catch(err);
 }
 function chat(){
- if(!partner){section('<div class="card center">Hozircha juftingiz ulanmagan. '+btn('pair','Juftlik yaratish')+'</div>');return}
- chatPartner=partner.id;chatVisit=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+'a'+Math.random().toString(36).slice(2));
- section('<div class="row between"><div class="profile">'+avatar(partner.avatarId,partner.name)+'<div><strong>'+esc(partner.name)+'</strong><div class="small muted">♡ Shaxsiy suhbat</div></div></div>'+btn('chats','←')+'</div>'+
- '<label class="field"><span>Xabarlarning o‘chish tartibi</span><select class="input" id="ttlSelect"><option value="view">👀 Ko‘rib, chatdan chiqqach</option><option value="6h">6 soatdan keyin</option><option value="12h">12 soatdan keyin</option><option value="18h">18 soatdan keyin</option><option value="24h">24 soatdan keyin</option></select></label>'+
- '<div id="chatMessages" class="chatbox"><div class="muted small center">Suhbat yuklanmoqda...</div></div>'+
- '<form data-form="message" class="composer"><input class="input" name="text" placeholder="Samimiy xabaringiz..." maxlength="1600" autocomplete="off" required><button class="btn" type="submit">➤</button></form><p class="center small muted">Ko‘rildi rejimida o‘qilgan xabarlar chiqishda o‘chadi.</p>');
- $('ttlSelect').value=me.chatTtl||'view';loadMessages();chatTimer=setInterval(loadMessages,4500);
+ if(!partner){
+   section('<div class="card center">Hozircha juftingiz ulanmagan. '+btn('pair','Juftlik yaratish')+'</div>');return;
+ }
+ chatPartner=partner.id;
+ chatVisit=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+'a'+Math.random().toString(36).slice(2));
+ chatSignature='';
+ window.QalbimArena.setup({api,notify,go,getMe:()=>me,getPartner:()=>partner});
+ window.QalbimChatGames.setup({api,notify,go,getMe:()=>me,getPartner:()=>partner,reloadMessages:loadMessages});
+ section('<div class="chatplay-chat-container">'+
+ '<div class="row between" style="gap:10px"><div class="profile">'+avatar(partner.avatarId,partner.name)+
+ '<div><strong>'+esc(partner.name)+'</strong><div class="chatplay-header-status">'+window.QalbimIcons.svg('heart',13)+' Faqat ikkimiz</div></div></div>'+
+ '<button type="button" class="btn alt sm" data-a="chats">'+window.QalbimIcons.svg('arrow',16)+' Orqaga</button></div>'+
+ '<div class="chatplay-actions"><button type="button" class="chatplay-play-button" data-a="chatPlay">'+
+ window.QalbimIcons.svg('gamepad',19)+' Birga o‘ynash'+window.QalbimIcons.svg('arrowup',16)+'</button>'+
+ '<span class="muted small">O‘yin taklifi avtomatik shu chatga tushadi.</span></div>'+
+ '<label class="field"><span>Xabarlarning o‘chish tartibi</span><select class="input" id="ttlSelect">'+
+ '<option value="view">Ko‘rib, chatdan chiqqach</option>'+
+ '<option value="6h">6 soatdan keyin</option><option value="12h">12 soatdan keyin</option>'+
+ '<option value="18h">18 soatdan keyin</option><option value="24h">24 soatdan keyin</option></select></label>'+
+ '<div id="chatMessages" class="chatbox" aria-live="polite"><div class="muted small center">Suhbat yuklanmoqda...</div></div>'+
+ '<form data-form="message" class="composer chatplay-composer">'+
+ '<button type="button" class="chatplay-composer-btn" data-a="chatPlay" title="Chatda o‘yin boshlash" aria-label="Juftlik o‘yini boshlash">'+window.QalbimIcons.svg('gamepad',21)+'</button>'+
+ '<input class="input" name="text" placeholder="Xabar yozing..." maxlength="1600" autocomplete="off" required>'+
+ '<button class="btn" type="submit" aria-label="Xabar yuborish">'+window.QalbimIcons.svg('send',19)+'</button></form>'+
+ '<p class="center small muted">Oddiy xabarlar tanlangan muddatda o‘chadi. O‘yin takliflari esa 24 soat amal qiladi.</p></div>');
+ $('ttlSelect').value=me.chatTtl||'view';
+ loadMessages();
+ chatTimer=setInterval(loadMessages,4500);
 }
-async function loadMessages(){if(!chatPartner||!chatVisit||!$('chatMessages'))return;
- try{const data=await api('/api/chats/messages?with='+encodeURIComponent(chatPartner)+'&visit='+encodeURIComponent(chatVisit));
- const pane=$('chatMessages'),atBottom=pane.scrollHeight-pane.scrollTop-pane.clientHeight<115;
- pane.innerHTML=data.messages.length?data.messages.map(m=>'<div class="chatbubble '+(m.from===me.id?'mine':'')+'">'+esc(m.text)+'<small>'+new Date(m.createdAt).toLocaleTimeString('uz-UZ',{hour:'2-digit',minute:'2-digit'})+' · '+(m.mode==='view'?'👁':m.mode)+'</small></div>').join(''):'<div class="center muted small" style="margin:auto">Birinchi xabarni yozing. 💌</div>';if(atBottom)pane.scrollTop=pane.scrollHeight;
- }catch(e){if($('chatMessages'))$('chatMessages').textContent=e.message}}
-function leaveChat(){if(chatTimer){clearInterval(chatTimer);chatTimer=null}if(chatVisit){let body=new URLSearchParams({visit:chatVisit});if(navigator.sendBeacon)navigator.sendBeacon('/api/chats/leave',body);chatVisit=''}}
+async function loadMessages(){
+ if(!chatPartner||!chatVisit||!$('chatMessages'))return;
+ try{
+  const data=await api('/api/chats/messages?with='+encodeURIComponent(chatPartner)+'&visit='+encodeURIComponent(chatVisit));
+  const pane=$('chatMessages');if(!pane)return;
+  const signature=JSON.stringify(data.messages.map(m=>[m.id,m.mode,m.text,m.gameStatus,m.gameVersion,m.gameWinner]));
+  if(signature===chatSignature)return;
+  const atBottom=pane.scrollHeight-pane.scrollTop-pane.clientHeight<115;
+  const scroll=pane.scrollTop;
+  pane.innerHTML=data.messages.length?data.messages.map(m=>{
+    if(m.kind==='game')return window.QalbimChatGames.renderCard(m,me.id);
+    return '<div class="chatbubble '+(m.from===me.id?'mine':'')+'">'+esc(m.text)+
+       '<small>'+new Date(m.createdAt).toLocaleTimeString('uz-UZ',{hour:'2-digit',minute:'2-digit'})+
+       ' · '+(m.mode==='view'?'Ko‘rilgach':m.mode)+'</small></div>';
+  }).join(''):'<div class="center muted small" style="margin:auto">Birinchi xabarni yozing yoki birga o‘yin boshlang.</div>';
+  chatSignature=signature;
+  pane.scrollTop=atBottom?pane.scrollHeight:scroll;
+ }catch(e){if($('chatMessages'))$('chatMessages').textContent=e.message}
+}
+function leaveChat(){window.QalbimChatGames?.close();chatSignature='';if(chatTimer){clearInterval(chatTimer);chatTimer=null}if(chatVisit){let body=new URLSearchParams({visit:chatVisit});if(navigator.sendBeacon)navigator.sendBeacon('/api/chats/leave',body);chatVisit=''}}
 function proPage(){return extra.proPage()}
 function arcade(){window.QalbimArena.setup({api,notify,go,getMe:()=>me,getPartner:()=>partner});section(window.QalbimGames.mount());window.QalbimArena.activateHub()}
 function games(kind){
@@ -225,6 +270,7 @@ async function act(action,node){
  try{
  if(await extra.action(action,node))return;
  if(action==='closeModal')return closeModal();
+ if(action==='chatPlay')return window.QalbimChatGames.openPicker();
  if(action==='loginMode'||action==='registerMode'){authMode=action==='loginMode'?'login':'register';return auth()}
  if(['home','letters','create','games','pro','chats','chat','profile','admin'].includes(action)){leaveChat();return go(action)}
  if(action==='loginGo')return go('/');
