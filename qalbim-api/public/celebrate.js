@@ -15,7 +15,11 @@ const SKINS=[{id:'blush',name:'Blush',hex:'#f6a4c0'},{id:'lilac',name:'Lavanda',
 let api,notify,go,getMe,getPartner,section;
 let saved=[],draft=null,editing=false,busy=false,opened=null;
 function setup(x){({api,notify,go,getMe,getPartner,section}=x)}
-function currentDate(){return new Intl.DateTimeFormat('uz-UZ',{day:'numeric',month:'long',year:'numeric'}).format(new Date())}
+function currentDate(){
+ const now=new Date();
+ const months=['yanvar','fevral','mart','aprel','may','iyun','iyul','avgust','sentabr','oktabr','noyabr','dekabr'];
+ return now.getDate()+'-'+months[now.getMonth()]+', '+now.getFullYear();
+}
 function personName(s){return String(s||'Azizim').split(' ')[0]}
 function cardEntry(item){
  const ev=EVENTS.find(x=>x.id===item.event)||EVENTS[0];
@@ -92,7 +96,15 @@ function previewHTML(d,full=false){
  '</div>';
 }
 function composer(event='love'){
- const me=getMe?.();if(!me){notify?.('Tabrik yaratish uchun akkauntga kiring');go?.('/');return}
+ const me=getMe?.();if(!me){
+  try{sessionStorage.setItem('qalbim_celebrate_return',event)}catch(e){}
+  showOverlay('<div class="cel-result"><span class="cel-result-icon">'+ico('lock',34)+'</span>'+
+    '<span class="cel-eyebrow">TABRIK YARATISH</span><h2>Hisobingizga kiring</h2>'+
+    '<p>Tabrikni saqlash, chat orqali yuborish va xotiralar kolleksiyasini yuritish uchun akkauntga kirish kerak.</p>'+
+    '<a href="/" class="cel-primary">'+ico('user',17)+' Kirish yoki ro‘yxatdan o‘tish</a>'+
+    '<button class="cel-secondary" data-cel="dismiss">Hozircha ko‘rish</button></div>');
+  return;
+ }
  if(!editing)draft=defaultDraft(event);
  editing=true;
  const form='<div class="cel-editor-overlay" id="celEditorOverlay" role="dialog" aria-modal="true" aria-label="Tabrik yaratish">'+
