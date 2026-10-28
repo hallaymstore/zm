@@ -19,12 +19,15 @@ async function api(url,options={}){
 }
 function modal(html){host.hidden=false;host.innerHTML='<div class="modal" role="dialog" aria-modal="true"><div class="row between"><strong style="font:600 23px Playfair Display,serif">Qalbim ♡</strong>'+btn('closeModal','✕')+'</div>'+html+'</div>'}
 function closeModal(){host.hidden=true;host.innerHTML=''}
-function markNav(){document.querySelectorAll('[data-a]').forEach(n=>{if(!n.classList.contains('navitem'))return;let page=location.pathname,tab=new URLSearchParams(location.search).get('view'),x=n.dataset.a;n.classList.toggle('active',(x==='chats'&&page.includes('chat'))||(x==='letters'&&tab==='letters')||(x==='games'&&tab==='games')||(x==='pro'&&tab==='pro')||(x==='profile'&&page.includes('profile'))||(x==='home'&&page==='/'&&!tab))})}
+function markNav(){document.querySelectorAll('[data-a]').forEach(n=>{if(!n.classList.contains('navitem'))return;let page=location.pathname,tab=new URLSearchParams(location.search).get('view'),x=n.dataset.a;n.classList.toggle('active',(x==='chats'&&page.includes('chat'))||(x==='letters'&&tab==='letters')||(x==='games'&&tab==='games')||(x==='tabrik'&&tab==='tabrik')||(x==='pro'&&tab==='pro')||(x==='profile'&&page.includes('profile'))||(x==='home'&&page==='/'&&!tab))})}
 async function refresh(){try{const v=await api('/api/me');me=v.user;partner=v.partner}catch(e){me=null;partner=null}}
-function page(){let p=location.pathname,tab=new URLSearchParams(location.search).get('view');if(p.startsWith('/l/'))return 'letter';if(p.startsWith('/invite/'))return 'invite';if(p.includes('admin'))return 'admin';if(p.includes('chats.html'))return 'chats';if(p.includes('chat.html'))return 'chat';if(p.startsWith('/u/'))return 'publicProfile';if(p.includes('profile'))return 'profile';return tab||'home'}
-function go(where){let routes={home:'/',letters:'/?view=letters',create:'/?view=create',games:'/?view=games',pro:'/?view=pro',chats:'/chats.html',chat:'/chat.html',profile:'/profile.html',admin:'/admin.html'};location.href=routes[where]||where}
+function page(){let p=location.pathname,tab=new URLSearchParams(location.search).get('view');if(p.startsWith('/t/'))return 'celebration';if(p.startsWith('/l/'))return 'letter';if(p.startsWith('/invite/'))return 'invite';if(p.includes('admin'))return 'admin';if(p.includes('chats.html'))return 'chats';if(p.includes('chat.html'))return 'chat';if(p.startsWith('/u/'))return 'publicProfile';if(p.includes('profile'))return 'profile';return tab||'home'}
+function go(where){let routes={home:'/',tabrik:'/?view=tabrik',letters:'/?view=letters',create:'/?view=create',games:'/?view=games',pro:'/?view=pro',chats:'/chats.html',chat:'/chat.html',profile:'/profile.html',admin:'/admin.html'};location.href=routes[where]||where}
 function hero(txt,sub){return '<div class="hero"><div class="spark">'+window.QalbimIcons.svg('mail',28)+'</div><p class="eyebrow">Ikki qalb — bir hikoya</p><h1>'+txt+'</h1><p>'+sub+'</p></div>'}
 const extra=window.QalbimIntegrations({api,section,hero,btn,esc,notify,go,copy,modal,closeModal,refresh,getMe:()=>me});
+window.QalbimCelebrate.setup({api,notify,go,section,getMe:()=>me,getPartner:()=>partner});
+function tabrik(){section(window.QalbimCelebrate.home());window.QalbimCelebrate.hydrate()}
+function publicCelebration(){return window.QalbimCelebrate.openPublic(location.pathname.split('/').pop())}
 function auth(){
  nav.hidden=true;$('profileButton').hidden=true;$('proBadge').hidden=true;
  let register=authMode==='register';
@@ -191,7 +194,8 @@ function chat(){
  '<div class="row between" style="gap:10px"><div class="profile">'+avatar(partner.avatarId,partner.name)+
  '<div><strong>'+esc(partner.name)+'</strong><div class="chatplay-header-status">'+window.QalbimIcons.svg('heart',13)+' Faqat ikkimiz</div></div></div>'+
  '<button type="button" class="btn alt sm" data-a="chats">'+window.QalbimIcons.svg('arrow',16)+' Orqaga</button></div>'+
- '<div class="chatplay-actions"><button type="button" class="chatplay-play-button" data-a="chatPlay">'+
+ '<div class="chatplay-actions"><button type="button" class="chatplay-play-button chatplay-celebrate" data-a="tabrik">'+
+ window.QalbimIcons.svg('heart',19)+' Tabrik yuborish'+window.QalbimIcons.svg('arrowup',16)+'</button><button type="button" class="chatplay-play-button" data-a="chatPlay">'+
  window.QalbimIcons.svg('gamepad',19)+' Birga o‘ynash'+window.QalbimIcons.svg('arrowup',16)+'</button>'+
  '<span class="muted small">O‘yin taklifi avtomatik shu chatga tushadi.</span></div>'+
  '<label class="field"><span>Xabarlarning o‘chish tartibi</span><select class="input" id="ttlSelect">'+
@@ -200,6 +204,7 @@ function chat(){
  '<option value="18h">18 soatdan keyin</option><option value="24h">24 soatdan keyin</option></select></label>'+
  '<div id="chatMessages" class="chatbox" aria-live="polite"><div class="muted small center">Suhbat yuklanmoqda...</div></div>'+
  '<form data-form="message" class="composer chatplay-composer">'+
+ '<button type="button" class="chatplay-composer-btn" data-a="tabrik" title="Tabrik yaratish" aria-label="Juftlikka tabrik yuborish">'+window.QalbimIcons.svg('heart',21)+'</button>'+
  '<button type="button" class="chatplay-composer-btn" data-a="chatPlay" title="Chatda o‘yin boshlash" aria-label="Juftlik o‘yini boshlash">'+window.QalbimIcons.svg('gamepad',21)+'</button>'+
  '<input class="input" name="text" placeholder="Xabar yozing..." maxlength="1600" autocomplete="off" required>'+
  '<button class="btn" type="submit" aria-label="Xabar yuborish">'+window.QalbimIcons.svg('send',19)+'</button></form>'+
@@ -213,7 +218,7 @@ async function loadMessages(){
  try{
   const data=await api('/api/chats/messages?with='+encodeURIComponent(chatPartner)+'&visit='+encodeURIComponent(chatVisit));
   const pane=$('chatMessages');if(!pane)return;
-  const signature=JSON.stringify(data.messages.map(m=>[m.id,m.mode,m.text,m.gameStatus,m.gameVersion,m.gameWinner]));
+  const signature=JSON.stringify(data.messages.map(m=>[m.id,m.kind,m.celebrationId,m.mode,m.text,m.gameStatus,m.gameVersion,m.gameWinner]));
   const invites=data.messages.filter(m=>m.kind==='game'&&m.from!==me.id&&m.gameStatus==='waiting').map(m=>m.id);
   if(chatKnownGameInvites&&invites.some(id=>!chatKnownGameInvites.has(id))){notify('Juftingiz sizni o‘yinga taklif qildi');}
   chatKnownGameInvites=new Set(invites);
@@ -222,6 +227,7 @@ async function loadMessages(){
   const scroll=pane.scrollTop;
   pane.innerHTML=data.messages.length?data.messages.map(m=>{
     if(m.kind==='game')return window.QalbimChatGames.renderCard(m,me.id);
+    if(m.kind==='celebration')return window.QalbimCelebrate.renderChat({...m,mine:m.from===me.id});
     return '<div class="chatbubble '+(m.from===me.id?'mine':'')+'">'+esc(m.text)+
        '<small>'+new Date(m.createdAt).toLocaleTimeString('uz-UZ',{hour:'2-digit',minute:'2-digit'})+
        ' · '+(m.mode==='view'?'Ko‘rilgach':m.mode)+'</small></div>';
@@ -275,7 +281,7 @@ async function act(action,node){
  if(action==='closeModal')return closeModal();
  if(action==='chatPlay')return window.QalbimChatGames.openPicker();
  if(action==='loginMode'||action==='registerMode'){authMode=action==='loginMode'?'login':'register';return auth()}
- if(['home','letters','create','games','pro','chats','chat','profile','admin'].includes(action)){leaveChat();return go(action)}
+ if(['home','letters','create','games','tabrik','pro','chats','chat','profile','admin'].includes(action)){leaveChat();return go(action)}
  if(action==='loginGo')return go('/');
  if(action==='pair')return pair();
  if(action==='logout'){await api('/api/auth/logout',{method:'POST'});me=null;go('/');return}
@@ -345,10 +351,12 @@ document.addEventListener('error',e=>{if(e.target.tagName==='IMG'&&e.target.src.
  if(await extra.preLogin())return;
  await refresh();
  const p=page();
+ if(p==='celebration')return publicCelebration();
  if(p==='letter')return letter();
  if(p==='invite')return invite();
  if(p==='publicProfile')return publicProfile();
  if(p==='games')return arcade(); // Public playable demos; no registration required
+ if(p==='tabrik')return tabrik(); // Public celebration catalog; login needed only to save
  if(!me)return auth();
  if(p==='admin')return adminPage();
  if(p==='chat')return chat();
