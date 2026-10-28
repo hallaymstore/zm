@@ -1,17 +1,18 @@
-/* Qalbim AutoTabrik: private professional order intake. Photos are compressed
- * to WebP in separate Mongo documents and expire after 30 days.
- * A receipt means verification requested, NEVER confirmation of payment. */
+/* Qalbim AutoTabrik: private order intake and provider-verified payments.
+ * Photos compressed to WebP; payment verified exclusively through Hamyon.
+ * Service turnaround is 14 hours after the provider confirms payment. */
 'use strict';
 const multer=require('multer'),sharp=require('sharp');
 module.exports=function({app,auth,adm,wrap,c,oid,bad,clean,date}){
  const EVENTS=['birthday','love','mother','wedding','anniversary','thanks','achievement'];
+ const PRICES={audio:50000,video:70000};
  const IMAGE_MIMES=['image/jpeg','image/png','image/webp'];
  const upload=multer({storage:multer.memoryStorage(),limits:{fileSize:5*1024*1024},fileFilter:(req,f,cb)=>cb(null,IMAGE_MIMES.includes(f.mimetype))});
  const archive=()=>c('autotabrik_orders'),images=()=>c('autotabrik_assets');
  const pack=(o,assets=0)=>({id:String(o._id),kind:o.kind,status:o.status,occasion:o.occasion,
   recipient:o.recipient,age:o.age,birthday:o.birthday,recipientPhone:o.recipientPhone,contactChannel:o.contactChannel,
   relation:o.relation,fromName:o.fromName,address:o.address,formality:o.formality,family:o.family,
-  message:o.message,notes:o.notes,photosCount:assets,hasReceipt:!!o.receiptId,createdAt:o.createdAt,submittedAt:o.submittedAt||null});
+  message:o.message,notes:o.notes,photosCount:assets,price:PRICES[o.kind]||null,paymentOrderId:o.paymentOrderId||null,paidAt:o.paidAt||null,deadlineAt:o.deadlineAt||null,createdAt:o.createdAt,submittedAt:o.submittedAt||null});
  const owned=async(req,res)=>{
   const id=oid(req.params.id);if(!id)return {failed:bad(res,404,'Buyurtma topilmadi')};
   const o=await archive().findOne({_id:id,...(req.user.role==='admin'?{}:{owner:req.user._id})});
@@ -40,7 +41,7 @@ module.exports=function({app,auth,adm,wrap,c,oid,bad,clean,date}){
   const count=await archive().countDocuments({owner:req.user._id,createdAt:{$gt:new Date(Date.now()-86400000)}});
   if(count>=6)return bad(res,429,'Bir kunda ko‘pi bilan 6 ta yangi buyurtma yarating');
   const o={owner:req.user._id,kind,occasion,recipient,age,birthday,recipientPhone,contactChannel,relation,
-    fromName,formality,family,address,message,notes,status:'draft',receiptId:null,createdAt:date(),submittedAt:null};
+    fromName,formality,family,address,message,notes,status:'draft',paymentOrderId:null,paidAt:null,deadlineAt:null,createdAt:date(),submittedAt:null};
   const inserted=await archive().insertOne(o);o._id=inserted.insertedId;
   res.status(201).json({order:pack(o,0)});
  }));
@@ -58,29 +59,15 @@ module.exports=function({app,auth,adm,wrap,c,oid,bad,clean,date}){
      createdAt:now,expiresAt:new Date(now.getTime()+30*86400000)});
   res.status(201).json({photosCount:count+1,required:30});
  }));
- app.post('/api/autotabrik/orders/:id/receipt',auth,upload.single('image'),wrap(async(req,res)=>{
-  const {o,failed}=await owned(req,res);if(failed)return;
-  if(!req.file)return bad(res,400,'Chekning JPG/PNG rasmini tanlang');
-  if(!['draft','awaiting_payment','payment_review'].includes(o.status))return bad(res,409,'Bu buyurtmada chekni almashtirish mumkin emas');
-  let buffer;try{buffer=await sharp(req.file.buffer,{limitInputPixels:20000000})
-   .rotate().resize({width:1200,height:1400,fit:'inside',withoutEnlargement:true}).webp({quality:82}).toBuffer()}
-  catch(e){return bad(res,400,'Chek fayli o‘qilmadi')}
-  const now=date();const r=await images().insertOne({orderId:o._id,owner:req.user._id,kind:'receipt',buffer,
-   createdAt:now,expiresAt:new Date(now.getTime()+30*86400000)});
-  const old=o.receiptId;
-  await archive().updateOne({_id:o._id,owner:req.user._id},{$set:{receiptId:r.insertedId,status:'payment_review'}});
-  if(old)await images().deleteOne({_id:old,orderId:o._id});
-  res.status(201).json({status:'payment_review',message:'Chek tekshiruvga yuborildi. To‘lov hali tasdiqlanmagan.'});
- }));
  app.post('/api/autotabrik/orders/:id/submit',auth,wrap(async(req,res)=>{
   const {o,failed}=await owned(req,res);if(failed)return;
-  if(!['draft','payment_review'].includes(o.status))return bad(res,409,'Buyurtma allaqachon yuborilgan');
+  if(o.status!=='draft')return bad(res,409,'Buyurtma allaqachon yuborilgan');
   const count=await images().countDocuments({orderId:o._id,kind:'photo'});
   if(o.kind==='video'&&count<30)return bad(res,400,'Video uchun kamida 30 ta rasm kerak. Hozir: '+count);
-  const status=o.receiptId?'payment_review':'awaiting_payment';
+  const status=o.kind==='phone'?'awaiting_quote':'awaiting_payment';
   await archive().updateOne({_id:o._id,owner:req.user._id},{$set:{status,submittedAt:date()}});
   res.json({submitted:true,status,photosCount:count,
-   message:'Buyurtma qabul qilindi. To‘lov tasdiqlanguncha xizmat boshlanmaydi.'});
+   message:o.kind==='phone'?'Operator telefon orqali tabriklash xizmatining narxini kelishadi.':'Buyurtma qabul qilindi. Hamyon orqali to‘lov tasdiqlangach 14 soat ichida tayyorlanadi.'});
  }));
  app.get('/api/autotabrik/orders/:id/assets',auth,wrap(async(req,res)=>{
   const {o,failed}=await owned(req,res);if(failed)return;
@@ -101,10 +88,10 @@ module.exports=function({app,auth,adm,wrap,c,oid,bad,clean,date}){
  }));
  app.patch('/api/autotabrik/admin/orders/:id',auth,adm,wrap(async(req,res)=>{
   const id=oid(req.params.id),status=String(req.body.status||'');
-  if(!id||!['payment_review','awaiting_payment','paid','in_progress','delivered','cancelled'].includes(status))
+  if(!id||!['in_progress','delivered','cancelled'].includes(status))
     return bad(res,400,'Noto‘g‘ri holat');
   const o=await archive().findOne({_id:id});if(!o)return bad(res,404,'Buyurtma topilmadi');
-  if(status==='paid'&&!o.receiptId)return bad(res,409,'Chek kelmagan; avval to‘lovni tekshiring');
+  if(status==='cancelled'&&['paid','in_progress','delivered'].includes(o.status))return bad(res,409,'To‘langan buyurtmani qaytarish tartibisiz bekor qilib bo‘lmaydi');
   if(['in_progress','delivered'].includes(status)&&!['paid','in_progress'].includes(o.status))
     return bad(res,409,'To‘lov tasdiqlanmasdan xizmat yakunlanmaydi');
   await archive().updateOne({_id:id},{$set:{status,updatedAt:date()}});
