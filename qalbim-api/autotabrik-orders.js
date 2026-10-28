@@ -5,14 +5,14 @@
 const multer=require('multer'),sharp=require('sharp');
 module.exports=function({app,auth,adm,wrap,c,oid,bad,clean,date}){
  const EVENTS=['birthday','love','mother','wedding','anniversary','thanks','achievement'];
- const PRICES={audio:50000,video:70000};
+ const PRICES={audio:55000,video:75000};
  const IMAGE_MIMES=['image/jpeg','image/png','image/webp'];
  const upload=multer({storage:multer.memoryStorage(),limits:{fileSize:5*1024*1024},fileFilter:(req,f,cb)=>cb(null,IMAGE_MIMES.includes(f.mimetype))});
  const archive=()=>c('autotabrik_orders'),images=()=>c('autotabrik_assets');
  const pack=(o,assets=0)=>({id:String(o._id),kind:o.kind,status:o.status,occasion:o.occasion,
   recipient:o.recipient,age:o.age,birthday:o.birthday,recipientPhone:o.recipientPhone,contactChannel:o.contactChannel,
   relation:o.relation,fromName:o.fromName,address:o.address,formality:o.formality,family:o.family,
-  message:o.message,notes:o.notes,photosCount:assets,price:PRICES[o.kind]||null,paymentOrderId:o.paymentOrderId||null,paidAt:o.paidAt||null,deadlineAt:o.deadlineAt||null,createdAt:o.createdAt,submittedAt:o.submittedAt||null});
+  message:o.message,notes:o.notes,photosCount:assets,price:o.price??PRICES[o.kind]??null,paymentOrderId:o.paymentOrderId||null,paidAt:o.paidAt||null,deadlineAt:o.deadlineAt||null,createdAt:o.createdAt,submittedAt:o.submittedAt||null});
  const owned=async(req,res)=>{
   const id=oid(req.params.id);if(!id)return {failed:bad(res,404,'Buyurtma topilmadi')};
   const o=await archive().findOne({_id:id,...(req.user.role==='admin'?{}:{owner:req.user._id})});
@@ -41,7 +41,7 @@ module.exports=function({app,auth,adm,wrap,c,oid,bad,clean,date}){
   const count=await archive().countDocuments({owner:req.user._id,createdAt:{$gt:new Date(Date.now()-86400000)}});
   if(count>=6)return bad(res,429,'Bir kunda ko‘pi bilan 6 ta yangi buyurtma yarating');
   const o={owner:req.user._id,kind,occasion,recipient,age,birthday,recipientPhone,contactChannel,relation,
-    fromName,formality,family,address,message,notes,status:'draft',paymentOrderId:null,paidAt:null,deadlineAt:null,createdAt:date(),submittedAt:null};
+    fromName,formality,family,address,message,notes,price:PRICES[kind]??null,status:'draft',paymentOrderId:null,paidAt:null,deadlineAt:null,createdAt:date(),submittedAt:null};
   const inserted=await archive().insertOne(o);o._id=inserted.insertedId;
   res.status(201).json({order:pack(o,0)});
  }));
