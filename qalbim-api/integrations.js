@@ -128,7 +128,7 @@ module.exports=function installIntegrations(app,deps){
      gatewayStatus:health.status,verificationMode:'provider-polling'});
  }));
  app.get('/api/payments/mine',deps.auth,asyncRoute(async(req,res)=>{
-   const list=await c('payments').find({userId:req.user._id},{projection:{_id:0,orderId:1,days:1,amount:1,card:1,status:1,createdAt:1,expiresAt:1}}).sort({createdAt:-1}).limit(25).toArray();
+   const list=await c('payments').find({userId:req.user._id,purpose:{$ne:'autotabrik'}},{projection:{_id:0,orderId:1,days:1,amount:1,card:1,status:1,createdAt:1,expiresAt:1}}).sort({createdAt:-1}).limit(25).toArray();
    res.json({payments:list});
  }));
 
@@ -156,12 +156,23 @@ module.exports=function installIntegrations(app,deps){
    const session=deps.mongoClient().startSession();
    try{
      await session.withTransaction(async()=>{
-       const result=await c('payments').updateOne({_id:order._id,status:'pending'},{$set:{status:'paid',paidAt:now()}},{session});
-       if(result.modifiedCount===1){
+       const paidAt=now();
+       const result=await c('payments').updateOne({_id:order._id,status:'pending'},
+         {$set:{status:'paid',paidAt}},{session});
+       if(result.modifiedCount!==1)return;
+       if(order.purpose==='autotabrik'){
+         const due=new Date(paidAt.getTime()+14*60*60*1000);
+         const r=await c('autotabrik_orders').updateOne({
+           _id:order.serviceOrderId,owner:order.userId,status:'awaiting_payment',
+           paymentOrderId:order.orderId
+         },{$set:{status:'paid',paidAt,deadlineAt:due,updatedAt:paidAt}},{session});
+         if(r.modifiedCount!==1)throw new Error('AutoTabrik payment/order mismatch — transaction reverted');
+       }else{
          const user=await c('users').findOne({_id:order.userId},{session});
          if(!user||user.banned)throw new Error('User unavailable to activate Pro');
          const from=Math.max(Date.now(),user.proUntil?new Date(user.proUntil).getTime():0);
-         await c('users').updateOne({_id:user._id},{$set:{proUntil:new Date(from+order.days*day)}},{session});
+         await c('users').updateOne({_id:user._id},
+           {$set:{proUntil:new Date(from+order.days*day)}},{session});
        }
      },{maxCommitTimeMS:12000});
    }finally{await session.endSession()}
@@ -182,7 +193,7 @@ module.exports=function installIntegrations(app,deps){
    }
  }
  app.get('/api/payments/status/:orderId',deps.auth,asyncRoute(async(req,res)=>{
-   const filter={orderId:String(req.params.orderId),userId:req.user._id};
+   const filter={orderId:String(req.params.orderId),userId:req.user._id,purpose:{$ne:'autotabrik'}};
    let doc=await c('payments').findOne(filter);
    if(!doc)return reply(res,404,'Buyurtma topilmadi');
    if(doc.status==='pending'&&doc.paymentId){
@@ -204,7 +215,7 @@ module.exports=function installIntegrations(app,deps){
    if(health.status==='session_disconnected')return reply(res,503,'Hamyon do‘konining Telegram sessiyasi ulanmagan. Administrator @HamyonAPIBot → Sessiya bo‘limida ulab, so‘ng admin panelda Tekshirish tugmasini bosishi kerak.');
    if(health.status!=='connected')return reply(res,503,'Hamyon ulanishi hali admin paneldagi API sinovidan o‘tmagan. Pul o‘tkazishdan oldin administrator ulanishni tekshirishi kerak.');
    // Signed callbacks are recommended, but secure provider-status verification is also supported.
-   const current=await c('payments').findOne({userId:req.user._id,status:'pending',expiresAt:{$gt:now()}});
+   const current=await c('payments').findOne({userId:req.user._id,purpose:{$ne:'autotabrik'},status:'pending',expiresAt:{$gt:now()}});
    if(current)return res.json({orderId:current.orderId,amount:current.amount,card:current.card,days:current.days,expiresAt:current.expiresAt,status:'pending',reused:true});
    let lock,amount;
    for(let i=0;i<200;i++){
@@ -249,6 +260,125 @@ module.exports=function installIntegrations(app,deps){
      }
      return reply(res,502,'Hamyon buyurtmasini yaratishda xatolik: '+String(e.message).slice(0,170));
    }
+ }));
+
+ // Physical/off-platform personalized audio and video production service.
+ // A transfer is ALWAYS verified against the provider. Never mark paid on client input.
+ const AT_PRICES={audio:55000,video:75000};
+ const atPaymentResponse=p=>({
+   paymentOrderId:p.orderId,status:p.status,amount:p.amount,
+   basePrice:p.basePrice,card:p.status==='pending'?p.card:null,expiresAt:p.expiresAt
+ });
+ app.post('/api/autotabrik/payments/create',deps.auth,deps.authRate,asyncRoute(async(req,res)=>{
+   const serviceId=String(req.body.serviceOrderId||'');
+   if(!ObjectId.isValid(serviceId)||String(new ObjectId(serviceId))!==serviceId)
+     return reply(res,400,'Buyurtma identifikatori xato');
+   const serviceOrderId=new ObjectId(serviceId);
+   const item=await c('autotabrik_orders').findOne({
+     _id:serviceOrderId,owner:req.user._id
+   });
+   if(!item)return reply(res,404,'AutoTabrik buyurtmasi topilmadi');
+   if(item.status==='paid'||item.status==='in_progress'||item.status==='delivered')
+     return reply(res,409,'Bu buyurtma uchun to‘lov allaqachon tasdiqlangan');
+   if(item.status!=='awaiting_payment'||!Object.hasOwn(AT_PRICES,item.kind))
+     return reply(res,409,'Buyurtma hali to‘lovga tayyor emas');
+   const price=AT_PRICES[item.kind];
+   if(item.price!==price)return reply(res,409,'Buyurtmaning eski narxi o‘zgargan; yangi tarifda buyurtma yarating');
+   if(item.kind==='video'){
+     const count=await c('autotabrik_assets').countDocuments({orderId:serviceOrderId,kind:'photo'});
+     if(count<30)return reply(res,409,'Video buyurtma uchun kamida 30 ta surat kerak');
+   }
+   const h=hamyon();
+   if(!h.id||!h.key)return reply(res,503,'Hamyon to‘lov tizimi ulanmagan');
+   const health=await gatewayHealth();
+   if(health.status!=='connected')return reply(res,503,'Hamyon ulanishini administrator qayta tekshirishi kerak');
+   const existing=await c('payments').findOne({
+     purpose:'autotabrik',serviceOrderId,userId:req.user._id,
+     status:'pending',expiresAt:{$gt:now()}
+   });
+   if(existing)return res.json({...atPaymentResponse(existing),reused:true});
+   let amount=0;
+   for(let i=0;i<200;i++){
+     const candidate=price+i;
+     try{
+       await c('paymentAmounts').insertOne({
+         amount:candidate,createdAt:now(),expiresAt:new Date(Date.now()+15*60*1000)
+       });
+       amount=candidate;break;
+     }catch(e){if(e.code!==11000)throw e}
+   }
+   if(!amount)return reply(res,409,'Bu tarif uchun to‘lov joylari vaqtincha band. Keyinroq qayta urinib ko‘ring');
+   const orderId='ATB-'+crypto.randomBytes(10).toString('hex');
+   const doc={orderId,purpose:'autotabrik',serviceOrderId,userId:req.user._id,
+     basePrice:price,amount,status:'creating',createdAt:now(),
+     expiresAt:new Date(Date.now()+15*60*1000)};
+   await c('payments').insertOne(doc);
+   try{
+     const form=new URLSearchParams({
+       shop_id:h.id,shop_key:h.key,amount:String(amount),order_id:orderId
+     });
+     const request=await fetch('https://hamyon-api.uz/payment/create',{
+       method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+       body:form,signal:AbortSignal.timeout(18000)
+     });
+     const payload=await request.json().catch(()=>({}));
+     if(!request.ok||!payload.payment_id||!payload.card||Number(payload.amount)!==amount)
+       throw new Error(String(payload.message||payload.error||'Hamyon to‘lovni yaratmadi'));
+     const paymentId=String(payload.payment_id);
+     let state;
+     try{state=await getHamyonStatus({...doc,paymentId})}
+     catch(e){
+       await c('payments').updateOne({orderId,status:'creating'},
+         {$set:{paymentId,status:'unverified'}});
+       return reply(res,503,'To‘lov mustaqil tekshiruvdan o‘tmadi. Pul o‘tkazmang.');
+     }
+     if(!['pending','prepare','created','waiting'].includes(state)){
+       await c('payments').updateOne({orderId,status:'creating'},
+         {$set:{paymentId,status:'unverified'}});
+       return reply(res,503,'Hamyon to‘lov holati tasdiqlanmadi. Pul o‘tkazmang.');
+     }
+     await c('payments').updateOne({orderId,status:'creating'},
+       {$set:{paymentId,card:String(payload.card).slice(0,32),status:'pending'}});
+     await c('autotabrik_orders').updateOne({
+       _id:serviceOrderId,owner:req.user._id,status:'awaiting_payment'
+     },{$set:{paymentOrderId:orderId}});
+     res.status(201).json({
+       ...atPaymentResponse({...doc,card:String(payload.card),status:'pending'}),basePrice:price
+     });
+   }catch(e){
+     await c('payments').updateOne({orderId,status:'creating'},
+       {$set:{status:'failed',error:'Provider creation failed'}});
+     await c('paymentAmounts').deleteOne({amount});
+     if(sessionDisconnected(e.message)){
+       await saveGateway('session_disconnected');
+       return reply(res,503,'Hamyon sessiyasi uzilgan. Administrator sessiyani tiklashi kerak.');
+     }
+     return reply(res,502,'To‘lovni yaratib bo‘lmadi: '+e.message.slice(0,140));
+   }
+ }));
+ app.get('/api/autotabrik/payments/status/:orderId',deps.auth,asyncRoute(async(req,res)=>{
+   const key={purpose:'autotabrik',userId:req.user._id,
+     orderId:String(req.params.orderId)};
+   let payment=await c('payments').findOne(key);
+   if(!payment)return reply(res,404,'To‘lov topilmadi');
+   if(payment.status==='pending'&&payment.paymentId){
+     const prior=new Date(Date.now()-6500);
+     const lease=await c('payments').updateOne({
+       ...key,status:'pending',$or:[
+         {lastProviderCheckAt:{$exists:false}},
+         {lastProviderCheckAt:{$lt:prior}}
+       ]
+     },{$set:{lastProviderCheckAt:now()}});
+     if(lease.modifiedCount)await updatePaymentFromHamyon(payment);
+     payment=await c('payments').findOne(key);
+   }
+   const order=await c('autotabrik_orders').findOne({
+     _id:payment.serviceOrderId,owner:req.user._id
+   });
+   res.set('Cache-Control','no-store').json({
+     ...atPaymentResponse(payment),serviceStatus:order?.status||null,
+     paidAt:order?.paidAt||null,deadlineAt:order?.deadlineAt||null
+   });
  }));
  function validSignature(body){
    const h=hamyon();
