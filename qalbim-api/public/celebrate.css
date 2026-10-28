@@ -242,3 +242,29 @@ html[data-theme=dark] .cel-footnote{color:#b5a2bb}
 @media(prefers-reduced-motion:reduce){
  .cel-app *,.cel-editor-overlay *,.cel-mini-overlay *{animation:none!important;transition:none!important}
 }
+
+/* Home discovery, chat shortcuts and navigation polish */
+.cel-home-promo{display:flex;align-items:center;justify-content:space-between;gap:17px;margin:20px 0;padding:25px 29px;border-radius:21px;background:linear-gradient(110deg,#fff8fb,#f9e3ef);border:1px solid #f5d9e7;box-shadow:0 12px 26px #b7679420}
+.cel-home-promo h2{font:400 clamp(22px,2.6vw,31px)/1.14 "DM Serif Display",Georgia,serif;color:#3c1c45;margin:7px 0}
+.cel-home-promo p{font-size:11px;line-height:1.6;color:#8e7194;margin:0}
+.cel-home-promo button{display:flex;align-items:center;gap:8px;justify-content:center;flex:none;border:1px solid #c65d96;background:#bc4b83;color:white;padding:12px 15px;min-height:44px;border-radius:12px;font-size:11px;font-weight:800;cursor:pointer}
+.chatplay-actions{flex-wrap:wrap}
+.chatplay-celebrate{background:linear-gradient(125deg,#f8dbe9,#f4d9f0)!important;color:#9d4f80!important;border-color:#eac6dd!important}
+.chatplay-celebrate .ui-icon{color:#ab5c93}
+html .topbar #proBadge{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:30px;font-size:10px;cursor:pointer;padding:5px 11px;border-radius:99px;background:#f3edfd;color:#8c53c4;border:1px solid #e7d8f9}
+html .topbar #proBadge:hover{background:#eadffd}
+@media(min-width:768px){
+ html .bottomnav .navitem[data-a="tabrik"].active{background:#fff0f5;color:#d64f8f}
+ html[data-theme=dark] .bottomnav .navitem[data-a="tabrik"].active{background:#3f2a41;color:#f7b3d4}
+}
+@media(max-width:767px){
+ .cel-home-promo{padding:18px 14px;border-radius:16px;gap:11px;margin:14px 0}
+ .cel-home-promo h2{font-size:21px}
+ .cel-home-promo p{font-size:10px}
+ .cel-home-promo button{padding:10px 9px;min-width:97px;max-width:112px;font-size:9px;gap:5px}
+ .cel-home-promo button>.ui-icon{width:15px;height:15px}
+ html .bottomnav .navitem[data-a="tabrik"].active{background:#fbeaf2;color:#d44485}
+ html[data-theme=dark] .bottomnav .navitem[data-a="tabrik"].active{background:#3f2a41;color:#f7b3d4}
+ html .bottomnav .navitem{flex:1 1 0;min-width:0;max-width:none;font-size:9px;padding-left:2px;padding-right:2px}
+ html .bottomnav .navitem b .ui-icon{width:20px;height:20px}
+}
