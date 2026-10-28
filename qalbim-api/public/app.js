@@ -10,7 +10,7 @@ const copy=async s=>{try{await navigator.clipboard.writeText(s);notify('Havola n
 const notify=s=>{let el=$('toastHost');el.innerHTML='<div class="toast">'+esc(s)+'</div>';setTimeout(()=>el.innerHTML='',3200)};
 const err=e=>{notify(e.message||String(e))};
 const btn=(action,label,kind='alt')=>'<button class="btn '+kind+' sm" data-a="'+esc(action)+'">'+label+'</button>';
-const section=html=>{view.dataset.page=page();view.innerHTML=html;nav.hidden=!me;$('profileButton').hidden=!me;$('proBadge').hidden=!isPro();markNav()};
+const section=html=>{view.dataset.page=page();view.innerHTML=html;nav.hidden=!me;$('profileButton').hidden=!me;$('proBadge').hidden=false;markNav()};
 async function api(url,options={}){
  const opt={credentials:'same-origin',...options};
  if(opt.body&&!(opt.body instanceof FormData)&&typeof opt.body==='object'){opt.body=JSON.stringify(opt.body);opt.headers={'Content-Type':'application/json',...(opt.headers||{})}}
@@ -29,7 +29,7 @@ window.QalbimCelebrate.setup({api,notify,go,section,getMe:()=>me,getPartner:()=>
 function tabrik(){section(window.QalbimCelebrate.home());window.QalbimCelebrate.hydrate()}
 function publicCelebration(){return window.QalbimCelebrate.openPublic(location.pathname.split('/').pop())}
 function auth(){
- nav.hidden=true;$('profileButton').hidden=true;$('proBadge').hidden=true;
+ nav.hidden=true;$('profileButton').hidden=true;$('proBadge').hidden=false;
  let register=authMode==='register';
  section('<div class="auth-layout"><div class="auth-splash">'+hero('Senga bir maktubim bor','So‘zlarga sig‘magan tuyg‘ular uchun yaratilgan kichik, sehrli makon.')+
  '<div class="envelope"><div class="base"></div><div class="flap"></div><div class="fold"></div><div class="seal">♥</div></div>'+
@@ -45,6 +45,7 @@ function auth(){
 function home(){
  const E=window.QalbimExperience;
  section(E.homeWidget(me,partner)+
+   '<div class="cel-home-promo"><div><span class="cel-eyebrow">YANGI · TABRIKLAR</span><h2>Sevgilingizga bir lahza hadya eting.</h2><p>Chiroyli tabriknomalar, syurprizlar va bir bosishda chatga yuborish.</p></div><button data-a="tabrik">'+window.QalbimIcons.svg('heart',18)+' Tabrik yaratish '+window.QalbimIcons.svg('arrow',16)+'</button></div>'+
    '<div class="card faint" id="homeQuickStats"><div class="row between"><span class="muted small">♡ Sizning xotiralaringiz</span><strong>Yuklanmoqda...</strong></div></div>'+
    (me.role==='admin'?'<div class="card">'+btn('admin','⚙️ Admin panel','')+'</div>':''));
  api('/api/letters/mine').then(d=>{
