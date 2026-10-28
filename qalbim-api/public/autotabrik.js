@@ -15,7 +15,7 @@ const SKINS=[
  ['moon','Oyli tun','moon'],['cinema','Kino kadri','image'],['rose','Romantik','heart']
 ];
 const state={app:null,photos:[],preview:[],audio:null,audioUrl:null,recording:null,mic:null,recordChunks:[],
- recorder:null,run:null,sceneTime:0,animation:null,tab:'order',activeOrder:null,uploading:false,lastMsg:'',
+ recorder:null,run:null,sceneTime:0,animation:null,tab:'order',activeOrder:null,paymentTimer:null,uploading:false,lastMsg:'',
  orderStatus:'',canvas:null};
 const isAlive=()=>!!$('#atRoot');
 const notify=s=>{const el=$('#atAlert');if(el){el.textContent=s;el.hidden=false}else state.app?.notify(s)};
@@ -75,8 +75,8 @@ function orderForm(){
  '<div class="at-panel-heading at-inner-heading"><span class="at-heading-index">02 / 03</span><div><div class="at-kicker">TABRIK TURI</div>'+
  '<h2>Qanday tabrik bo‘lsin?</h2></div></div>'+
  '<div class="at-service-types">'+
- serviceCard('audio','Audio tabrik','Ovozli tabrikni tayyorlash', 'mic')+
- serviceCard('video','Video tabrik','30+ rasm bilan montaj','film')+
+ serviceCard('audio','Audio tabrik','55 000 so‘m · 14 soat ichida', 'mic')+
+ serviceCard('video','Video tabrik','75 000 so‘m · 14 soat ichida','film')+
  serviceCard('phone','Telefon orqali','Jonli operator tabrigi','phone-call')+'</div>'+
  '<div class="at-field-row"><label class="at-field"><span>Munosabat</span><select id="atEvent" name="occasion">'+EVENTS.map(([v,l])=>'<option value="'+v+'">'+l+'</option>').join('')+'</select></label>'+
  '<div class="at-field"><span>Video uchun suratlar</span><label class="at-upload">'+I('image-plus',18)+
@@ -89,7 +89,7 @@ function orderForm(){
  '<div class="at-panel-heading at-inner-heading"><span class="at-heading-index">03 / 03</span><div><div class="at-kicker">TASDIQLASH</div><h2>Buyurtmani yuborish</h2></div></div>'+
  '<label class="at-consent"><input type="checkbox" name="agreed" required><span>Tabrik egasining aloqa ma’lumoti va rasmlaridan ushbu buyurtma uchun foydalanishga huquqim borligini tasdiqlayman. '+ 
  'Ma’lumotlar ommaviy ko‘rsatilmaydi.</span></label>'+
- '<div class="at-order-bar"><div><strong>To‘lov hozir olinmaydi</strong><small>Audio va video narxlari operator tomonidan aniqlashtiriladi. Chek avtomatik tasdiqlash emas.</small></div>'+
+ '<div class="at-order-bar"><div><strong>Audio — 55 000 so‘m · Video — 75 000 so‘m</strong><small>Buyurtmadan keyin Hamyon orqali avto-to‘lov. Tasdiqlangan paytdan boshlab 14 soat ichida tayyorlanadi. Chek talab qilinmaydi.</small></div>'+
  '<button class="at-main-btn" id="atSubmitOrder" type="submit">'+I('send',17)+' Buyurtma yuborish</button></div>'+
  '<div class="at-progress" id="atOrderProgress" hidden><div class="at-progress-track"><span id="atOrderProgressLine"></span></div><p id="atOrderProgressText"></p></div>'+
  '</form></div>'+
@@ -173,15 +173,83 @@ async function submitOrder(ev){
   }
   const result=await state.app.api('/api/autotabrik/orders/'+encodeURIComponent(id)+'/submit',{method:'POST',body:{}});
   state.activeOrder=null;state.orderStatus=result.status;
-  $('#atContent').innerHTML='<div class="at-success"><span>'+I('check-circle',47)+'</span><h2>Buyurtma qabul qilindi!</h2>'+
-  '<p>Buyurtma raqami: <strong>'+esc(id)+'</strong></p>'+
-  '<p>Holati: <b>To‘lovni tasdiqlash kutilmoqda</b>. Operator buyurtmani ko‘rib chiqadi; chekni keyinroq shaxsiy buyurtma sahifasidan yuklash mumkin.</p>'+
-  '<button class="at-main-btn" data-at-tab="orders">'+I('folder',18)+' Buyurtmalarim</button></div>';
+  if(body.kind==='phone'){
+    $('#atContent').innerHTML='<div class="at-success"><span>'+I('check-circle',47)+'</span><h2>Buyurtmangiz qabul qilindi</h2>'+
+      '<p>Telefon orqali jonli tabriklash narxi operator bilan alohida kelishiladi.</p>'+
+      '<p>Buyurtma: <strong>'+esc(id)+'</strong></p>'+
+      '<button class="at-main-btn" data-at-tab="orders">Buyurtmalarim</button></div>';
+  }else{
+    try{
+      const payment=await state.app.api('/api/autotabrik/payments/create',
+        {method:'POST',body:{serviceOrderId:id}});
+      showCheckout(id,payment);
+    }catch(error){
+      showPaymentError(id,error.message);
+    }
+  }
  }catch(e){
   $('#atOrderProgressText').textContent='Xatolik: '+e.message;
   notify('Yuklash to‘xtadi: '+e.message+' · agar buyurtma yaratilgan bo‘lsa, uni buyurtmalar ro‘yxatida ko‘rish mumkin.');
   state.activeOrder=null;
  }finally{state.uploading=false;if(b)b.disabled=false}
+}
+function money(n){return Number(n||0).toLocaleString('ru-RU')+' so‘m'}
+function stopPolling(){if(state.paymentTimer)clearInterval(state.paymentTimer);state.paymentTimer=null}
+function paymentMessage(id,inner){
+ const box=$('#atContent');if(!box)return;
+ box.innerHTML='<section class="at-checkout"><div class="at-checkout-head">'+I('credit-card',29)+
+ '<span class="at-kicker">HAMYON / AVTOTO‘LOV</span><h2>AutoTabrik to‘lovi</h2>'+
+ '<p>Buyurtma: <strong>'+esc(id)+'</strong></p></div>'+inner+
+ '<button class="at-outline-btn" data-at-tab="orders">'+I('folder',17)+' Buyurtmalarim</button></section>';
+}
+function showPaymentError(id,error){
+ stopPolling();
+ paymentMessage(id,'<div class="at-payment-warning">'+I('shield',19)+' To‘lov yaratilmadi: '+esc(error)+
+ '</div><p>Buyurtmangiz saqlangan. Pul o‘tkazmang; to‘lovni qayta ochish uchun tugmani bosing.</p>'+
+ '<button class="at-main-btn" data-at-pay="'+esc(id)+'">'+I('refresh',16)+' To‘lovni qayta ochish</button>');
+}
+function showCheckout(id,pay){
+ stopPolling();
+ if(pay.status==='paid'){showPaid(id,pay);return}
+ if(pay.status!=='pending'||!pay.card){showPaymentError(id,'To‘lov hozircha tayyor emas');return}
+ const expired=pay.expiresAt&&new Date(pay.expiresAt).getTime()<Date.now();
+ if(expired){showPaymentError(id,'Hisob muddati tugagan, yangi to‘lov yarating');return}
+ const note=pay.amount!==pay.basePrice?
+  '<p class="at-payment-warning">To‘lovlarni avtomatik ajratish uchun '+money(pay.basePrice)+' tarifiga kichik noyob summa qo‘shildi. Kartaga aynan quyidagi summani o‘tkazing.</p>':'';
+ paymentMessage(id,'<div class="at-pay-pricetag">To‘lanadigan aniq summa <strong>'+money(pay.amount)+'</strong></div>'+
+ '<div class="at-pay-account"><small>Hamyon to‘lov kartasi</small><strong>'+esc(pay.card)+'</strong>'+
+ '<button class="at-outline-btn" data-at-copy="'+esc(pay.card)+'">'+I('copy',16)+' Kartani nusxalash</button></div>'+
+ '<p class="at-pay-note">Bank ilovasida <strong>aynan '+money(pay.amount)+'</strong> o‘tkazing. Chek yuborish shart emas. Pul kelgani Hamyon orqali avtomatik tekshiriladi.</p>'+note+
+ '<p class="at-pay-remaining">Hisob muddati: '+new Date(pay.expiresAt).toLocaleString('uz-UZ')+'</p>'+
+ '<div class="at-pending-state">'+I('clock',19)+' <span id="atPayStatus">To‘lov tasdiqlanishi kutilmoqda…</span></div>'+
+ '<button class="at-main-btn" data-at-check="'+esc(pay.paymentOrderId)+'" data-at-for="'+esc(id)+'">'+I('refresh',16)+' To‘lovni tekshirish</button>');
+ state.paymentTimer=setInterval(()=>{if(document.visibilityState==='visible')checkPayment(pay.paymentOrderId,id,true)},7000);
+}
+function showPaid(id,result){
+ stopPolling();
+ let due='';
+ if(result.deadlineAt)due='<p class="at-deadline">'+I('clock',17)+' Tayyorlash muddati: <strong>'+
+   esc(new Date(result.deadlineAt).toLocaleString('uz-UZ'))+'</strong> gacha</p>';
+ paymentMessage(id,'<div class="at-success-payment">'+I('check-circle',45)+'<h3>To‘lov tasdiqlandi!</h3>'+
+ '<p>Buyurtmangiz '+money(result.basePrice||result.amount)+' uchun qabul qilindi.</p>'+
+ '<p>Tabrik to‘lov tasdiqlangan paytdan boshlab <strong>14 soat ichida</strong> tayyorlanadi.</p>'+due+'</div>');
+}
+async function createPayment(id){
+ try{const data=await state.app.api('/api/autotabrik/payments/create',{method:'POST',body:{serviceOrderId:id}});
+  showCheckout(id,data)
+ }catch(e){showPaymentError(id,e.message)}
+}
+async function checkPayment(paymentId,id,quiet=false){
+ try{
+  const result=await state.app.api('/api/autotabrik/payments/status/'+encodeURIComponent(paymentId));
+  if(result.status==='paid'||result.serviceStatus==='paid'||result.serviceStatus==='in_progress'||result.serviceStatus==='delivered'){
+   showPaid(id,result);return;
+  }
+  if(result.status==='cancel'||result.status==='failed'||result.status==='unverified'){
+   showPaymentError(id,'Ushbu to‘lov aktiv emas. Yangi to‘lov yarating.');return;
+  }
+  const text=$('#atPayStatus');if(text)text.textContent='Hamyon orqali tekshirilmoqda — hali tasdiqlanmagan';
+ }catch(e){if(!quiet)notify('Tekshirib bo‘lmadi: '+e.message)}
 }
 function audioPlayerHTML(){
  return '<div class="at-audio-box"><div class="at-audio-icon">'+I('mic',30)+'</div><div><strong>Ovozli tabrik</strong>'+
@@ -219,33 +287,36 @@ function orders(){
  const me=state.app?.getMe?.();
  return '<div class="at-card"><div class="at-panel-heading"><span class="at-heading-index">'+I('folder',21)+'</span>'+
  '<div><div class="at-kicker">BUYURTMALAR TARIXI</div><h2>Mening buyurtmalarim</h2>'+
- '<p>Buyurtma holati, suratlar soni va to‘lov chekini shu yerdan kuzating.</p></div></div>'+
+ '<p>To‘lov holati va 14 soatlik tayyorlash muddati shu yerda ko‘rsatiladi. Chek kerak emas.</p></div></div>'+
  '<div id="atOrderList" class="at-order-list">'+(me?'Yuklanmoqda...':'Ko‘rish uchun hisobingizga kiring.')+'</div>'+
  (me?.role==='admin'?'<div class="at-admin-section"><h3>'+I('shield',18)+' Admin / Operator buyurtmalari</h3><div id="atAdminOrders">Yuklanmoqda...</div></div>':'')+
  '</div>';
 }
 function statusName(x){return ({
- draft:'Qoralama / rasmlar kutilmoqda',awaiting_payment:'To‘lov kutilmoqda',
- payment_review:'Chek tekshirilmoqda',paid:'To‘lov tasdiqlandi',in_progress:'Tayyorlanmoqda',
- delivered:'Yetkazilgan',cancelled:'Bekor qilingan'
+ draft:'Qoralama',awaiting_payment:'To‘lov kutilmoqda',awaiting_quote:'Operator narxni aytadi',
+ paid:'To‘lov tasdiqlandi · 14 soat',in_progress:'Tayyorlanmoqda',delivered:'Tayyor / yetkazilgan',cancelled:'Bekor qilingan'
  })[x]||x}
 function orderCard(o,admin=false){
- return '<div class="at-order-item"><div class="at-order-head"><strong>'+esc(o.recipient)+' · '+esc(o.kind==='video'?'Video':o.kind==='audio'?'Audio':'Telefon')+'</strong>'+
- '<span class="at-order-badge" data-status="'+esc(o.status)+'">'+esc(statusName(o.status))+'</span></div>'+
- '<div class="at-order-meta"><span>'+I('calendar',15)+' '+new Date(o.createdAt).toLocaleDateString('uz-UZ')+'</span>'+
- '<span>'+I('images',15)+' '+(o.photosCount||0)+' ta surat</span>'+
- '<span>'+I('user',15)+' '+esc(o.fromName)+'</span></div>'+
- (admin?'<div class="at-order-personal">'+esc(o.recipientPhone)+' · '+esc(o.address)+' · '+esc(o.message)+'</div>'+
- '<label class="at-field"><span>Holatini o‘zgartirish</span><select data-at-admin-status="'+o.id+'">'+
- ['awaiting_payment','payment_review','paid','in_progress','delivered','cancelled'].map(x=>
- '<option value="'+x+'" '+(o.status===x?'selected':'')+'>'+statusName(x)+'</option>').join('')+'</select></label>'+
- '<button class="at-outline-btn" data-at-admin-save="'+o.id+'">Saqlash</button>'+
- '<button class="at-outline-btn" data-at-assets="'+o.id+'">Rasmlar / Chek</button>':
- '<div class="at-order-actions"><button class="at-outline-btn" data-at-assets="'+o.id+'">'+I('images',16)+' Rasmlar</button>'+
- (!o.hasReceipt&&o.status!=='cancelled'&&o.status!=='delivered'?
- '<label class="at-outline-btn">'+I('receipt',16)+' Chek yuklash<input type="file" data-at-receipt="'+o.id+'" accept="image/jpeg,image/png,image/webp" hidden></label>':
- o.hasReceipt?'<span class="at-receipt-flag">'+I('check',15)+' Chek yuklangan (tekshiruvda)</span>':'')+
- (o.status==='draft'&&o.kind==='video'?'<small>Rasmlar yetmasa, yangi buyurtmada qayta yuboring.</small>':'')+'</div>')+'</div>';
+ const price=o.price?money(o.price):'Kelishiladi';
+ return '<div class="at-order-item"><div class="at-order-head"><strong>'+
+  esc(o.recipient)+' · '+esc(o.kind==='video'?'Video tabrik':o.kind==='audio'?'Audio tabrik':'Telefon tabrik')+'</strong>'+
+  '<span class="at-order-badge" data-status="'+esc(o.status)+'">'+esc(statusName(o.status))+'</span></div>'+
+  '<div class="at-order-meta"><span>'+I('calendar',15)+' '+new Date(o.createdAt).toLocaleDateString('uz-UZ')+'</span>'+
+  '<span>'+I('images',15)+' '+(o.photosCount||0)+' surat</span>'+
+  '<span>'+I('credit-card',15)+' '+esc(price)+'</span></div>'+
+  (o.deadlineAt?'<div class="at-deadline">'+I('clock',17)+' 14 soatlik muddat: <strong>'+
+   esc(new Date(o.deadlineAt).toLocaleString('uz-UZ'))+' gacha</strong></div>':'')+
+  (admin?'<div class="at-order-personal">'+esc(o.recipientPhone)+' · '+esc(o.address)+' · '+esc(o.message)+'</div>'+
+   '<label class="at-field"><span>Operator holati</span><select data-at-admin-status="'+o.id+'">'+
+   ['paid','in_progress','delivered','cancelled'].map(x=>'<option value="'+x+'" '+(x===o.status?'selected':'')+
+     '>'+statusName(x)+'</option>').join('')+'</select></label>'+
+   '<button class="at-outline-btn" data-at-admin-save="'+o.id+'">Saqlash</button>'+
+   '<button class="at-outline-btn" data-at-assets="'+o.id+'">Suratlar</button>':
+   '<div class="at-order-actions"><button class="at-outline-btn" data-at-assets="'+o.id+'">'+I('images',16)+' Rasmlar</button>'+
+   (o.status==='awaiting_payment'?'<button class="at-main-btn" data-at-pay="'+o.id+'">'+I('credit-card',17)+' '+money(o.price)+' to‘lash</button>':'')+
+   (o.paymentOrderId&&o.status==='awaiting_payment'?'<button class="at-outline-btn" data-at-check="'+esc(o.paymentOrderId)+
+     '" data-at-for="'+esc(o.id)+'">'+I('refresh',16)+' To‘lov holatini tekshirish</button>':'')+
+   '</div>')+'</div>';
 }
 async function loadOrders(){
  const list=$('#atOrderList');if(!list)return;
@@ -269,15 +340,9 @@ function openAssets(id){
   const el=document.createElement('div');el.className='at-asset-panel';
   el.innerHTML=result.assets?.length?result.assets.map(a=>'<a target="_blank" rel="noopener" href="/api/autotabrik/assets/'+
     encodeURIComponent(a.id)+'"><img src="/api/autotabrik/assets/'+encodeURIComponent(a.id)+'" alt="'+
-    (a.kind==='receipt'?'To‘lov cheki':'Rasm')+'" loading="lazy"><small>'+ (a.kind==='receipt'?'Chek':'Foto')+'</small></a>').join(''):'Fayllar yo‘q';
+    'Surat'+'" loading="lazy"><small>'+ 'Foto'+'</small></a>').join(''):'Fayllar yo‘q';
   target.appendChild(el);
  }).catch(e=>notify(e.message));
-}
-async function receipt(id,file){
- if(!file)return;
- try{await postImage('/api/autotabrik/orders/'+encodeURIComponent(id)+'/receipt',file);
-  notify('Chek qabul qilindi. To‘lov tekshiruvda, hali tasdiqlanmagan.');loadOrders()}
- catch(e){notify(e.message)}
 }
 async function adminSave(id){
  const node=document.querySelector('[data-at-admin-status="'+id+'"]');if(!node)return;
@@ -340,7 +405,7 @@ function runPreview(){
 }
 function openTab(t){
  if(state.run&&t!=='studio'){notify('Video yozilayotganda sahifani o‘zgartirmang.');return}
- state.tab=t;
+ stopPolling();state.tab=t;
  document.querySelectorAll('[data-at-tab]').forEach(b=>{const selected=b.dataset.atTab===t;b.classList.toggle('active',selected);
  b.setAttribute('aria-selected',String(selected))});
  $('#atContent').innerHTML=t==='order'?orderForm():t==='studio'?studio():orders();
@@ -448,7 +513,7 @@ function videoStop(){
  try{r.audio.pause()}catch(e){}
 }
 function cleanup(){
- cancelAnimationFrame(state.animation);state.animation=null;
+ stopPolling();cancelAnimationFrame(state.animation);state.animation=null;
  clearInterval(state.recordInterval);
  recordStop();state.mic?.getTracks().forEach(t=>t.stop());state.mic=null;
  if(state.run)videoStop();
@@ -460,6 +525,9 @@ function activate(){
  const root=$('#atRoot');if(!root)return;
  root.addEventListener('click',e=>{
   const tab=e.target.closest('[data-at-tab]');if(tab){openTab(tab.dataset.atTab);return}
+  const pay=e.target.closest('[data-at-pay]');if(pay){createPayment(pay.dataset.atPay);return}
+  const check=e.target.closest('[data-at-check]');if(check){checkPayment(check.dataset.atCheck,check.dataset.atFor);return}
+  const copy=e.target.closest('[data-at-copy]');if(copy){navigator.clipboard.writeText(copy.dataset.atCopy).then(()=>notify('Karta raqami nusxalandi')).catch(()=>window.prompt('To‘lov kartasi',copy.dataset.atCopy));return}
   const generate=e.target.closest('#atGenerateText');
   if(generate){$('#atMessage').value=preset();notify('Tahrirlash mumkin bo‘lgan namunaviy matn yaratildi.');return}
   const skin=e.target.closest('[data-at-skin]');if(skin){
@@ -477,7 +545,6 @@ function activate(){
  root.addEventListener('change',e=>{
   if(e.target.id==='atPhotoFiles'||e.target.id==='atStudioPhotos')setupImages(e.target.files);
   if(e.target.id==='atAudioFile')audioChosen(e.target.files[0]);
-  if(e.target.matches('[data-at-receipt]'))receipt(e.target.dataset.atReceipt,e.target.files[0]);
   if(e.target.name==='ratio')draw(state.sceneTime);
  });
 }
