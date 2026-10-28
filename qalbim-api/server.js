@@ -212,6 +212,7 @@ const integrations=require('./integrations')(app,{
  showUser,cookie,phone,clean,authRate:rate
 });
 require('./celebrations')({app,auth,ready,wrap,c,oid,bad,clean,date});
+require('./autotabrik-orders')({app,auth,adm,wrap,c,oid,bad,clean,date});
 const dir=path.join(__dirname,'public');require('./couple-games')({app,auth,wrap,c,pro,oid,bad});
 app.use(express.static(dir,{extensions:['html']}));
 app.get(['/t/:id','/l/:id','/invite/:token','/u/:id','/'],(req,res)=>res.sendFile(path.join(dir,'index.html')));
@@ -221,7 +222,7 @@ async function connect(){
  if(!process.env.MONGODB_URI){dbError='MongoDB sozlanmagan: Render Environment bo‘limida MONGODB_URI kerak';console.warn(dbError);return}
  try{
   const client=new MongoClient(process.env.MONGODB_URI,{serverSelectionTimeoutMS:12000,maxPoolSize:10});await client.connect();mongoClient=client;db=client.db(process.env.MONGODB_DB||'qalbim');
-  await Promise.all([colUser().createIndex({phone:1},{unique:true}),c('messages').createIndex({expiresAt:1},{expireAfterSeconds:0}),c('invites').createIndex({expiresAt:1},{expireAfterSeconds:0}),c('reactions').createIndex({letterId:1,userId:1},{unique:true}),c('letters').createIndex({owner:1}),c('celebrations').createIndex({owner:1,createdAt:-1}),c('messages').createIndex({celebrationId:1,from:1,to:1},{unique:true,partialFilterExpression:{kind:'celebration'}}),c('photos').createIndex({owner:1}),c('couple_game_rooms').createIndex({expiresAt:1},{expireAfterSeconds:0}),c('couple_game_rooms').createIndex({pairKey:1,status:1,createdAt:-1})]);
+  await Promise.all([colUser().createIndex({phone:1},{unique:true}),c('messages').createIndex({expiresAt:1},{expireAfterSeconds:0}),c('invites').createIndex({expiresAt:1},{expireAfterSeconds:0}),c('reactions').createIndex({letterId:1,userId:1},{unique:true}),c('letters').createIndex({owner:1}),c('celebrations').createIndex({owner:1,createdAt:-1}),c('autotabrik_orders').createIndex({owner:1,createdAt:-1}),c('autotabrik_assets').createIndex({orderId:1,kind:1}),c('autotabrik_assets').createIndex({expiresAt:1},{expireAfterSeconds:0}),c('messages').createIndex({celebrationId:1,from:1,to:1},{unique:true,partialFilterExpression:{kind:'celebration'}}),c('photos').createIndex({owner:1}),c('couple_game_rooms').createIndex({expiresAt:1},{expireAfterSeconds:0}),c('couple_game_rooms').createIndex({pairKey:1,status:1,createdAt:-1})]);
   if(process.env.ADMIN_PASSWORD&&process.env.ADMIN_PHONE){
     const requestedPhone=process.env.ADMIN_PHONE==='admin'?'admin':phone(process.env.ADMIN_PHONE);
     const adminPassword=process.env.ADMIN_PASSWORD;
