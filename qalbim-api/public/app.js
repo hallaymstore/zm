@@ -19,14 +19,16 @@ async function api(url,options={}){
 }
 function modal(html){host.hidden=false;host.innerHTML='<div class="modal" role="dialog" aria-modal="true"><div class="row between"><strong style="font:600 23px Playfair Display,serif">Qalbim ♡</strong>'+btn('closeModal','✕')+'</div>'+html+'</div>'}
 function closeModal(){host.hidden=true;host.innerHTML=''}
-function markNav(){document.querySelectorAll('[data-a]').forEach(n=>{if(!n.classList.contains('navitem'))return;let page=location.pathname,tab=new URLSearchParams(location.search).get('view'),x=n.dataset.a;n.classList.toggle('active',(x==='chats'&&page.includes('chat'))||(x==='letters'&&tab==='letters')||(x==='games'&&tab==='games')||(x==='tabrik'&&tab==='tabrik')||(x==='pro'&&tab==='pro')||(x==='profile'&&page.includes('profile'))||(x==='home'&&page==='/'&&!tab))})}
+function markNav(){document.querySelectorAll('[data-a]').forEach(n=>{if(!n.classList.contains('navitem'))return;let page=location.pathname,tab=new URLSearchParams(location.search).get('view'),x=n.dataset.a;n.classList.toggle('active',(x==='chats'&&page.includes('chat'))||(x==='letters'&&tab==='letters')||(x==='games'&&tab==='games')||(x==='tabrik'&&tab==='tabrik')||(x==='autotabrik'&&tab==='autotabrik')||(x==='pro'&&tab==='pro')||(x==='profile'&&page.includes('profile'))||(x==='home'&&page==='/'&&!tab))})}
 async function refresh(){try{const v=await api('/api/me');me=v.user;partner=v.partner}catch(e){me=null;partner=null}}
 function page(){let p=location.pathname,tab=new URLSearchParams(location.search).get('view');if(p.startsWith('/t/'))return 'celebration';if(p.startsWith('/l/'))return 'letter';if(p.startsWith('/invite/'))return 'invite';if(p.includes('admin'))return 'admin';if(p.includes('chats.html'))return 'chats';if(p.includes('chat.html'))return 'chat';if(p.startsWith('/u/'))return 'publicProfile';if(p.includes('profile'))return 'profile';return tab||'home'}
-function go(where){let routes={home:'/',tabrik:'/?view=tabrik',letters:'/?view=letters',create:'/?view=create',games:'/?view=games',pro:'/?view=pro',chats:'/chats.html',chat:'/chat.html',profile:'/profile.html',admin:'/admin.html'};location.href=routes[where]||where}
+function go(where){let routes={home:'/',tabrik:'/?view=tabrik',autotabrik:'/?view=autotabrik',letters:'/?view=letters',create:'/?view=create',games:'/?view=games',pro:'/?view=pro',chats:'/chats.html',chat:'/chat.html',profile:'/profile.html',admin:'/admin.html'};location.href=routes[where]||where}
 function hero(txt,sub){return '<div class="hero"><div class="spark">'+window.QalbimIcons.svg('mail',28)+'</div><p class="eyebrow">Ikki qalb — bir hikoya</p><h1>'+txt+'</h1><p>'+sub+'</p></div>'}
 const extra=window.QalbimIntegrations({api,section,hero,btn,esc,notify,go,copy,modal,closeModal,refresh,getMe:()=>me});
 window.QalbimCelebrate.setup({api,notify,go,section,getMe:()=>me,getPartner:()=>partner});
+window.QalbimAutoTabrik.setup({api,notify,go,getMe:()=>me});
 function tabrik(){section(window.QalbimCelebrate.home());window.QalbimCelebrate.hydrate();window.QalbimCelebrate.resumeDraft()}
+function autotabrik(){section(window.QalbimAutoTabrik.build());window.QalbimAutoTabrik.activate()}
 function publicCelebration(){return window.QalbimCelebrate.openPublic(location.pathname.split('/').pop())}
 function auth(){
  nav.hidden=true;$('profileButton').hidden=true;$('proBadge').hidden=false;
@@ -46,7 +48,10 @@ function home(){
  const E=window.QalbimExperience;
  section(E.homeWidget(me,partner)+
    '<div class="cel-home-promo"><div><span class="cel-eyebrow">YANGI · TABRIKLAR</span><h2>Sevgilingizga bir lahza hadya eting.</h2><p>Chiroyli tabriknomalar, syurprizlar va bir bosishda chatga yuborish.</p></div><button data-a="tabrik">'+window.QalbimIcons.svg('heart',18)+' Tabrik yaratish '+window.QalbimIcons.svg('arrow',16)+'</button></div>'+
-   '<div class="card faint" id="homeQuickStats"><div class="row between"><span class="muted small">♡ Sizning xotiralaringiz</span><strong>Yuklanmoqda...</strong></div></div>'+
+   '<div class="cel-home-promo at-home-entry"><div><span class="cel-eyebrow">AUTO TABRIK / YANGI XIZMAT</span>'+
+ '<h2>Audio yoki video tabrik buyurtma qiling.</h2><p>Audio 55 000 so‘m, video 75 000 so‘m. Hamyon avto-to‘lovidan keyin 14 soat ichida tayyorlanadi.</p></div>'+
+ '<button data-a="autotabrik">'+window.QalbimIcons.svg('mic',18)+' AutoTabrik '+window.QalbimIcons.svg('arrow',16)+'</button></div>'+
+ '<div class="card faint" id="homeQuickStats"><div class="row between"><span class="muted small">♡ Sizning xotiralaringiz</span><strong>Yuklanmoqda...</strong></div></div>'+
    (me.role==='admin'?'<div class="card">'+btn('admin','⚙️ Admin panel','')+'</div>':''));
  api('/api/letters/mine').then(d=>{
    const el=$('homeQuickStats');
@@ -282,10 +287,10 @@ async function act(action,node){
  if(action==='closeModal')return closeModal();
  if(action==='chatPlay')return window.QalbimChatGames.openPicker();
  if(action==='loginMode'||action==='registerMode'){authMode=action==='loginMode'?'login':'register';return auth()}
- if(['home','letters','create','games','tabrik','pro','chats','chat','profile','admin'].includes(action)){leaveChat();return go(action)}
+ if(['home','letters','create','games','tabrik','autotabrik','pro','chats','chat','profile','admin'].includes(action)){leaveChat();return go(action)}
  if(action==='loginGo')return go('/');
  if(action==='pair')return pair();
- if(action==='logout'){await api('/api/auth/logout',{method:'POST'});me=null;go('/');return}
+ if(action==='logout'){window.QalbimAutoTabrik?.cleanup();await api('/api/auth/logout',{method:'POST'});me=null;go('/');return}
  if(action==='theme'){theme=Number(node.dataset.id);window.QalbimExperience.changeTheme(theme);return}
  if(action==='openLetter')return showLetter();
  if(action.startsWith('openLetter:'))return go('/l/'+action.split(':')[1]);
@@ -358,6 +363,7 @@ document.addEventListener('error',e=>{if(e.target.tagName==='IMG'&&e.target.src.
  if(p==='publicProfile')return publicProfile();
  if(p==='games')return arcade(); // Public playable demos; no registration required
  if(p==='tabrik')return tabrik(); // Public celebration catalog; login needed only to save
+ if(p==='autotabrik')return autotabrik(); // Public service catalog; login required to purchase
  if(!me)return auth();
  if(p==='admin')return adminPage();
  if(p==='chat')return chat();
