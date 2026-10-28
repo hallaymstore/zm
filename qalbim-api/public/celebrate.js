@@ -11,7 +11,7 @@ const EVENTS=[
  {id:'miss',name:'Sog‘indim',icon:'mail',title:'Seni juda sog‘indim',text:'Masofalar uzoq bo‘lsa ham qalbimiz yaqin. Seni ko‘rish va bag‘rimga bosish lahzasini kutyapman.'},
  {id:'achievement',name:'Yutuq va quvonch',icon:'star',title:'Sen bilan faxrlanaman!',text:'Harakatlaring samarasini ko‘rish naqadar quvonchli! Yutuqlaring ko‘paysin, doim yoningdaman.'}
 ];
-const SKINS=[{id:'blush',name:'Blush',hex:'#f6a4c0'},{id:'lilac',name:'Lavanda',hex:'#bfa6ec'},{id:'pearl',name:'Marvarid',hex:'#eac7ad'},{id:'rose',name:'Rose',hex:'#c65e83'},{id:'night',name:'Moonlight',hex:'#685483'}];
+const SKINS=window.QalbimDesigns.TEMPLATES;
 let api,notify,go,getMe,getPartner,section;
 let saved=[],draft=null,editing=false,busy=false,opened=null;
 function setup(x){({api,notify,go,getMe,getPartner,section}=x)}
@@ -78,21 +78,27 @@ async function hydrate(){
 }
 function defaultDraft(event='love'){
  const found=EVENTS.find(x=>x.id===event)||EVENTS[0];
- const user=getMe?.();return {event:found.id,skin:'blush',title:found.title,message:found.text,to:getPartner?.()?.name||'Sevgilim',
+ const user=getMe?.();return {event:found.id,skin:window.QalbimDesigns.DEFAULTS[found.id]||'blush',title:found.title,message:found.text,to:getPartner?.()?.name||'Sevgilim',
  from:user?.name||'Men',secret:''};
 }
 function previewHTML(d,full=false){
  const found=EVENTS.find(x=>x.id===d.event)||EVENTS[0];
- return '<div class="cel-preview-card skin-'+esc(d.skin)+' '+(full?'cel-full-card':'')+'">'+
- '<span class="cel-preview-pill">'+ico(found.icon,16)+' '+esc(found.name)+'</span>'+
- '<div class="cel-preview-icon">'+ico('heart',26)+'</div>'+
- '<h2>'+esc(d.title||'Tabriklaymiz!')+'</h2>'+
- '<div class="cel-preview-art"><img src="/celebration-hearts.svg" alt="" loading="lazy"></div>'+
+ const design=SKINS.find(x=>x.id===d.skin)||SKINS[0];
+ const label='<span class="cel-preview-pill">'+ico(found.icon,16)+' '+esc(found.name)+'</span>';
+ const art='<div class="cel-preview-art">'+window.QalbimDesigns.asset(design.kind)+'</div>';
+ const content='<div class="cel-preview-content">'+
  '<div class="cel-preview-to">AZIZ <strong>'+esc(d.to||'Sevgilim')+'</strong></div>'+
- '<p class="cel-preview-message">'+esc(d.message||'Tabrigingiz matni...')+'</p>'+
- '<div class="cel-preview-bottom"><span>QALBIM / MADE WITH LOVE</span><em>'+esc(d.from||'Men')+'</em></div>'+
- (d.secret?'<button type="button" class="cel-secret-button" data-cel="reveal">'+ico('gift',18)+' Maxsus syurprizni ochish</button>'+
- '<div class="cel-secret-message" hidden><span>'+ico('heart',18)+' Faqat sen uchun</span><p>'+esc(d.secret)+'</p></div>':'')+
+ '<p class="cel-preview-message">'+esc(d.message||'Tabrigingiz matni...')+'</p></div>';
+ const footer='<div class="cel-preview-bottom"><span>QALBIM / '+esc(design.badge)+'</span><em>'+esc(d.from||'Men')+'</em></div>';
+ const surprise=d.secret?'<button type="button" class="cel-secret-button" data-cel="reveal" aria-expanded="false">'+ico('gift',18)+' Maxsus syurprizni ochish</button>'+
+ '<div class="cel-secret-message" hidden><span>'+ico('heart',18)+' Faqat sen uchun</span><p>'+esc(d.secret)+'</p></div>':'';
+ const category='<div class="cel-design-category">'+esc(design.name)+' · '+esc(design.badge)+'</div>';
+ return '<div class="cel-preview-card skin-'+design.id+' '+(full?'cel-full-card':'')+'" data-template="'+design.id+'">'+
+ '<div class="cel-corner-top" aria-hidden="true"></div><div class="cel-corner-bottom" aria-hidden="true"></div>'+
+ '<div class="cel-preview-identity">'+label+category+'</div>'+
+ '<div class="cel-preview-icon">'+ico(found.icon,26)+'</div>'+
+ '<h2>'+esc(d.title||'Tabriklaymiz!')+'</h2>'+
+ art+content+footer+surprise+
  '</div>';
 }
 function composer(event='love'){
@@ -120,9 +126,12 @@ function composer(event='love'){
  '<label><span>Tabrik matni</span><textarea name="message" maxlength="900" minlength="8" required rows="5">'+esc(draft.message)+'</textarea>'+
  '<small class="cel-count" id="celCount">'+draft.message.length+' / 900</small></label>'+
  '<label><span>Maxfiy syurpriz (ixtiyoriy)</span><textarea name="secret" maxlength="220" rows="2" placeholder="Tabrik ochilganda sovg‘a tugmasi orqali chiqadi..."></textarea></label>'+
- '<div class="cel-form-title"><span class="cel-form-step">03</span><strong>Rang va kayfiyat</strong></div>'+
- '<div class="cel-skin-row">'+SKINS.map(t=>'<button type="button" data-cel="skin" data-skin="'+t.id+'" class="'+(t.id===draft.skin?'active':'')+'" aria-label="'+esc(t.name)+'" aria-pressed="'+(t.id===draft.skin)+'">'+
- '<span style="--skin-dot:'+t.hex+'"></span><small>'+t.name+'</small></button>').join('')+'</div>'+
+ '<div class="cel-form-title"><span class="cel-form-step">03</span><strong>Sahifa dizaynini tanlang</strong><small class="cel-template-count">12 xil kompozitsiya</small></div>'+
+ '<p class="cel-template-explain">Har bir shablonning tasviri, matn joylashuvi, bezagi va animatsiyasi boshqacha. Kichik namunani bosib sinang.</p>'+
+ '<div class="cel-template-subtitle">'+ico('sparkle',15)+' Ushbu tabrik uchun mos</div>'+
+ '<div class="cel-design-gallery">'+SKINS.filter(t=>t.events.includes(draft.event)).map(t=>window.QalbimDesigns.galleryThumb(t,t.id===draft.skin)).join('')+'</div>'+
+ '<div class="cel-template-subtitle">'+ico('layers',15)+' Barcha shablonlar</div>'+
+ '<div class="cel-design-gallery cel-all-designs">'+SKINS.filter(t=>!t.events.includes(draft.event)).map(t=>window.QalbimDesigns.galleryThumb(t,t.id===draft.skin)).join('')+'</div>'+
  '<div class="cel-form-actions"><button class="cel-primary" type="submit" id="celSubmit">'+ico('check',18)+' Tabrikni saqlash</button>'+
  '<button class="cel-secondary" type="button" data-cel="preview">'+ico('eye',18)+' To‘liq ko‘rish</button></div></form>'+
  '<aside class="cel-editor-preview"><div class="cel-preview-heading">'+ico('eye',17)+' JONLI KO‘RINISH <span>Oluvchi shuni ko‘radi</span></div><div id="celPreview">'+previewHTML(draft)+'</div></aside></div></div></div>';
@@ -136,6 +145,15 @@ function values(){
  const f=new FormData(form);
  return {...draft,to:String(f.get('to')||''),from:String(f.get('from')||''),title:String(f.get('title')||''),
  message:String(f.get('message')||''),secret:String(f.get('secret')||'')};
+}
+function updateGallery(){
+ const recommended=SKINS.filter(t=>t.events.includes(draft.event));
+ const others=SKINS.filter(t=>!t.events.includes(draft.event));
+ const root=document.getElementById('celCompose');if(!root)return;
+ const groups=root.querySelectorAll('.cel-design-gallery');
+ if(groups.length!==2)return;
+ groups[0].innerHTML=recommended.map(t=>window.QalbimDesigns.galleryThumb(t,t.id===draft.skin)).join('');
+ groups[1].innerHTML=others.map(t=>window.QalbimDesigns.galleryThumb(t,t.id===draft.skin)).join('');
 }
 function sync(){
  if(!document.getElementById('celCompose'))return;
@@ -239,12 +257,13 @@ document.addEventListener('click',e=>{
  if(action==='occasion'){if(!editing)composer(button.dataset.event);return}
  if(action==='event'){
    if(!editing)return;draft=values();const item=EVENTS.find(x=>x.id===button.dataset.event);if(!item)return;
-   draft.event=item.id;draft.title=item.title;draft.message=item.text;
+   draft.event=item.id;draft.title=item.title;draft.message=item.text;draft.skin=window.QalbimDesigns.DEFAULTS[item.id]||'blush';
    document.getElementById('celCompose').querySelector('[name="title"]').value=item.title;
    document.getElementById('celCompose').querySelector('[name="message"]').value=item.text;
-   document.querySelectorAll('[data-cel="event"]').forEach(x=>x.classList.toggle('active',x===button));sync();return;
+   document.querySelectorAll('[data-cel="event"]').forEach(x=>x.classList.toggle('active',x===button));
+   updateGallery();sync();return;
  }
- if(action==='skin'){if(!editing)return;draft=values();draft.skin=button.dataset.skin;
+ if(action==='skin'){if(!editing)return;draft=values();if(!SKINS.some(x=>x.id===button.dataset.skin))return;draft.skin=button.dataset.skin;
    document.querySelectorAll('[data-cel="skin"]').forEach(x=>{x.classList.toggle('active',x===button);x.setAttribute('aria-pressed',String(x===button))});
    sync();return}
  if(action==='preview'){
