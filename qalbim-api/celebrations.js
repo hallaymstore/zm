@@ -2,7 +2,7 @@
 /* Qalbim celebration cards: public share links are explicit, private accounts required to create
  * and send. The recipient gets a native chat card; no URL pasted into the composer. */
 const EVENTS=['love','birthday','anniversary','thanks','miss','achievement'];
-const SKINS=['blush','lilac','pearl','rose','night'];
+const SKINS=['blush','lilac','pearl','rose','night','victory','postcard','royal','galaxy','editorial','giftbox','polaroid'];
 module.exports=function registerCelebrations({app,auth,ready,wrap,c,oid,bad,clean,date}){
  const collection=()=>c('celebrations');
  function pack(v){return {id:String(v._id),ownerId:String(v.owner),event:v.event,skin:v.skin,
