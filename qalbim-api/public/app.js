@@ -26,7 +26,7 @@ function go(where){let routes={home:'/',tabrik:'/?view=tabrik',letters:'/?view=l
 function hero(txt,sub){return '<div class="hero"><div class="spark">'+window.QalbimIcons.svg('mail',28)+'</div><p class="eyebrow">Ikki qalb — bir hikoya</p><h1>'+txt+'</h1><p>'+sub+'</p></div>'}
 const extra=window.QalbimIntegrations({api,section,hero,btn,esc,notify,go,copy,modal,closeModal,refresh,getMe:()=>me});
 window.QalbimCelebrate.setup({api,notify,go,section,getMe:()=>me,getPartner:()=>partner});
-function tabrik(){section(window.QalbimCelebrate.home());window.QalbimCelebrate.hydrate()}
+function tabrik(){section(window.QalbimCelebrate.home());window.QalbimCelebrate.hydrate();window.QalbimCelebrate.resumeDraft()}
 function publicCelebration(){return window.QalbimCelebrate.openPublic(location.pathname.split('/').pop())}
 function auth(){
  nav.hidden=true;$('profileButton').hidden=true;$('proBadge').hidden=false;
@@ -328,8 +328,8 @@ document.addEventListener('submit',async e=>{
  let f=e.target.closest('[data-form]');if(!f)return;e.preventDefault();let data=Object.fromEntries(new FormData(f).entries());let t=f.dataset.form,button=f.querySelector('[type=submit]');if(button)button.disabled=true;
  try{
  if(await extra.form(t,data))return;
- if(t==='register'){await api('/api/auth/register',{method:'POST',body:{name:data.name,phone:data.phone,password:data.password,termsAccepted:!!data.terms,privacyAccepted:!!data.privacy}});let room='';try{room=sessionStorage.getItem('qalbim_pending_room')||'';sessionStorage.removeItem('qalbim_pending_room')}catch(e){}return go(/^[0-9a-f]{24}$/i.test(room)?'/?view=games&room='+room:'/')}
- if(t==='login'){await api('/api/auth/login',{method:'POST',body:{phone:data.phone,password:data.password}});let room='';try{room=sessionStorage.getItem('qalbim_pending_room')||'';sessionStorage.removeItem('qalbim_pending_room')}catch(e){}return go(/^[0-9a-f]{24}$/i.test(room)?'/?view=games&room='+room:'/')}
+ if(t==='register'){await api('/api/auth/register',{method:'POST',body:{name:data.name,phone:data.phone,password:data.password,termsAccepted:!!data.terms,privacyAccepted:!!data.privacy}});let room='';try{room=sessionStorage.getItem('qalbim_pending_room')||'';sessionStorage.removeItem('qalbim_pending_room')}catch(e){}return go(/^[0-9a-f]{24}$/i.test(room)?'/?view=games&room='+room:sessionStorage.getItem('qalbim_celebrate_return')?'tabrik':'/')}
+ if(t==='login'){await api('/api/auth/login',{method:'POST',body:{phone:data.phone,password:data.password}});let room='';try{room=sessionStorage.getItem('qalbim_pending_room')||'';sessionStorage.removeItem('qalbim_pending_room')}catch(e){}return go(/^[0-9a-f]{24}$/i.test(room)?'/?view=games&room='+room:sessionStorage.getItem('qalbim_celebrate_return')?'tabrik':'/')}
  if(t==='letter'){let d=await api('/api/letters',{method:'POST',body:{to:data.to,from:data.from,title:data.title,message:data.message,coverLine:data.coverLine||'',experience:data.experience||'story',secretNote:data.secretNote||'',theme,photoIds:draftPhotos.map(x=>x.id)}});draftPhotos=[];notify('Maktub tayyor!');return go('/l/'+d.letter.id)}
  if(t==='letterEdit'){await api('/api/letters/'+data.id,{method:'PATCH',body:{to:data.to,from:data.from,title:data.title,message:data.message,coverLine:data.coverLine||'',experience:data.experience||'direct',secretNote:data.secretNote||'',theme:Number(data.theme)}});closeModal();notify('Maktub yangilandi');return letters()}
  if(t==='report'){await api('/api/reports',{method:'POST',body:{type:data.type,target:data.target,reason:data.reason}});closeModal();return notify('Shikoyat yuborildi')}
