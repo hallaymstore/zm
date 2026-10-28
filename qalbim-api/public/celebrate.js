@@ -58,6 +58,12 @@ function home(){
  '<span>Har kuni yangicha hislar</span></div>'+
  '<div class="cel-occasions">'+EVENTS.map(e=>'<button class="cel-occasion" data-cel="occasion" data-event="'+e.id+'">'+ico(e.icon,23)+
  '<strong>'+e.name+'</strong><span>'+ico('arrow',16)+'</span></button>').join('')+'</div>'+
+ '<div class="cel-section-head" id="cel-designs"><div><span class="cel-eyebrow">DIZAYNLAR ATELYESI</span><h2>12 xil haqiqiy shablon</h2></div>'+
+ '<span>Har birining tasviri va kompozitsiyasi alohida</span></div>'+
+ '<div class="cel-public-templates">'+SKINS.map(t=>'<button type="button" data-cel="show-design" data-skin="'+t.id+'" class="cel-public-template skin-'+t.id+'">'+
+ '<span class="cel-public-template-art">'+window.QalbimDesigns.asset(t.kind)+'</span>'+
+ '<span class="cel-public-template-info"><strong>'+esc(t.name)+'</strong><small>'+esc(t.sub)+'</small></span>'+
+ '<span class="cel-public-template-arrow">'+ico('arrow',16)+'</span></button>').join('')+'</div>'+
  '<div class="cel-section-head" id="cel-memories"><div><span class="cel-eyebrow">FAQAT SIZNING XOTIRALARINGIZ</span><h2>Saqlangan tabriklar</h2></div>'+
  (me?'<button class="cel-section-btn" data-cel="compose">'+ico('pen',16)+' Yangisi</button>':'<a class="cel-section-btn" href="/">Kirish</a>')+'</div>'+
  '<div id="celSaved" class="cel-saved-list">'+(me?'<div class="cel-loading">Tabriklar yuklanmoqda...</div>':
@@ -254,6 +260,24 @@ document.addEventListener('click',e=>{
  if(action==='dismiss'){dismiss();return}
  if(action==='surprise'){surprise();return}
  if(action==='memories'){document.getElementById('cel-memories')?.scrollIntoView({behavior:'smooth',block:'start'});return}
+ if(action==='show-design'){
+   const t=SKINS.find(x=>x.id===button.dataset.skin);if(!t)return;
+   const initial=defaultDraft(t.events[0]);initial.skin=t.id;
+   showOverlay('<div class="cel-showcase"><div class="cel-showcase-heading"><span class="cel-eyebrow">DIZAYN NAMUNASI</span>'+
+     '<h2>'+esc(t.name)+'</h2><p>'+esc(t.sub)+' — har bir detalning o‘z tarixi bor.</p></div>'+
+     '<div class="cel-modal-preview">'+previewHTML(initial,true)+'</div>'+
+     '<button class="cel-primary" data-cel="choose-design" data-skin="'+t.id+'" data-event="'+esc(initial.event)+'">'+ico('pen',17)+' Shu dizaynda tabrik yaratish</button></div>');
+   return;
+ }
+ if(action==='choose-design'){
+   const t=SKINS.find(x=>x.id===button.dataset.skin);if(!t)return;
+   const event=EVENTS.some(x=>x.id===button.dataset.event)?button.dataset.event:'love';
+   dismiss();
+   composer(event);
+   if(editing){draft.skin=t.id;updateGallery();sync()}
+   else try{sessionStorage.setItem('qalbim_celebrate_skin',t.id)}catch(e){}
+   return;
+ }
  if(action==='occasion'){if(!editing)composer(button.dataset.event);return}
  if(action==='event'){
    if(!editing)return;draft=values();const item=EVENTS.find(x=>x.id===button.dataset.event);if(!item)return;
@@ -289,7 +313,11 @@ document.addEventListener('keydown',e=>{
 function resumeDraft(){
  if(!getMe?.())return;
  let event=null;try{event=sessionStorage.getItem('qalbim_celebrate_return');sessionStorage.removeItem('qalbim_celebrate_return')}catch(e){}
- if(event&&EVENTS.some(x=>x.id===event))composer(event);
+ if(event&&EVENTS.some(x=>x.id===event)){
+   composer(event);
+   let skin=null;try{skin=sessionStorage.getItem('qalbim_celebrate_skin');sessionStorage.removeItem('qalbim_celebrate_skin')}catch(e){}
+   if(editing&&SKINS.some(x=>x.id===skin)){draft.skin=skin;updateGallery();sync()}
+ }
 }
 window.QalbimCelebrate={setup,home,hydrate,openPublic,renderChat,resumeDraft};
 })();
