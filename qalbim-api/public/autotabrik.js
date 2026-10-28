@@ -193,6 +193,35 @@ async function submitOrder(ev){
  }finally{state.uploading=false;if(b)b.disabled=false}
 }
 function money(n){return Number(n||0).toLocaleString('ru-RU')+' so‘m'}
+
+const BANKS=[
+ {id:'click',name:'Click',href:'https://my.click.uz/',icon:'credit-card'},
+ {id:'payme',name:'Payme',href:'https://p2p.payme.uz/',icon:'credit-card'},
+ {id:'uzum',name:'Uzum Bank',href:'https://uzumbank.uz/uz/',icon:'credit-card'}
+];
+function bankOptions(card,amount){
+ return '<div class="at-bank-launch"><div class="at-bank-heading">'+I('smartphone',18)+
+   '<div><strong>Qaysi ilovadan to‘laysiz?</strong><small>Ilova/rasmiy sahifani ochishdan oldin karta avtomatik nusxalanadi.</small></div></div>'+
+   '<div class="at-bank-grid">'+BANKS.map(bank=>'<a class="at-bank-option" href="'+bank.href+
+     '" target="_blank" rel="noopener noreferrer" data-at-bank="'+bank.id+
+     '" data-at-bank-card="'+esc(card)+'" aria-label="'+bank.name+' orqali to‘lov">'+
+     '<span>'+I(bank.icon,19)+'</span><strong>'+bank.name+'</strong>'+I('external-link',15)+'</a>').join('')+'</div>'+
+   '<div class="at-bank-howto"><span>1. Karta nusxalanadi</span><span>2. Ilovada o‘tkazma bo‘limi</span>'+
+   '<span>3. Karta va <b>'+money(amount)+'</b> summani kiriting</span></div>'+
+   '<p class="at-bank-disclaimer">Bu banklarning rasmiy sahifalari. Karta va summani avtomatik to‘ldirish qo‘llab-quvvatlanmaydi. Hamyon faqat pul haqiqatan kelganini tasdiqlaganda buyurtma to‘langan hisoblanadi.</p></div>';
+}
+function refreshCallMethod(){
+ const abroad=document.querySelector('input[name="recipientAbroad"]:checked')?.value==='abroad';
+ const box=$('#atCountryWrap');if(box){box.hidden=!abroad;box.querySelector('input').required=abroad}
+ const hint=$('#atCallMethod');
+ if(hint)hint.innerHTML=I(abroad?'message-circle':'phone-call',17)+
+  '<span>'+(abroad?
+   'Operator tabrik oluvchiga WhatsApp orqali <strong>jonli qo‘ng‘iroq qiladi</strong>. Mamlakat va xalqaro raqamni kiriting.':
+   'Operator tabrik oluvchiga <strong>oddiy telefon orqali</strong> qo‘ng‘iroq qiladi va suhbat davomida tabriklaydi.')+'</span>';
+ const phone=$('#atOrderForm input[name="recipientPhone"]');
+ if(phone)phone.placeholder=abroad?'+7 999 123 45 67 (WhatsApp raqam)':'+998 90 123 45 67';
+}
+
 function stopPolling(){if(state.paymentTimer)clearInterval(state.paymentTimer);state.paymentTimer=null}
 function paymentMessage(id,inner){
  const box=$('#atContent');if(!box)return;
@@ -217,7 +246,7 @@ function showCheckout(id,pay){
   '<p class="at-payment-warning">To‘lovlarni avtomatik ajratish uchun '+money(pay.basePrice)+' tarifiga kichik noyob summa qo‘shildi. Kartaga aynan quyidagi summani o‘tkazing.</p>':'';
  paymentMessage(id,'<div class="at-pay-pricetag">To‘lanadigan aniq summa <strong>'+money(pay.amount)+'</strong></div>'+
  '<div class="at-pay-account"><small>Hamyon to‘lov kartasi</small><strong>'+esc(pay.card)+'</strong>'+
- '<button class="at-outline-btn" data-at-copy="'+esc(pay.card)+'">'+I('copy',16)+' Kartani nusxalash</button></div>'+
+ '<button class="at-outline-btn" data-at-copy="'+esc(pay.card)+'">'+I('copy',16)+' Kartani nusxalash</button></div>'+bankOptions(pay.card,pay.amount)+
  '<p class="at-pay-note">Bank ilovasida <strong>aynan '+money(pay.amount)+'</strong> o‘tkazing. Chek yuborish shart emas. Pul kelgani Hamyon orqali avtomatik tekshiriladi.</p>'+note+
  '<p class="at-pay-remaining">Hisob muddati: '+new Date(pay.expiresAt).toLocaleString('uz-UZ')+'</p>'+
  '<div class="at-pending-state">'+I('clock',19)+' <span id="atPayStatus">To‘lov tasdiqlanishi kutilmoqda…</span></div>'+
@@ -231,7 +260,7 @@ function showPaid(id,result){
    esc(new Date(result.deadlineAt).toLocaleString('uz-UZ'))+'</strong> gacha</p>';
  paymentMessage(id,'<div class="at-success-payment">'+I('check-circle',45)+'<h3>To‘lov tasdiqlandi!</h3>'+
  '<p>Buyurtmangiz '+money(result.basePrice||result.amount)+' uchun qabul qilindi.</p>'+
- '<p>Tabrik to‘lov tasdiqlangan paytdan boshlab <strong>14 soat ichida</strong> tayyorlanadi.</p>'+due+'</div>');
+ '<p>Operator 14 soat ichida telefon yoki WhatsApp orqali <strong>jonli suhbatda</strong> tabriklaydi. Video buyurtmada rasmlardan tayyorlangan tabrik videosi ham qo‘shiladi.</p>'+due+'</div>');
 }
 async function createPayment(id){
  try{const data=await state.app.api('/api/autotabrik/payments/create',{method:'POST',body:{serviceOrderId:id}});
@@ -298,14 +327,27 @@ function statusName(x){return ({
 function orderCard(o,admin=false){
  const price=o.price?money(o.price):'Kelishiladi';
  return '<div class="at-order-item"><div class="at-order-head"><strong>'+
-  esc(o.recipient)+' · '+esc(o.kind==='video'?'Video tabrik':o.kind==='audio'?'Audio tabrik':'Telefon tabrik')+'</strong>'+
+  esc(o.recipient)+' · '+esc(o.kind==='video'?'Jonli suhbat + video':'Jonli audio qo‘ng‘iroq')+'</strong>'+
   '<span class="at-order-badge" data-status="'+esc(o.status)+'">'+esc(statusName(o.status))+'</span></div>'+
   '<div class="at-order-meta"><span>'+I('calendar',15)+' '+new Date(o.createdAt).toLocaleDateString('uz-UZ')+'</span>'+
   '<span>'+I('images',15)+' '+(o.photosCount||0)+' surat</span>'+
-  '<span>'+I('credit-card',15)+' '+esc(price)+'</span></div>'+
+  '<span>'+I('credit-card',15)+' '+esc(price)+'</span>'+ '<span>'+I('phone-call',15)+' '+(o.recipientAbroad?'WhatsApp qo‘ng‘irog‘i':'Telefon qo‘ng‘irog‘i')+'</span></div>'+
   (o.deadlineAt?'<div class="at-deadline">'+I('clock',17)+' 14 soatlik muddat: <strong>'+
    esc(new Date(o.deadlineAt).toLocaleString('uz-UZ'))+' gacha</strong></div>':'')+
-  (admin?'<div class="at-order-personal">'+esc(o.recipientPhone)+' · '+esc(o.address)+' · '+esc(o.message)+'</div>'+
+  (admin?'<div class="at-order-personal">'+esc(o.recipientPhone)+' · '+esc(o.address)+
+   (o.recipientCountry?' · '+esc(o.recipientCountry):'')+
+   (o.callPreference?' · Qulay vaqt: '+esc(o.callPreference):'')+
+   ' · '+esc(o.message)+'</div>'+
+   '<div class="at-operator-call">'+
+   '<span class="at-operator-call-title">'+I('phone-call',16)+' Operatorning jonli qo‘ng‘irog‘i</span>'+
+   (function(){
+     const digits=String(o.recipientPhone||'').replace(/\D/g,'');
+     if(digits.length<9||digits.length>15)return '<small>Telefonni tekshiring</small>';
+     return o.recipientAbroad?
+       '<a class="at-main-btn" href="https://wa.me/'+digits+'" target="_blank" rel="noopener noreferrer">'+I('message-circle',17)+' WhatsApp suhbatini ochish</a>'+
+       '<small>WhatsApp ichida qo‘ng‘iroq tugmasini bosing. Suhbat yozib olinsa, rozilik oling.</small>':
+       '<a class="at-main-btn" href="tel:+'+digits+'">'+I('phone-call',17)+' Qo‘ng‘iroq qilish</a>';
+   })()+'</div>'+
    '<label class="at-field"><span>Operator holati</span><select data-at-admin-status="'+o.id+'">'+
    ['paid','in_progress','delivered','cancelled'].map(x=>'<option value="'+x+'" '+(x===o.status?'selected':'')+
      '>'+statusName(x)+'</option>').join('')+'</select></label>'+
@@ -408,7 +450,7 @@ function openTab(t){
  document.querySelectorAll('[data-at-tab]').forEach(b=>{const selected=b.dataset.atTab===t;b.classList.toggle('active',selected);
  b.setAttribute('aria-selected',String(selected))});
  $('#atContent').innerHTML=t==='order'?orderForm():t==='studio'?studio():orders();
- if(t==='order'){photoThumbs();const f=$('#atOrderForm');f.addEventListener('submit',submitOrder)}
+ if(t==='order'){photoThumbs();refreshCallMethod();const f=$('#atOrderForm');f.addEventListener('submit',submitOrder)}
  if(t==='studio'){syncMediaInfo();runPreview()}
  if(t==='orders')loadOrders();
 }
@@ -526,6 +568,13 @@ function activate(){
   const tab=e.target.closest('[data-at-tab]');if(tab){openTab(tab.dataset.atTab);return}
   const pay=e.target.closest('[data-at-pay]');if(pay){createPayment(pay.dataset.atPay);return}
   const check=e.target.closest('[data-at-check]');if(check){checkPayment(check.dataset.atCheck,check.dataset.atFor);return}
+  const bank=e.target.closest('[data-at-bank]');if(bank){
+   const card=bank.dataset.atBankCard;
+   if(card&&navigator.clipboard?.writeText){
+     navigator.clipboard.writeText(card).then(()=>notify('Karta nusxalandi. Ilovada o‘tkazmalar bo‘limini oching.')).catch(()=>notify('Karta avtomatik nusxalanmadi — qo‘lda nusxalang.'));
+   }else notify('Karta avtomatik nusxalanmadi — qo‘lda nusxalang.');
+   return;
+  }
   const copy=e.target.closest('[data-at-copy]');if(copy){navigator.clipboard.writeText(copy.dataset.atCopy).then(()=>notify('Karta raqami nusxalandi')).catch(()=>window.prompt('To‘lov kartasi',copy.dataset.atCopy));return}
   const generate=e.target.closest('#atGenerateText');
   if(generate){$('#atMessage').value=preset();notify('Tahrirlash mumkin bo‘lgan namunaviy matn yaratildi.');return}
@@ -542,6 +591,7 @@ function activate(){
   const admin=e.target.closest('[data-at-admin-save]');if(admin)return adminSave(admin.dataset.atAdminSave);
  });
  root.addEventListener('change',e=>{
+  if(e.target.name==='recipientAbroad')refreshCallMethod();
   if(e.target.id==='atPhotoFiles'||e.target.id==='atStudioPhotos')setupImages(e.target.files);
   if(e.target.id==='atAudioFile')audioChosen(e.target.files[0]);
   if(e.target.name==='ratio')draw(state.sceneTime);
