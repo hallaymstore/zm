@@ -1,0 +1,224 @@
+/* Qalbim AutoTabrik: responsive, compact, premium creative workstation */
+.at-app{--at-ink:#3b2c43;--at-muted:#95879e;--at-line:#eadfea;--at-pink:#c85891;--at-purple:#7b5eae;--at-card:#fff;--at-soft:#faf5fa;max-width:1230px;margin:0 auto;padding:8px 0 40px;color:var(--at-ink);font-family:Manrope,system-ui,sans-serif}
+.at-app *{box-sizing:border-box}
+.at-app button,.at-app select,.at-app input,.at-app textarea{font-family:inherit}
+.at-app button{cursor:pointer}
+.at-app .ui-icon{flex-shrink:0}
+.at-app :focus-visible{outline:3px solid #be7bca;outline-offset:3px}
+.at-hero{position:relative;overflow:hidden;isolation:isolate;border-radius:25px;border:1px solid #f7dfe8;background:linear-gradient(115deg,#fff8fb 0,#fbeaf3 57%,#eadffa 100%);min-height:324px;box-shadow:0 15px 38px #976b8f1e;padding:37px 41px;display:flex;align-items:center;gap:25px}
+.at-hero::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 79% 65%,#f1bed8cc 0,transparent 39%);pointer-events:none;z-index:-1}
+.at-hero-body{position:relative;z-index:2;max-width:695px;flex:1}
+.at-eyebrow,.at-kicker{display:inline-flex;align-items:center;gap:7px;letter-spacing:1.8px;font-size:9px;font-weight:850;color:#a967a0}
+.at-hero h1{font:400 clamp(33px,4.2vw,55px)/1.1 "DM Serif Display",Georgia,serif;color:#36213e;letter-spacing:-.7px;margin:18px 0 12px;max-width:690px}
+.at-hero h1 em{font-style:italic;color:#ab5087}
+.at-hero p{color:#826f8d;font-size:12px;line-height:1.9;max-width:520px;margin:0}
+.at-highlights{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px}
+.at-highlights span{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;font-size:10px;font-weight:800;color:#966290;border:1px solid #eac7dd;border-radius:99px;background:#fff8}
+.at-hero-figure{width:240px;height:228px;display:grid;place-items:center;position:relative;flex:none}
+.at-hero-disc{height:181px;width:181px;background:linear-gradient(141deg,#f5cce2,#b18cd2);border:7px solid #fff7;border-radius:47px;transform:rotate(-8deg);display:grid;place-items:center;color:#9b4c85;box-shadow:0 18px 35px #936c9c36}
+.at-hero-disc .ui-icon{stroke-width:1.3}
+.at-float{position:absolute;width:56px;height:56px;border-radius:18px;background:#fff9;border:1px solid #ffffffbd;display:grid;place-items:center;color:#a46093;box-shadow:0 10px 23px #8c5c8d31}
+.at-float.one{top:0;right:9px;transform:rotate(12deg)}
+.at-float.two{bottom:1px;left:0;transform:rotate(-11deg)}
+.at-float.three{bottom:19px;right:0;transform:rotate(8deg)}
+.at-tabs{display:flex;gap:8px;border-bottom:1px solid var(--at-line);padding:0 3px;margin:22px 0}
+.at-tabs button{display:inline-flex;align-items:center;gap:9px;border:0;background:transparent;padding:15px 20px;color:#8f7e96;font-size:11px;font-weight:800;border-bottom:3px solid transparent;white-space:nowrap}
+.at-tabs button.active{border-color:#bd528c;color:#a7467a;background:#fff8fba8}
+.at-tabs button:hover{color:#ad6299}
+.at-content{min-height:380px}
+.at-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(270px,.62fr);gap:19px;align-items:start}
+.at-card,.at-side-card,.at-preview-side{background:var(--at-card);border:1px solid var(--at-line);border-radius:22px;box-shadow:0 11px 32px #56345c0c;padding:27px 29px}
+.at-panel-heading{display:flex;align-items:flex-start;gap:13px;margin-bottom:24px}
+.at-heading-index{height:42px;min-width:42px;padding:0 9px;border-radius:13px;background:#f9eaf3;color:#b66899;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:850}
+.at-panel-heading h2{font:400 clamp(24px,2.5vw,34px)/1.2 "DM Serif Display",Georgia,serif;color:var(--at-ink);margin:7px 0 4px}
+.at-panel-heading p{font-size:11px;color:var(--at-muted);margin:3px 0;line-height:1.75}
+.at-inner-heading{border-top:1px solid var(--at-line);padding-top:20px;margin-top:23px;margin-bottom:15px}
+.at-inner-heading .at-heading-index{height:36px;min-width:36px;border-radius:10px}
+#atOrderForm{display:flex;flex-direction:column;gap:16px}
+.at-field{display:flex;flex-direction:column;gap:8px;min-width:0;font-size:11px;font-weight:800;color:#66516d}
+.at-field>span{display:block;font-size:11px}
+.at-field-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.at-field input:not([type=radio]):not([type=checkbox]):not([type=file]),.at-field select,.at-field textarea{width:100%;min-width:0;padding:12px 13px;border:1px solid #e7dbe7;border-radius:12px;background:#fffbfe;color:#382a40;font-size:12px;outline:0;transition:border-color .2s,box-shadow .2s}
+.at-field input:focus,.at-field textarea:focus,.at-field select:focus{border-color:#bd86b7;box-shadow:0 0 0 3px #ead5ea7c}
+.at-field textarea{resize:vertical;min-height:75px;max-height:450px;line-height:1.6}
+.at-pills{display:flex;align-items:stretch;gap:7px;flex-wrap:wrap}
+.at-choice{position:relative;cursor:pointer;display:inline-block;min-width:0}
+.at-choice input{position:absolute;opacity:0;pointer-events:none}
+.at-choice span{display:inline-flex;align-items:center;justify-content:center;padding:11px 12px;border-radius:11px;border:1px solid #eadbe8;font-size:10px;color:#74627b;font-weight:800;background:#fff;min-height:40px}
+.at-choice input:checked+span{border-color:#d48bb3;background:#ffedf5;color:#ac497f}
+.at-choice input:focus-visible+span{outline:3px solid #b87bb5}
+.at-service-types{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.at-service{position:relative;cursor:pointer;min-width:0}
+.at-service input{position:absolute;opacity:0}
+.at-service-face{display:flex;flex-direction:column;align-items:center;gap:7px;justify-content:center;text-align:center;height:125px;border:1px solid #eadbe8;border-radius:15px;background:linear-gradient(145deg,#fff,#fdf5fa);padding:10px 7px}
+.at-service-face .ui-icon{color:#bf6395}
+.at-service-face strong{font:400 18px "DM Serif Display",Georgia,serif;color:#513953}
+.at-service-face small{font-size:9px;font-weight:550;color:#958398;line-height:1.4}
+.at-service input:checked+.at-service-face{border:2px solid #cc7ea8;background:#fae7f2;box-shadow:0 0 0 3px #f9edf2}
+.at-service input:focus-visible+.at-service-face{outline:3px solid #c198c2}
+.at-upload{min-height:48px;display:flex;align-items:center;justify-content:center;gap:9px;border:1px dashed #d3a6c6;background:#fff8fb;color:#a65e8b;border-radius:12px;font-size:10px;font-weight:800;cursor:pointer;padding:9px}
+.at-photo-grid,.at-studio-photos{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.at-photo-thumb{aspect-ratio:1;overflow:hidden;border-radius:9px;background:#f6e9f0}
+.at-photo-thumb img{width:100%;height:100%;object-fit:cover}
+.at-photo-extra,.at-more-images{display:grid;place-items:center;color:#a26098;font-size:12px;font-weight:850;background:#f8edf7;border:1px solid #e9d6e8;border-radius:9px;aspect-ratio:1}
+.at-helper{margin:0;font-size:10px;line-height:1.7;color:#96839e}
+.at-compose-hint{display:flex;justify-content:space-between;align-items:center;gap:9px;color:#9d889f;font-size:10px;font-weight:500;line-height:1.5}
+.at-text-gen{background:#f5eaf6;border:1px solid #e6d2e6;border-radius:8px;display:flex;align-items:center;gap:6px;padding:7px 10px;font-size:10px;color:#9c5b8c;font-weight:800;white-space:nowrap}
+.at-consent{display:flex;align-items:flex-start;gap:11px;color:#78637e;line-height:1.75;font-size:11px;cursor:pointer}
+.at-consent input{accent-color:#bf4f8c;width:17px;height:17px;margin:3px 0 0}
+.at-order-bar{padding:16px 17px;border-radius:15px;border:1px solid #f2dce9;background:#fff8fc;display:flex;justify-content:space-between;align-items:center;gap:15px}
+.at-order-bar>div{display:flex;flex-direction:column;gap:5px}
+.at-order-bar strong{font-size:11px;color:#684a6d}
+.at-order-bar small{font-size:9px;color:#9d83a3;line-height:1.5}
+.at-main-btn,.at-outline-btn{border-radius:12px;padding:12px 16px;min-height:43px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:11px;font-weight:850;transition:background .2s,transform .2s;border:1px solid transparent;text-decoration:none;white-space:nowrap;cursor:pointer}
+.at-main-btn{background:linear-gradient(110deg,#b54e8a,#d268aa);color:#fff;box-shadow:0 9px 18px #af5a9530}
+.at-main-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 13px 23px #af5a9549}
+.at-main-btn:disabled{opacity:.55;cursor:wait}
+.at-outline-btn{background:#fff;border-color:#e7d5e6;color:#8e568d}
+.at-outline-btn:hover:not(:disabled){background:#f9edf6}
+.at-outline-btn:disabled{opacity:.5;cursor:not-allowed}
+.at-progress{border:1px solid #edcfe3;border-radius:11px;padding:12px;color:#947a97;font-size:10px}
+.at-progress[hidden]{display:none}
+.at-progress-track{height:7px;border-radius:99px;background:#eedee9;overflow:hidden}
+.at-progress-track>span{display:block;height:100%;width:0;background:#ad6197;transition:width .2s}
+.at-side{display:flex;flex-direction:column;gap:15px;position:sticky;top:20px}
+.at-side-card{padding:22px}
+.at-timeline{display:flex;flex-direction:column;gap:18px;margin-top:21px}
+.at-timeline>div{display:flex;gap:14px;align-items:flex-start}
+.at-timeline b{width:37px;height:37px;border-radius:12px;display:grid;place-items:center;background:#f8e9f2;color:#b55990;font-size:11px;flex:none}
+.at-timeline p{display:flex;flex-direction:column;gap:5px;margin:0}
+.at-timeline strong{font-size:12px;color:#513d55}
+.at-timeline small{font-size:10px;line-height:1.55;color:#a08ba3}
+.at-side-note{background:linear-gradient(160deg,#f8f1fa,#fff);color:#986193}
+.at-side-note h3{font:400 22px "DM Serif Display",Georgia,serif;color:#563756;margin:10px 0}
+.at-side-note p{line-height:1.8;font-size:11px;color:#8e7a96}
+.at-alert{margin:16px auto;padding:13px 15px;border:1px solid #e7c6d9;border-radius:13px;background:#fff1f6;color:#8e5276;font-size:12px;font-weight:700}
+.at-alert[hidden]{display:none}
+.at-success{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:13px;padding:70px 15px;border:1px solid #efdbeb;border-radius:21px;background:linear-gradient(145deg,#fff8fc,#f1eafb)}
+.at-success>span{width:86px;height:86px;border-radius:26px;display:grid;place-items:center;color:#ae5894;background:#fff;box-shadow:0 12px 26px #af58951c}
+.at-success h2{font:400 38px "DM Serif Display",Georgia,serif;color:#4e3454;margin:9px 0 0}
+.at-success p{max-width:480px;font-size:12px;line-height:1.7;color:#967e9c}
+/* Self-serve editor */
+.at-studio-layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(330px,.65fr);gap:19px;align-items:start}
+.at-studio-controls{display:flex;flex-direction:column;gap:17px}
+.at-studio-controls .at-panel-heading{margin-bottom:2px}
+.at-studio-photos{grid-template-columns:repeat(10,minmax(0,1fr));min-height:47px}
+.at-studio-photos img{width:100%;height:47px;border-radius:7px;object-fit:cover}
+.at-studio-photo-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:10px;color:#9b85a0}
+.at-skin-options{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.at-skin{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:#fff;border:1px solid #eddde9;border-radius:12px;padding:12px 4px;font-size:10px;font-weight:800;color:#8f7795}
+.at-skin>.ui-icon{color:#b26b9e}
+.at-skin.active{background:#f9e9f3;border:2px solid #b96d9d;color:#a14f87}
+.at-audio-box{border:1px solid #eedeea;border-radius:16px;padding:14px;display:flex;align-items:center;gap:12px;background:#faf5fa}
+.at-audio-icon{height:49px;width:49px;border-radius:13px;display:grid;place-items:center;flex:none;background:#f5e5f4;color:#ad619c}
+.at-audio-box>div:nth-child(2){display:flex;flex-direction:column;gap:5px;min-width:0;flex:1}
+.at-audio-box strong{font-size:12px}
+.at-audio-box small{font-size:9px;color:#8f8096;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px}
+.at-audio-box .at-outline-btn{padding:10px;font-size:10px;flex:none}
+.at-record-controls,.at-action-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.at-record-controls button{display:flex;align-items:center;gap:7px;font-size:10px;padding:10px 12px;border-radius:10px;background:#fff;border:1px solid #e6d8e8;color:#895986}
+.at-record-controls button:disabled{opacity:.5}
+.at-record-controls>span{margin-left:auto;font-size:10px;font-weight:850;color:#ab6591;font-variant-numeric:tabular-nums}
+.at-live-status{padding:12px 15px;background:#f8edf6;border:1px solid #edd9e8;border-radius:11px;font-size:11px;line-height:1.65;color:#855b88;margin:0}
+#atExportLink{display:flex;align-items:center;flex-wrap:wrap;gap:7px}
+.at-preview-side{position:sticky;top:20px;background:linear-gradient(145deg,#fff,#f8f1fa);padding:17px;display:flex;align-items:center;flex-direction:column}
+.at-preview-header{display:flex;align-items:center;gap:8px;color:#ad719f;font-size:10px;font-weight:800;letter-spacing:1.3px;width:100%;margin-bottom:16px}
+.at-preview-header>span{font-size:9px;letter-spacing:0;color:#a18ba7;margin-left:auto}
+.at-video-shell{position:relative;border-radius:19px;overflow:hidden;background:#f7ebf3;max-height:70vh;box-shadow:0 19px 38px #55335d2e;border:5px solid #ffffff;width:min(100%,300px);aspect-ratio:9/16}
+.at-video-shell canvas{display:block;width:100%;height:100%;object-fit:contain}
+.at-video-overlay{position:absolute;top:13px;left:0;right:0;text-align:center;pointer-events:none;color:#fff}
+.at-video-overlay span{background:#38234245;padding:6px 10px;font-size:8px;letter-spacing:1.7px;border-radius:99px}
+.at-preview-foot{display:flex;align-items:flex-start;gap:7px;font-size:10px;color:#8e7d99;line-height:1.6;margin-top:20px}
+/* Order dashboard */
+.at-order-list,.at-admin-section{display:flex;flex-direction:column;gap:13px}
+.at-order-item{border:1px solid #eedfec;border-radius:16px;padding:19px;display:flex;flex-direction:column;gap:13px;background:#fffafc}
+.at-order-head,.at-order-meta,.at-order-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.at-order-head{justify-content:space-between}
+.at-order-head strong{font:400 23px "DM Serif Display",Georgia,serif;color:#44304b}
+.at-order-badge{border-radius:99px;padding:7px 10px;font-size:10px;font-weight:800;background:#f4ebf7;color:#a36a9a}
+.at-order-badge[data-status=paid],.at-order-badge[data-status=delivered]{background:#e9f6ef;color:#378263}
+.at-order-badge[data-status=payment_review]{background:#fff2e1;color:#a37040}
+.at-order-meta span{display:flex;align-items:center;gap:5px;color:#9b849f;font-size:10px}
+.at-order-actions{border-top:1px solid #f0e3ec;padding-top:12px}
+.at-receipt-flag{display:flex;align-items:center;gap:4px;color:#947aa0;font-size:10px}
+.at-order-personal{font-size:11px;color:#87738c;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere}
+.at-asset-panel{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;border-top:1px solid #eee;padding-top:14px}
+.at-asset-panel a{position:relative}
+.at-asset-panel a img{width:100%;height:65px;object-fit:cover;border-radius:8px}
+.at-asset-panel a small{font-size:9px;color:#895f87;display:block}
+.at-admin-section{margin-top:30px;border-top:1px solid #eee;padding-top:19px}
+.at-admin-section h3{display:flex;gap:8px;align-items:center;font-size:15px;color:#735375}
+.at-empty{text-align:center;padding:50px 20px;background:#faf5fa;border:1px dashed #dfcedd;border-radius:17px;color:#997da0}
+.at-empty h3{font:400 25px "DM Serif Display",Georgia,serif;color:#523b57}
+@media(max-width:1100px){
+ .at-grid{grid-template-columns:minmax(0,1fr) minmax(230px,.6fr);gap:12px}
+ .at-card{padding:20px}
+ .at-side-card{padding:17px}
+ .at-studio-layout{grid-template-columns:minmax(0,1fr) minmax(260px,.7fr);gap:13px}
+ .at-skin-options{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:767px){
+ .at-app{padding:0 0 30px}
+ .at-hero{border-radius:19px;min-height:290px;padding:25px 18px}
+ .at-hero h1{font-size:clamp(32px,7.8vw,43px);max-width:370px}
+ .at-hero p{font-size:10px;max-width:285px;line-height:1.75}
+ .at-eyebrow{font-size:8px;letter-spacing:1px}
+ .at-hero-figure{position:absolute;right:-75px;top:37px;transform:scale(.75);opacity:.3;pointer-events:none}
+ .at-highlights{gap:4px}
+ .at-highlights span{font-size:9px;padding:7px 8px}
+ .at-tabs{gap:1px;justify-content:space-between;margin:14px 0 12px;overflow-x:auto}
+ .at-tabs button{gap:5px;padding:11px 8px;font-size:9px;min-width:0;white-space:nowrap}
+ .at-tabs button .ui-icon{width:15px;height:15px}
+ .at-grid,.at-studio-layout{grid-template-columns:1fr;gap:13px}
+ .at-card,.at-side-card,.at-preview-side{padding:17px 13px;border-radius:17px}
+ .at-panel-heading{gap:9px;margin-bottom:16px}
+ .at-heading-index{height:36px;min-width:36px;border-radius:10px}
+ .at-panel-heading h2{font-size:26px}
+ .at-panel-heading p{font-size:10px}
+ .at-field-row{gap:9px}
+ .at-field{font-size:10px}
+ .at-field>span{font-size:10px}
+ .at-field input:not([type=radio]):not([type=checkbox]):not([type=file]),.at-field select,.at-field textarea{padding:11px 10px;font-size:11px}
+ .at-choice span{font-size:9px;padding:9px}
+ .at-service-types{gap:6px}
+ .at-service-face{height:106px;border-radius:12px;padding:6px 3px}
+ .at-service-face .ui-icon{width:22px;height:22px}
+ .at-service-face strong{font-size:15px}
+ .at-service-face small{font-size:8px}
+ .at-photo-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+ .at-order-bar{flex-direction:column;align-items:stretch;padding:12px}
+ .at-order-bar>.at-main-btn{width:100%}
+ .at-side{position:static;display:grid;grid-template-columns:1fr;gap:13px}
+ .at-timeline{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+ .at-timeline>div{gap:7px}
+ .at-timeline b{width:30px;height:30px;font-size:9px}
+ .at-timeline strong{font-size:10px}
+ .at-timeline small{font-size:9px}
+ .at-studio-layout .at-preview-side{position:static;order:-1;padding:14px}
+ .at-video-shell{max-height:390px;width:min(100%,220px);aspect-ratio:9/16}
+ .at-skin-options{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+ .at-skin{font-size:8px;padding:8px 4px}
+ .at-skin .ui-icon{width:15px;height:15px}
+ .at-studio-photos{grid-template-columns:repeat(8,minmax(0,1fr))}
+ .at-audio-box{flex-wrap:wrap;gap:9px}
+ .at-audio-box .at-outline-btn{width:100%}
+ .at-record-controls{gap:5px}
+ .at-record-controls button{padding:9px;font-size:9px}
+ .at-order-head strong{font-size:21px}
+ .at-asset-panel{grid-template-columns:repeat(5,minmax(0,1fr))}
+}
+@media(max-width:360px){
+ .at-field-row{grid-template-columns:1fr}
+ .at-hero h1{font-size:30px}
+ .at-tabs button{font-size:8px;padding:10px 5px;gap:3px}
+ .at-tabs .ui-icon{width:13px;height:13px}
+ .at-skin-options{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .at-service-face strong{font-size:13px}
+}
+html[data-theme=dark] .at-app{--at-card:#2a2330;--at-line:#4b3d51;--at-ink:#f3e9f6;--at-muted:#c0aac6;--at-soft:#30273a}
+html[data-theme=dark] .at-card,html[data-theme=dark] .at-side-card,html[data-theme=dark] .at-preview-side{background:#2a2330}
+html[data-theme=dark] .at-panel-heading h2,html[data-theme=dark] .at-order-head strong{color:#fff4fd}
+html[data-theme=dark] .at-field{color:#e9d7ea}
+html[data-theme=dark] .at-field input:not([type=radio]):not([type=checkbox]):not([type=file]),
+html[data-theme=dark] .at-field select,html[data-theme=dark] .at-field textarea{background:#382f40;color:#fff;border-color:#65516a}
+@media(prefers-reduced-motion:reduce){.at-app *{animation:none!important;transition:none!important}}
