@@ -44,8 +44,8 @@ function build(){
  return '<section id="atRoot" class="at-app">'+
  '<div class="at-hero"><div class="at-hero-body"><div class="at-eyebrow">'+I('sparkle',16)+' QALBIM / AUTO TABRIK</div>'+
  '<h1>Yurakdan chiqqan so‘zlar — <em>unutilmas lahzalarga.</em></h1>'+
- '<p>Tabrik uchun anketani to‘ldiring, ovoz va rasmlarni birlashtiring yoki professional tabrik xizmatiga buyurtma qoldiring.</p>'+
- '<div class="at-highlights"><span>'+I('mic',16)+' Audio</span><span>'+I('clapperboard',16)+' Animatsiyali video</span>'+
+ '<p>Operator sevgan insoningizga telefon qiladi va samimiy suhbat davomida tabriklaydi. Video tarifida suhbatga oilaviy rasmlardan tayyorlangan video ham qo‘shiladi.</p>'+
+ '<div class="at-highlights"><span>'+I('phone-call',16)+' Jonli tabrik qo‘ng‘irog‘i</span><span>'+I('clapperboard',16)+' Qo‘ng‘iroq + video</span>'+
  '<span>'+I('shield',16)+' Maxfiy ma’lumotlar</span></div></div>'+
  '<div class="at-hero-figure" aria-hidden="true"><div class="at-hero-disc">'+I('heart',91)+'</div><div class="at-float one">'+I('music',28)+'</div><div class="at-float two">'+I('image',25)+'</div><div class="at-float three">'+I('gift',24)+'</div></div></div>'+
  '<div class="at-tabs" role="tablist"><button data-at-tab="order" class="active" role="tab" aria-selected="true">'+I('clipboard-list',18)+' Anketa va buyurtma</button>'+
@@ -62,8 +62,12 @@ function orderForm(){
  '<label class="at-field"><span>2. Yoshi *</span><input name="age" type="number" min="0" max="120" placeholder="Masalan, 35" required></label></div>'+
  '<div class="at-field-row"><label class="at-field"><span>3. Tug‘ilgan kun, oy, yil *</span><input type="date" name="birthday" required></label>'+
  '<label class="at-field"><span>4. Telefon raqami *</span><input name="recipientPhone" type="tel" maxlength="32" placeholder="+998 90 123 45 67" required></label></div>'+
- '<div class="at-field"><span>Chet elda bo‘lsa qaysi tarmoqda bog‘lanamiz?</span><div class="at-pills" data-at-choice="contactChannel">'+
- choices('contactChannel',[['phone','Oddiy telefon'],['telegram','Telegram'],['whatsapp','WhatsApp']],'phone')+'</div></div>'+
+ '<div class="at-field"><span>Tabrik oluvchi qayerda?</span><div class="at-pills at-location-choice">'+
+ choices('recipientAbroad',[['local','O‘zbekistonda — telefon qo‘ng‘irog‘i'],['abroad','Chet elda — WhatsApp qo‘ng‘irog‘i']],'local')+'</div></div>'+
+ '<div class="at-call-method" id="atCallMethod">'+I('phone-call',17)+' <span>Operator oddiy telefon orqali jonli suhbatda tabriklaydi.</span></div>'+
+ '<div class="at-field" id="atCountryWrap" hidden><span>Qaysi davlatda?</span><input id="atCountry" name="recipientCountry" maxlength="70" placeholder="Masalan: Rossiya, AQSH, Turkiya"></div>'+
+ '<div class="at-field"><span>Qo‘ng‘iroq qilish uchun qulay vaqt (ixtiyoriy)</span>'+
+ '<input name="callPreference" maxlength="180" placeholder="Masalan: 18:00–21:00, Toshkent vaqti"></div>'+
  '<div class="at-field-row"><label class="at-field"><span>5. Tabrik oluvchiga kim bo‘lasiz? *</span><input name="relation" maxlength="80" placeholder="Qizi, ukasi, singlisi..." required></label>'+
  '<label class="at-field"><span>6. Asosiy tabriklovchi kim? *</span><input id="atFrom" name="fromName" maxlength="100" placeholder="Ism, familiya" required></label></div>'+
  '<div class="at-field-row"><div class="at-field"><span>7. Qanday murojaat qilinsin? *</span><div class="at-pills" data-at-choice="formality">'+
@@ -75,29 +79,28 @@ function orderForm(){
  '<div class="at-panel-heading at-inner-heading"><span class="at-heading-index">02 / 03</span><div><div class="at-kicker">TABRIK TURI</div>'+
  '<h2>Qanday tabrik bo‘lsin?</h2></div></div>'+
  '<div class="at-service-types">'+
- serviceCard('audio','Audio tabrik','55 000 so‘m · 14 soat ichida', 'mic')+
- serviceCard('video','Video tabrik','75 000 so‘m · 14 soat ichida','film')+
- serviceCard('phone','Telefon orqali','Jonli operator tabrigi','phone-call')+'</div>'+
+ serviceCard('audio','Audio · Jonli suhbat','55 000 so‘m · telefon / WhatsApp', 'phone-call')+
+ serviceCard('video','Video · Suhbat + montaj','75 000 so‘m · 30+ surat bilan','film')+'</div>'+
  '<div class="at-field-row"><label class="at-field"><span>Munosabat</span><select id="atEvent" name="occasion">'+EVENTS.map(([v,l])=>'<option value="'+v+'">'+l+'</option>').join('')+'</select></label>'+
  '<div class="at-field"><span>Video uchun suratlar</span><label class="at-upload">'+I('image-plus',18)+
  '<span id="atFileLabel">Rasmlarni tanlash (kamida 30 ta)</span><input type="file" id="atPhotoFiles" accept="image/jpeg,image/png,image/webp" multiple hidden></label></div></div>'+
  '<div class="at-photo-grid" id="atPhotoGrid"></div><p class="at-helper" id="atPhotoHint">Video buyurtmasida kamida 30 ta surat majburiy. Bir buyurtmaga 50 tagacha.</p>'+
- '<div class="at-field"><span>Ovozli tabrik matni *</span><div class="at-compose-hint"><span>Ism va murojaatga moslab yozishingiz mumkin.</span>'+
+ '<div class="at-field"><span>Operatorga tabrik mazmuni *</span><div class="at-compose-hint"><span>Operator shu tilaklardan foydalanib, jonli va tabiiy suhbat quradi.</span>'+
  '<button type="button" class="at-text-gen" id="atGenerateText">'+I('sparkle',15)+' Matn tuzish</button></div>'+
- '<textarea name="message" id="atMessage" minlength="30" maxlength="3500" rows="7" required placeholder="Tabrik matnini yozing yoki avtomatik namuna oling..."></textarea></div>'+
+ '<textarea name="message" id="atMessage" minlength="30" maxlength="3500" rows="7" required placeholder="Operator aytishi kerak bo‘lgan tilaklar, xotiralar, samimiy so‘zlar..."></textarea></div>'+
  '<label class="at-field"><span>Qo‘shimcha istaklar / izoh</span><textarea name="notes" maxlength="1000" rows="3" placeholder="Qaysi qo‘shiq, qaysi xotira, qanday kayfiyatda..."></textarea></label>'+
  '<div class="at-panel-heading at-inner-heading"><span class="at-heading-index">03 / 03</span><div><div class="at-kicker">TASDIQLASH</div><h2>Buyurtmani yuborish</h2></div></div>'+
- '<label class="at-consent"><input type="checkbox" name="agreed" required><span>Tabrik egasining aloqa ma’lumoti va rasmlaridan ushbu buyurtma uchun foydalanishga huquqim borligini tasdiqlayman. '+ 
- 'Ma’lumotlar ommaviy ko‘rsatilmaydi.</span></label>'+
- '<div class="at-order-bar"><div><strong>Audio — 55 000 so‘m · Video — 75 000 so‘m</strong><small>Buyurtmadan keyin Hamyon orqali avto-to‘lov. Tasdiqlangan paytdan boshlab 14 soat ichida tayyorlanadi. Chek talab qilinmaydi.</small></div>'+
+ '<label class="at-consent"><input type="checkbox" name="agreed" required><span>Tabrik egasining aloqa ma’lumoti va rasmlaridan ushbu buyurtma uchun foydalanishga huquqim borligini tasdiqlayman. Ma’lumotlar ommaga chiqarilmaydi.</span></label>'+
+ '<label class="at-consent"><input type="checkbox" name="callAgreed" required><span>Tabrik oluvchiga operator telefon yoki WhatsApp orqali qo‘ng‘iroq qilishi mumkinligini tasdiqlayman. Suhbatni yozib olish zarur bo‘lsa, avval ishtirokchilardan rozilik olinishi kerak.</span></label>'+
+ '<div class="at-order-bar"><div><strong>Jonli audio qo‘ng‘iroq — 55 000 so‘m · Qo‘ng‘iroq + video — 75 000 so‘m</strong><small>Hamyon avto-to‘lovi tasdiqlangach operator 14 soat ichida tabriklash xizmatini bajaradi. Chet elga WhatsApp qo‘ng‘irog‘i. Chek kerak emas.</small></div>'+
  '<button class="at-main-btn" id="atSubmitOrder" type="submit">'+I('send',17)+' Buyurtma yuborish</button></div>'+
  '<div class="at-progress" id="atOrderProgress" hidden><div class="at-progress-track"><span id="atOrderProgressLine"></span></div><p id="atOrderProgressText"></p></div>'+
  '</form></div>'+
  '<aside class="at-side"><div class="at-side-card"><span class="at-kicker">BUYURTMA QANDAY ISHLAYDI?</span>'+
  '<div class="at-timeline"><div><b>01</b><p><strong>Anketani to‘ldiring</strong><small>Mijoz va tabrik egasi ma’lumotlari</small></p></div>'+
- '<div><b>02</b><p><strong>Rasmlarni biriktiring</strong><small>Video uchun 30–50 ta surat</small></p></div>'+
- '<div><b>03</b><p><strong>Buyurtmani yuboring</strong><small>Operator to‘lov va muddatni aniqlashtiradi</small></p></div>'+
- '<div><b>04</b><p><strong>Tabrik tayyorlanadi</strong><small>To‘lov tekshirilgach ish boshlanadi</small></p></div></div></div>'+
+ '<div><b>02</b><p><strong>Qo‘ng‘iroq yo‘lini belgilang</strong><small>O‘zbekiston: telefon · Chet el: WhatsApp; video uchun 30–50 surat</small></p></div>'+
+ '<div><b>03</b><p><strong>Hamyon orqali to‘lang</strong><small>Karta raqamini nusxalab, Click / Payme / Uzum’da to‘lang</small></p></div>'+
+ '<div><b>04</b><p><strong>Jonli tabrik + video</strong><small>Operator 14 soat ichida qo‘ng‘iroq qiladi; video ham tayyorlanadi</small></p></div></div></div>'+
  '<div class="at-side-card at-side-note">'+I('shield-check',24)+'<h3>Shaxsiy ma’lumotlar himoyasi</h3>'+
  '<p>Telefon raqamlari, oilaviy ma’lumot va rasmlar faqat buyurtma egasi hamda administrator uchun ochiladi. Suratlar 30 kundan keyin avtomatik o‘chiriladi.</p></div>'+
  (!me?'<div class="at-side-card"><h3>Buyurtma uchun kirish kerak</h3><p>Formani ko‘rib chiqing, keyin hisobingizga kiring.</p><a href="/" class="at-main-btn">Kirish</a></div>':'')+'</aside></div>';
@@ -135,10 +138,12 @@ function readForm(){
  return {kind:String(d.get('kind')||'audio'),occasion:String(d.get('occasion')||'birthday'),
  recipient:String(d.get('recipient')||'').trim(),age:Number(d.get('age')),
  birthday:String(d.get('birthday')||''),recipientPhone:String(d.get('recipientPhone')||'').trim(),
- contactChannel:String(d.get('contactChannel')||'phone'),relation:String(d.get('relation')||'').trim(),
+ recipientAbroad:d.get('recipientAbroad')==='abroad',recipientCountry:String(d.get('recipientCountry')||'').trim(),
+ contactChannel:d.get('recipientAbroad')==='abroad'?'whatsapp':'phone',callPreference:String(d.get('callPreference')||'').trim(),relation:String(d.get('relation')||'').trim(),
  fromName:String(d.get('fromName')||'').trim(),formality:String(d.get('formality')||'siz'),
  family:String(d.get('family')||''),address:String(d.get('address')||'').trim(),
- message:String(d.get('message')||'').trim(),notes:String(d.get('notes')||'').trim(),agreed:d.get('agreed')==='on'};
+ message:String(d.get('message')||'').trim(),notes:String(d.get('notes')||'').trim(),agreed:d.get('agreed')==='on',
+ callAgreed:d.get('callAgreed')==='on'};
 }
 async function postImage(route,file){
  const d=new FormData();d.append('image',file,file.name);
@@ -152,6 +157,7 @@ async function submitOrder(ev){
  if(!state.app?.getMe?.()){notify('Buyurtma yaratish uchun akkauntga kiring.');return}
  const f=$('#atOrderForm');if(!f.reportValidity())return;
  const body=readForm();
+ if(body.recipientAbroad&&!body.recipientCountry){notify('Chet eldagi tabrik oluvchi davlatini kiriting.');return}
  if(body.kind==='video'&&(state.photos.length<30||state.photos.length>50)){
   notify('Video buyurtma uchun 30–50 ta rasm tanlang.');return}
  state.uploading=true;const b=$('#atSubmitOrder'),p=$('#atOrderProgress');
@@ -173,19 +179,12 @@ async function submitOrder(ev){
   }
   const result=await state.app.api('/api/autotabrik/orders/'+encodeURIComponent(id)+'/submit',{method:'POST',body:{}});
   state.activeOrder=null;state.orderStatus=result.status;
-  if(body.kind==='phone'){
-    $('#atContent').innerHTML='<div class="at-success"><span>'+I('check-circle',47)+'</span><h2>Buyurtmangiz qabul qilindi</h2>'+
-      '<p>Telefon orqali jonli tabriklash narxi operator bilan alohida kelishiladi.</p>'+
-      '<p>Buyurtma: <strong>'+esc(id)+'</strong></p>'+
-      '<button class="at-main-btn" data-at-tab="orders">Buyurtmalarim</button></div>';
-  }else{
-    try{
-      const payment=await state.app.api('/api/autotabrik/payments/create',
-        {method:'POST',body:{serviceOrderId:id}});
-      showCheckout(id,payment);
-    }catch(error){
-      showPaymentError(id,error.message);
-    }
+  try{
+    const payment=await state.app.api('/api/autotabrik/payments/create',
+      {method:'POST',body:{serviceOrderId:id}});
+    showCheckout(id,payment);
+  }catch(error){
+    showPaymentError(id,error.message);
   }
  }catch(e){
   $('#atOrderProgressText').textContent='Xatolik: '+e.message;
