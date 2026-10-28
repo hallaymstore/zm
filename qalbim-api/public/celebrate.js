@@ -267,5 +267,10 @@ document.addEventListener('keydown',e=>{
  if(document.getElementById('celMiniModal'))dismiss();
  else if(editing)close();
 });
-window.QalbimCelebrate={setup,home,hydrate,openPublic,renderChat};
+function resumeDraft(){
+ if(!getMe?.())return;
+ let event=null;try{event=sessionStorage.getItem('qalbim_celebrate_return');sessionStorage.removeItem('qalbim_celebrate_return')}catch(e){}
+ if(event&&EVENTS.some(x=>x.id===event))composer(event);
+}
+window.QalbimCelebrate={setup,home,hydrate,openPublic,renderChat,resumeDraft};
 })();
