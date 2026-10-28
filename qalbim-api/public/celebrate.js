@@ -54,6 +54,10 @@ function home(){
  '<div class="cel-date-card"><span class="cel-date-icon">'+ico('calendar',29)+'</span><div class="cel-date-content">'+
  '<small>Bugungi sana</small><strong>'+currentDate()+'</strong><p>Bizning yana bir go‘zal kunimiz '+ico('heart',16)+'</p></div>'+
  '<div class="cel-date-quote"><span>“</span>Birga bo‘lgan har lahza — bu baxt <span>”</span></div></div>'+
+ '<div class="cel-autotabrik-discovery"><span class="cel-autotabrik-icon">'+ico('mic',28)+'</span>'+
+ '<div><span class="cel-eyebrow">YANGI XIZMAT / AUTO TABRIK</span><h3>Tabrikni professional ovoz va videoga aylantiring</h3>'+
+ '<p>Audio 55 000 so‘m · Video 75 000 so‘m · Hamyon orqali to‘lov · 14 soat ichida tayyor</p></div>'+
+ '<button type="button" data-a="autotabrik">Buyurtma berish '+ico('arrow',17)+'</button></div>'+
  '<div class="cel-section-head" id="cel-occasions"><div><span class="cel-eyebrow">ALOHIDA LAHZALAR UCHUN</span><h2>Tabrik turlari</h2></div>'+
  '<span>Har kuni yangicha hislar</span></div>'+
  '<div class="cel-occasions">'+EVENTS.map(e=>'<button class="cel-occasion" data-cel="occasion" data-event="'+e.id+'">'+ico(e.icon,23)+
