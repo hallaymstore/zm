@@ -11,6 +11,7 @@ module.exports=function({app,auth,adm,wrap,c,oid,bad,clean,date}){
  const archive=()=>c('autotabrik_orders'),images=()=>c('autotabrik_assets');
  const pack=(o,assets=0)=>({id:String(o._id),kind:o.kind,status:o.status,occasion:o.occasion,
   recipient:o.recipient,age:o.age,birthday:o.birthday,recipientPhone:o.recipientPhone,contactChannel:o.contactChannel,
+  recipientAbroad:!!o.recipientAbroad,recipientCountry:o.recipientCountry||'',callPreference:o.callPreference||'',
   relation:o.relation,fromName:o.fromName,address:o.address,formality:o.formality,family:o.family,
   message:o.message,notes:o.notes,photosCount:assets,price:o.price??PRICES[o.kind]??null,paymentOrderId:o.paymentOrderId||null,paidAt:o.paidAt||null,deadlineAt:o.deadlineAt||null,createdAt:o.createdAt,submittedAt:o.submittedAt||null});
  const owned=async(req,res)=>{
@@ -26,21 +27,25 @@ module.exports=function({app,auth,adm,wrap,c,oid,bad,clean,date}){
  app.post('/api/autotabrik/orders',auth,wrap(async(req,res)=>{
   const r=req.body||{},kind=String(r.kind||''),occasion=String(r.occasion||'birthday'),
    recipient=clean(r.recipient,90),age=Number(r.age),birthday=String(r.birthday||''),
-   recipientPhone=clean(r.recipientPhone,32),contactChannel=String(r.contactChannel||'phone'),
+   recipientPhone=clean(r.recipientPhone,32),recipientAbroad=r.recipientAbroad===true,
+   recipientCountry=clean(r.recipientCountry,70),callPreference=clean(r.callPreference,180),
+   contactChannel=String(r.contactChannel||'phone'),
    relation=clean(r.relation,80),fromName=clean(r.fromName,100),formality=String(r.formality||'siz'),
    family=String(r.family||''),address=clean(r.address,180),message=clean(r.message,3500),notes=clean(r.notes,1000);
-  if(!['audio','video','phone'].includes(kind)||!EVENTS.includes(occasion))
+  if(!['audio','video'].includes(kind)||!EVENTS.includes(occasion))
    return bad(res,400,'Tabrik turi noto‘g‘ri');
   if(!recipient||!Number.isInteger(age)||age<0||age>120||!/^\d{4}-\d{2}-\d{2}$/.test(birthday)||
    !Number.isFinite(Date.parse(birthday))||!recipientPhone||!relation||!fromName||!address||
    !['siz','sen'].includes(formality)||!['married_children','married','single','other'].includes(family)||
-   !['phone','telegram','whatsapp'].includes(contactChannel))
+   (!recipientAbroad&&contactChannel!=='phone')||(recipientAbroad&&(contactChannel!=='whatsapp'||!recipientCountry)))
     return bad(res,400,'Anketadagi 10 ta ma’lumotni to‘g‘ri to‘ldiring');
   if(message.length<30)return bad(res,400,'Tabrik uchun kamida 30 belgili tilak yozing');
-  if(r.agreed!==true)return bad(res,400,'Suratlar va aloqa ma’lumotlarini ishlatishga ruxsatni tasdiqlang');
+  if(r.agreed!==true)return bad(res,400,'Tabrik uchun ma’lumotlardan foydalanishga ruxsatni tasdiqlang');
+  if(r.callAgreed!==true)return bad(res,400,'Jonli tabrik qo‘ng‘irog‘i uchun aloqa ruxsatini tasdiqlang');
   const count=await archive().countDocuments({owner:req.user._id,createdAt:{$gt:new Date(Date.now()-86400000)}});
   if(count>=6)return bad(res,429,'Bir kunda ko‘pi bilan 6 ta yangi buyurtma yarating');
-  const o={owner:req.user._id,kind,occasion,recipient,age,birthday,recipientPhone,contactChannel,relation,
+  const o={owner:req.user._id,kind,occasion,recipient,age,birthday,recipientPhone,recipientAbroad,recipientCountry,
+    callPreference,contactChannel,relation,
     fromName,formality,family,address,message,notes,price:PRICES[kind]??null,status:'draft',paymentOrderId:null,paidAt:null,deadlineAt:null,createdAt:date(),submittedAt:null};
   const inserted=await archive().insertOne(o);o._id=inserted.insertedId;
   res.status(201).json({order:pack(o,0)});
@@ -64,10 +69,10 @@ module.exports=function({app,auth,adm,wrap,c,oid,bad,clean,date}){
   if(o.status!=='draft')return bad(res,409,'Buyurtma allaqachon yuborilgan');
   const count=await images().countDocuments({orderId:o._id,kind:'photo'});
   if(o.kind==='video'&&count<30)return bad(res,400,'Video uchun kamida 30 ta rasm kerak. Hozir: '+count);
-  const status=o.kind==='phone'?'awaiting_quote':'awaiting_payment';
+  const status='awaiting_payment';
   await archive().updateOne({_id:o._id,owner:req.user._id},{$set:{status,submittedAt:date()}});
   res.json({submitted:true,status,photosCount:count,
-   message:o.kind==='phone'?'Operator telefon orqali tabriklash xizmatining narxini kelishadi.':'Buyurtma qabul qilindi. Hamyon orqali to‘lov tasdiqlangach 14 soat ichida tayyorlanadi.'});
+   message:'Buyurtma qabul qilindi. Hamyon orqali to‘lov tasdiqlangach operator jonli suhbat shaklida tabriklaydi; video tarifida rasmlardan video ham tayyorlanadi. 14 soat ichida bajariladi.'});
  }));
  app.get('/api/autotabrik/orders/:id/assets',auth,wrap(async(req,res)=>{
   const {o,failed}=await owned(req,res);if(failed)return;
