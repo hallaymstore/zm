@@ -156,6 +156,8 @@ app.get('/api/chats/messages',auth,wrap(async(req,res)=>{
  const roomMap=new Map(rooms.map(r=>[String(r._id),r]));
  const games={xo:'Yurak XO',memory:'Memory Duel',match:'Moslik dueli'};
  res.set('Cache-Control','no-store').json({messages:active.map(m=>{
+  if(m.kind==='celebration')return {id:String(m._id),from:String(m.from),kind:'celebration',
+    celebrationId:String(m.celebrationId),createdAt:m.createdAt,mode:'24h'};
   if(m.kind==='game'){
    const game=roomMap.get(String(m.gameId));
    return {id:String(m._id),from:String(m.from),kind:'game',gameId:game?String(game._id):null,
@@ -209,9 +211,10 @@ const integrations=require('./integrations')(app,{
  db:()=>db,mongoClient:()=>mongoClient,auth,adm,
  showUser,cookie,phone,clean,authRate:rate
 });
+require('./celebrations')({app,auth,ready,wrap,c,oid,bad,clean,date});
 const dir=path.join(__dirname,'public');require('./couple-games')({app,auth,wrap,c,pro,oid,bad});
 app.use(express.static(dir,{extensions:['html']}));
-app.get(['/l/:id','/invite/:token','/u/:id','/'],(req,res)=>res.sendFile(path.join(dir,'index.html')));
+app.get(['/t/:id','/l/:id','/invite/:token','/u/:id','/'],(req,res)=>res.sendFile(path.join(dir,'index.html')));
 app.get('*',(req,res)=>res.sendFile(path.join(dir,'index.html')));
 app.use((e,req,res,next)=>{console.error('Server error:',e.message);bad(res,e.code==='LIMIT_FILE_SIZE'?413:500,e.code==='LIMIT_FILE_SIZE'?'Rasm 5 MB dan katta':'Server xatosi')});
 async function connect(){
