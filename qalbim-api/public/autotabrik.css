@@ -222,3 +222,42 @@ html[data-theme=dark] .at-field{color:#e9d7ea}
 html[data-theme=dark] .at-field input:not([type=radio]):not([type=checkbox]):not([type=file]),
 html[data-theme=dark] .at-field select,html[data-theme=dark] .at-field textarea{background:#382f40;color:#fff;border-color:#65516a}
 @media(prefers-reduced-motion:reduce){.at-app *{animation:none!important;transition:none!important}}
+
+/* Hamyon checkout with accurate price, automatic polling, and 14h service deadline */
+.at-checkout{width:min(630px,100%);margin:24px auto;padding:30px;background:var(--at-card,#fff);border:1px solid #ead6e7;border-radius:23px;box-shadow:0 23px 54px #70486617;display:flex;flex-direction:column;align-items:stretch;gap:14px}
+.at-checkout-head{display:flex;flex-direction:column;align-items:center;gap:8px;padding:9px 5px;text-align:center}
+.at-checkout-head>.ui-icon{color:#bd5a92}
+.at-checkout-head h2{font:400 35px 'DM Serif Display',Georgia,serif;color:var(--at-ink,#3b2c43);margin:0}
+.at-checkout-head p{font-size:11px;color:var(--at-muted,#95879e);margin:0}
+.at-pay-pricetag{display:flex;flex-direction:column;align-items:center;gap:5px;padding:19px 10px;border-radius:17px;background:linear-gradient(120deg,#faeaf4,#f1e9fb);color:#866a8c;font-size:11px}
+.at-pay-pricetag strong{color:#9c4280;font:400 clamp(34px,5vw,47px)/1.1 'DM Serif Display',Georgia,serif}
+.at-pay-account{display:flex;flex-direction:column;gap:8px;text-align:center;align-items:center;padding:22px 13px;background:#fffafc;border:1px dashed #e3c5dc;border-radius:15px}
+.at-pay-account small{font-size:10px;color:#9c7e9c}
+.at-pay-account strong{font-size:clamp(16px,3vw,26px);font-weight:850;letter-spacing:1px;color:#423048;word-break:break-all}
+.at-pay-note,.at-pay-remaining{font-size:11px;color:#89758f;text-align:center;line-height:1.8;margin:0}
+.at-pending-state,.at-deadline{display:flex;align-items:center;justify-content:center;gap:9px;background:#f9eff7;border:1px solid #edd9e8;color:#955b86;font-size:11px;padding:14px;border-radius:12px;line-height:1.6}
+.at-payment-warning{display:flex;align-items:center;gap:9px;border:1px solid #f0d4b2;background:#fff5e8;color:#a26b3d;padding:13px;border-radius:11px;font-size:11px;line-height:1.6}
+.at-success-payment{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding:21px 14px;background:linear-gradient(145deg,#f3f9f5,#fff);border:1px solid #d7e9da;border-radius:17px;color:#327d5c}
+.at-success-payment h3{font:400 31px 'DM Serif Display',Georgia,serif;margin:2px 0;color:#2a7854}
+.at-success-payment p{font-size:12px;line-height:1.8;color:#5d806d;margin:0}
+.at-checkout>.at-main-btn,.at-checkout>.at-outline-btn{width:100%}
+.cel-autotabrik-discovery{display:flex;align-items:center;gap:18px;border:1px solid #e8d0e4;border-radius:19px;padding:18px 22px;margin:19px 0 25px;background:linear-gradient(120deg,#fff9fc,#f4eaf9);box-shadow:0 12px 27px #79567416}
+.cel-autotabrik-icon{display:grid;place-items:center;flex:none;height:65px;width:65px;border-radius:18px;background:#f5ddeb;color:#b15c96}
+.cel-autotabrik-discovery>div{flex:1;min-width:0}
+.cel-autotabrik-discovery h3{font:400 clamp(20px,2.5vw,29px) 'DM Serif Display',Georgia,serif;color:#513552;margin:5px 0}
+.cel-autotabrik-discovery p{font-size:11px;line-height:1.7;color:#99849f;margin:0}
+.cel-autotabrik-discovery button{display:flex;align-items:center;justify-content:center;gap:7px;flex:none;background:#b9518b;color:white;border:0;border-radius:12px;padding:12px 15px;font-size:11px;font-weight:800;min-height:45px;cursor:pointer}
+@media(max-width:767px){
+ .at-checkout{border-radius:17px;margin:12px auto;padding:17px 13px}
+ .at-checkout-head h2{font-size:29px}
+ .at-pay-account{padding:17px 8px}
+ .cel-autotabrik-discovery{gap:10px;flex-wrap:wrap;padding:14px 12px;border-radius:15px}
+ .cel-autotabrik-icon{height:45px;width:45px;border-radius:12px}
+ .cel-autotabrik-icon>.ui-icon{width:22px;height:22px}
+ .cel-autotabrik-discovery h3{font-size:20px}
+ .cel-autotabrik-discovery p{font-size:10px}
+ .cel-autotabrik-discovery button{margin-left:55px;width:calc(100% - 55px);font-size:10px;min-height:40px}
+ html .bottomnav .navitem[data-a="autotabrik"]{letter-spacing:-.45px;font-size:8px}
+}
+html[data-theme=dark] .at-pay-account{background:#352b3d;border-color:#725675}
+html[data-theme=dark] .at-pay-account strong{color:#f8eafa}
