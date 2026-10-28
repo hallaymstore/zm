@@ -18,6 +18,7 @@ const TEMPLATES=[
  {id:'polaroid',name:'Xotira albomi',sub:'Fotokartalar va yozuvlar',icon:'image',events:['anniversary','love','miss'],badge:'MEMORIES',kind:'photos'}
 ];
 const DEFAULTS={love:'blush',birthday:'lilac',anniversary:'pearl',thanks:'rose',miss:'night',achievement:'victory'};
+let artworkSequence=0;
 function asset(kind){
  const defs='<defs>'+
  '<linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff3fb"/><stop offset=".38" stop-color="#f2a4c6"/><stop offset="1" stop-color="#d35a94"/></linearGradient>'+
@@ -155,7 +156,13 @@ function asset(kind){
   break;
  default: scene='<use href="#heart" transform="translate(210 72) scale(1)" fill="url(#a)"/>';
  }
- return '<svg class="cel-art-svg" viewBox="0 0 420 300" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">'+defs+scene+'</svg>';
+ const svg='<svg class="cel-art-svg" viewBox="0 0 420 300" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">'+defs+scene+'</svg>';
+ // Multiple artworks are visible in the gallery at once; each SVG must have isolated
+ // gradients and symbols, including after live preview updates.
+ const prefix='qd'+(++artworkSequence)+'_';
+ return svg.replace(/\bid="(a|b|gold|mint|glow|shadow|heart|spark|petal|flower)"/g,(_,key)=>'id="'+prefix+key+'"')
+  .replace(/url\(#(a|b|gold|mint|glow|shadow|heart|spark|petal|flower)\)/g,(_,key)=>'url(#'+prefix+key+')')
+  .replace(/href="#(a|b|gold|mint|glow|shadow|heart|spark|petal|flower)"/g,(_,key)=>'href="#'+prefix+key+'"');
 }
 function galleryThumb(t,active){
  return '<button type="button" class="cel-design-choice skin-'+t.id+(active?' active':'')+
