@@ -1,0 +1,212 @@
+/* Qalbim Design Atelier / 12 non-recolor layouts
+   This layer overlays base celebrate.css; old color-only IDs remain fully supported. */
+.cel-editor-dialog{scrollbar-gutter:stable}
+.cel-editor-top{position:sticky;top:-25px;z-index:8;background:#fffafdf4;padding:7px 5px 17px;border-bottom:1px solid #f0dfeb;backdrop-filter:blur(12px)}
+.cel-template-count{margin-left:auto;font-size:10px;font-weight:750;color:#b35b90;background:#fbedf5;padding:5px 9px;border-radius:99px;white-space:nowrap}
+.cel-template-explain{color:#99819e;font-size:11px;line-height:1.7;margin:0 0 4px}
+.cel-template-subtitle{font-size:10px;letter-spacing:1px;font-weight:800;color:#a56c9b;margin:5px 0 -4px;display:flex;gap:7px;align-items:center}
+.cel-template-subtitle>.ui-icon{width:15px;height:15px}
+.cel-design-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.cel-design-choice{--c-a:#d579ab;--c-b:#fce6f0;--c-text:#3b2245;min-width:0;display:flex;align-items:center;flex-direction:column;gap:5px;text-align:center;background:#fff;border:1px solid #eddfeb;border-radius:16px;padding:7px 7px 10px;color:#4d3854;transition:transform .17s,border-color .17s,box-shadow .17s;cursor:pointer}
+.cel-design-choice:hover{transform:translateY(-2px);border-color:#d19ec4}
+.cel-design-choice.active{border:2px solid #d45e9c;box-shadow:0 0 0 3px #f3d9e9;background:#fff9fc;padding:6px 6px 9px}
+.cel-design-choice:focus-visible{outline:3px solid #a465bd;outline-offset:2px}
+.cel-design-choice strong{font-size:10px;font-weight:850;line-height:1.25;color:#4b3751}
+.cel-design-choice small{font-size:9px;line-height:1.35;color:#9b85a1}
+.cel-design-snapshot{position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;width:100%;height:114px;border:1px solid #ffffffa8;border-radius:11px;background:linear-gradient(140deg,var(--c-b),#fffdfd);isolation:isolate}
+.cel-design-snapshot::before,.cel-design-snapshot::after{content:"";position:absolute;pointer-events:none;z-index:-1}
+.cel-design-snapshot::before{inset:8px;border:1px solid #ffffff80;border-radius:5px}
+.cel-design-snapshot .cel-art-svg{width:100%;height:100%;max-width:210px;max-height:103px;object-fit:contain;filter:drop-shadow(0 3px 3px #5d42631b);transition:transform .25s}
+.cel-design-choice:hover .cel-art-svg{transform:scale(1.055) rotate(-2deg)}
+.cel-design-topline,.cel-design-footline{position:absolute;height:2px;width:35%;border-radius:2px;background:var(--c-a);opacity:.35}
+.cel-design-topline{top:9px}.cel-design-footline{bottom:9px;width:27%}
+.cel-design-choice.skin-night .cel-design-snapshot,.cel-design-choice.skin-galaxy .cel-design-snapshot,
+.cel-design-choice.skin-victory .cel-design-snapshot,.cel-design-choice.skin-royal .cel-design-snapshot{color:white}
+.cel-design-choice.skin-blush{--c-b:#fce4ed;--c-a:#db6a9c}
+.cel-design-choice.skin-lilac{--c-b:#e6dff9;--c-a:#a887dc}
+.cel-design-choice.skin-pearl{--c-b:#f9eddb;--c-a:#d6a46b}
+.cel-design-choice.skin-rose{--c-b:#e4efde;--c-a:#9f7591}
+.cel-design-choice.skin-night{--c-b:#2b2d52;--c-a:#e7c78d}
+.cel-design-choice.skin-victory{--c-b:#144e57;--c-a:#e8c576}
+.cel-design-choice.skin-postcard{--c-b:#f2dfc8;--c-a:#b38b6a}
+.cel-design-choice.skin-royal{--c-b:#47223d;--c-a:#f4cc88}
+.cel-design-choice.skin-galaxy{--c-b:#242348;--c-a:#a3bee9}
+.cel-design-choice.skin-editorial{--c-b:#f5f3ef;--c-a:#9b7b63}
+.cel-design-choice.skin-giftbox{--c-b:#f1d5e5;--c-a:#cb719e}
+.cel-design-choice.skin-polaroid{--c-b:#e6e8d9;--c-a:#96a48b}
+/* Base for every illustration-based layout */
+.cel-preview-card[data-template]{--c-a:#cf75a3;--c-b:#f7e4ef;--c-text:#34233d;position:relative;min-height:640px;gap:0;padding:27px 26px 21px;display:flex;flex-direction:column;align-items:center;background:linear-gradient(150deg,#fff7fa,#fae1ec);isolation:isolate;overflow:hidden}
+.cel-preview-card[data-template]::before,.cel-preview-card[data-template]::after{content:"";position:absolute;z-index:-1;pointer-events:none}
+.cel-preview-card[data-template] .cel-corner-top,.cel-preview-card[data-template] .cel-corner-bottom{position:absolute;pointer-events:none;z-index:-1}
+.cel-preview-card[data-template] .cel-preview-identity{display:flex;flex-direction:column;align-items:center;gap:7px;order:0}
+.cel-preview-card[data-template] .cel-design-category{font-size:9px;letter-spacing:1.9px;font-weight:800;color:var(--c-a);opacity:.9}
+.cel-preview-card[data-template] .cel-preview-icon{order:1;margin-top:22px}
+.cel-preview-card[data-template] h2{order:2;max-width:460px;margin:9px 0 0;font:400 clamp(29px,3vw,45px)/1.12 "DM Serif Display",Georgia,serif;color:var(--c-text);overflow-wrap:anywhere}
+.cel-preview-card[data-template] .cel-preview-art{order:3;max-width:430px;width:100%;height:235px;flex:none;display:flex;justify-content:center;align-items:center;margin:4px auto 0}
+.cel-preview-card[data-template] .cel-art-svg{height:100%;width:100%;overflow:visible;filter:drop-shadow(0 10px 10px #704c6b14)}
+.cel-preview-card[data-template] .cel-preview-content{order:4;display:flex;flex:1;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;width:100%;min-height:90px}
+.cel-preview-card[data-template] .cel-preview-to{margin:0}
+.cel-preview-card[data-template] .cel-preview-message{flex:0 1 auto;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.78;margin:10px auto 12px;color:var(--c-text);max-width:450px;font-size:12px}
+.cel-preview-card[data-template] .cel-preview-bottom{order:5;margin-top:auto}
+.cel-preview-card[data-template] .cel-secret-button{order:6}
+.cel-preview-card[data-template] .cel-secret-message{order:7}
+.cel-preview-card[data-template] .cel-secret-button{flex:none}
+.cel-preview-card[data-template] .cel-preview-pill{background:transparent;border-color:color-mix(in srgb,var(--c-a) 34%,transparent)}
+.cel-preview-card[data-template] .cel-art-svg{animation:celIllustration 7s ease-in-out infinite}
+@keyframes celIllustration{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+/* 01 — Romantic duet: airy blush, deep rose border and central romantic art */
+.cel-preview-card.skin-blush[data-template]{background:radial-gradient(circle at 52% 43%,#fff 0,transparent 52%),linear-gradient(160deg,#fce2ec,#fff6fa 49%,#f9d8e7);border:2px solid #fffbfe;--c-a:#c85d92;--c-text:#532d4b}
+.cel-preview-card.skin-blush[data-template]::before{inset:11px;border:1px solid #db9db933;border-radius:13px}
+.cel-preview-card.skin-blush[data-template]::after{width:280px;height:280px;border:1px dashed #dca0bf55;border-radius:50%;top:31%;left:50%;transform:translateX(-50%)}
+.cel-preview-card.skin-blush[data-template] .cel-preview-art{height:245px}
+/* 02 — Birthday cake: large centered celebratory artwork above title, lilac band and confetti */
+.cel-preview-card.skin-lilac[data-template]{--c-a:#8a5dba;--c-text:#41284e;background:radial-gradient(circle at 50% 27%,#fffdfd 0,transparent 37%),repeating-linear-gradient(112deg,#f0e9fc 0,#f0e9fc 19px,#f7f0ff 20px,#f7f0ff 41px)}
+.cel-preview-card.skin-lilac[data-template]::before{width:85%;height:170px;top:62px;border-radius:40%;background:#fff7;filter:blur(30px)}
+.cel-preview-card.skin-lilac[data-template] .cel-preview-identity{order:0}
+.cel-preview-card.skin-lilac[data-template] .cel-preview-art{order:1;height:242px;margin:0 auto}
+.cel-preview-card.skin-lilac[data-template] .cel-preview-icon{display:none}
+.cel-preview-card.skin-lilac[data-template] h2{order:2;font-family:"Playfair Display",Georgia,serif;font-weight:750;font-size:clamp(30px,3vw,45px);color:#55376b}
+.cel-preview-card.skin-lilac[data-template] .cel-preview-content{order:3}
+.cel-preview-card.skin-lilac[data-template] .cel-preview-bottom{order:5}
+/* 03 — Anniversary: classic cream parchment, gold doubled frame, interlocking rings centered */
+.cel-preview-card.skin-pearl[data-template]{--c-a:#ad8454;--c-text:#62432e;border:2px solid #dfb971;background:radial-gradient(circle,#fffdf8 0,#f8ebd3 89%)}
+.cel-preview-card.skin-pearl[data-template]::before{inset:8px;border:2px solid #dfbc7a;border-radius:13px}
+.cel-preview-card.skin-pearl[data-template]::after{inset:14px;border:1px solid #dfbc7a80;border-radius:8px}
+.cel-preview-card.skin-pearl[data-template] .cel-preview-icon{display:none}
+.cel-preview-card.skin-pearl[data-template] .cel-preview-identity{margin-top:17px}
+.cel-preview-card.skin-pearl[data-template] .cel-preview-art{order:2;height:215px}
+.cel-preview-card.skin-pearl[data-template] h2{order:3;font-family:"Playfair Display",Georgia,serif;font-style:italic;font-size:clamp(30px,3vw,42px)}
+.cel-preview-card.skin-pearl[data-template] .cel-preview-content{order:4}
+/* 04 — Garden: botanical meadow background, off-center flowers + delicately left-aligned text */
+.cel-preview-card.skin-rose[data-template]{--c-a:#6b8c68;--c-text:#3e563d;background:linear-gradient(168deg,#fffdf9,#e7f3e7 75%,#d1e9d5);border:1px solid #b7d6bb}
+.cel-preview-card.skin-rose[data-template]::before{width:340px;height:340px;border:1px solid #9fc0a765;border-radius:50%;top:20%;left:50%;transform:translateX(-50%)}
+.cel-preview-card.skin-rose[data-template] .cel-preview-art{order:1;height:248px}
+.cel-preview-card.skin-rose[data-template] .cel-preview-icon{display:none}
+.cel-preview-card.skin-rose[data-template] h2{order:2;font-family:Georgia,serif;font-style:italic;letter-spacing:-.8px}
+.cel-preview-card.skin-rose[data-template] .cel-preview-message{font-family:Georgia,serif;font-style:italic;line-height:1.9;font-size:14px}
+/* 05 — Moonlight: nocturnal scene and glowing old letter */
+.cel-preview-card.skin-night[data-template]{--c-a:#f3ca9a;--c-text:#fff1e8;color:#fff1e8;background:radial-gradient(circle at 51% 36%,#5b5684 0,#252742 59%,#1c213b);border:1px solid #a6a0c355}
+.cel-preview-card.skin-night[data-template]::before{inset:0;background-image:radial-gradient(#fff 1px,transparent 1px),radial-gradient(#f6d8c9 1.2px,transparent 1.2px);background-size:39px 46px,83px 75px;background-position:0 0,17px 19px;opacity:.3}
+.cel-preview-card.skin-night[data-template]::after{width:290px;height:290px;left:50%;top:22%;transform:translateX(-50%);border-radius:50%;background:#f3debb12;box-shadow:0 0 100px 50px #f2d1a313}
+.cel-preview-card.skin-night[data-template] .cel-preview-icon{display:none}
+.cel-preview-card.skin-night[data-template] .cel-preview-art{order:1;height:244px}
+.cel-preview-card.skin-night[data-template] h2{order:2;color:#fff0dc;font-style:italic}
+.cel-preview-card.skin-night[data-template] .cel-preview-message,.cel-preview-card.skin-night[data-template] .cel-preview-to,.cel-preview-card.skin-night[data-template] .cel-preview-bottom em{color:#efe8ff}
+.cel-preview-card.skin-night[data-template] .cel-secret-message{color:#492c52}
+/* 06 — Success: geometric emerald/teal celebration and golden trophy */
+.cel-preview-card.skin-victory[data-template]{--c-a:#f5ce81;--c-text:#fff2d9;color:#fff;background:linear-gradient(149deg,#103e47,#15515b 45%,#0b303b);border:1px solid #d4ae6a}
+.cel-preview-card.skin-victory[data-template]::before{height:330px;width:330px;border-radius:50%;top:19%;left:50%;transform:translateX(-50%);border:1px solid #fce5ab62;box-shadow:0 0 0 32px #ebc4850b,0 0 0 84px #ebc48508}
+.cel-preview-card.skin-victory[data-template] .cel-preview-identity{margin-bottom:8px}
+.cel-preview-card.skin-victory[data-template] .cel-preview-icon{display:none}
+.cel-preview-card.skin-victory[data-template] .cel-preview-art{order:1;height:244px}
+.cel-preview-card.skin-victory[data-template] h2{order:2;color:#fff0c8;font-family:Manrope,sans-serif;font-size:clamp(27px,3vw,36px);font-weight:850;text-transform:uppercase;letter-spacing:1.1px}
+.cel-preview-card.skin-victory[data-template] .cel-preview-content{order:3}
+.cel-preview-card.skin-victory[data-template] .cel-preview-message,.cel-preview-card.skin-victory[data-template] .cel-preview-to,.cel-preview-card.skin-victory[data-template] .cel-preview-bottom em{color:#f4f2de}
+/* 07 — Vintage post: handwritten ink note, paper grain and stamp */
+.cel-preview-card.skin-postcard[data-template]{--c-a:#a47a61;--c-text:#5e473d;background:repeating-linear-gradient(0deg,#faf0df 0,#faf0df 27px,#ead8c244 28px,#faf0df 29px),#faeddb;border:2px solid #bc9580}
+.cel-preview-card.skin-postcard[data-template]::before{inset:12px;border:2px dashed #b8937368}
+.cel-preview-card.skin-postcard[data-template] .cel-preview-identity{margin-top:12px}
+.cel-preview-card.skin-postcard[data-template] .cel-preview-art{order:1;height:230px}
+.cel-preview-card.skin-postcard[data-template] .cel-preview-icon{display:none}
+.cel-preview-card.skin-postcard[data-template] h2{order:2;color:#754b42;font-family:Georgia,serif;font-size:clamp(32px,3vw,43px);font-style:italic;transform:rotate(-1deg)}
+.cel-preview-card.skin-postcard[data-template] .cel-preview-message{font-family:Georgia,serif;font-size:14px;font-style:italic;line-height:1.9}
+.cel-preview-card.skin-postcard[data-template] .cel-preview-bottom{border-top:1px dashed #a47a61}
+/* 08 — Royal invitation: burgundy velvet, ornate gold frame */
+.cel-preview-card.skin-royal[data-template]{--c-a:#f5cd8b;--c-text:#ffefcd;color:#ffe8d6;background:radial-gradient(ellipse at 50% 33%,#854f71 0,#4d2b4b 56%,#281a33 96%);border:2px solid #deac6e}
+.cel-preview-card.skin-royal[data-template]::before{inset:9px;border:2px solid #f0c889a1;border-radius:10px}
+.cel-preview-card.skin-royal[data-template]::after{inset:16px;border:1px dashed #e3ba785b;border-radius:7px}
+.cel-preview-card.skin-royal[data-template] .cel-preview-icon{display:none}
+.cel-preview-card.skin-royal[data-template] .cel-preview-identity{padding-top:24px}
+.cel-preview-card.skin-royal[data-template] .cel-preview-art{order:1;height:218px}
+.cel-preview-card.skin-royal[data-template] h2{order:2;color:#ffeac1;font-family:"Playfair Display",Georgia,serif;font-weight:700;font-style:italic}
+.cel-preview-card.skin-royal[data-template] .cel-preview-message,.cel-preview-card.skin-royal[data-template] .cel-preview-to,.cel-preview-card.skin-royal[data-template] .cel-preview-bottom em{color:#f9e7d5}
+/* 09 — Galaxy: cosmic atmosphere, orbit and nebula, brighter hierarchy */
+.cel-preview-card.skin-galaxy[data-template]{--c-a:#b3bbff;--c-text:#f5ecff;color:#fff;background:radial-gradient(ellipse at 30% 48%,#69467f99,transparent 43%),radial-gradient(ellipse at 79% 28%,#4b679a88,transparent 52%),linear-gradient(155deg,#1a1638,#30265c,#151b35)}
+.cel-preview-card.skin-galaxy[data-template]::before{inset:0;background-image:radial-gradient(#e3edff 1.2px,transparent 1.2px),radial-gradient(#ffdfef 1.3px,transparent 1.3px);background-size:49px 64px,92px 81px;background-position:18px 12px,40px 24px;opacity:.43}
+.cel-preview-card.skin-galaxy[data-template] .cel-preview-icon{display:none}
+.cel-preview-card.skin-galaxy[data-template] .cel-preview-art{order:1;height:242px}
+.cel-preview-card.skin-galaxy[data-template] h2{order:2;font-family:"DM Serif Display",Georgia,serif;color:#f9eaff;letter-spacing:1px}
+.cel-preview-card.skin-galaxy[data-template] .cel-preview-message,.cel-preview-card.skin-galaxy[data-template] .cel-preview-to,.cel-preview-card.skin-galaxy[data-template] .cel-preview-bottom em{color:#f3e8ff}
+.cel-preview-card.skin-galaxy[data-template] .cel-art-svg{animation:celPlanet 13s ease-in-out infinite}
+@keyframes celPlanet{50%{transform:translateY(-7px) rotate(3deg)}}
+/* 10 — Editorial magazine, radically left aligned with graphic divider */
+.cel-preview-card.skin-editorial[data-template]{--c-a:#816552;--c-text:#302b29;text-align:left;align-items:flex-start;background:linear-gradient(145deg,#fffdf7,#f3efe8);padding:30px 37px;border:1px solid #c5b6a1}
+.cel-preview-card.skin-editorial[data-template]::before{top:22px;right:22px;bottom:22px;left:22px;border-left:3px solid #4c4540}
+.cel-preview-card.skin-editorial[data-template] .cel-preview-identity{align-items:flex-start;padding:12px 0 0 10px}
+.cel-preview-card.skin-editorial[data-template] .cel-preview-icon{display:none}
+.cel-preview-card.skin-editorial[data-template] h2{order:1;font:400 clamp(38px,3.8vw,58px)/1.07 "Playfair Display",Georgia,serif;max-width:95%;margin:22px 0 0 10px;text-align:left}
+.cel-preview-card.skin-editorial[data-template] .cel-preview-art{order:3;max-width:290px;height:185px;margin:5px auto}
+.cel-preview-card.skin-editorial[data-template] .cel-preview-content{order:2;align-items:flex-start;min-height:0;margin:15px 0 0;padding-left:10px}
+.cel-preview-card.skin-editorial[data-template] .cel-preview-message{text-align:left;font:400 clamp(13px,1.4vw,16px)/1.8 Georgia,serif;margin:9px 0;color:#4b4440}
+.cel-preview-card.skin-editorial[data-template] .cel-preview-bottom{order:5;border-top:2px solid #877564}
+.cel-preview-card.skin-editorial[data-template] .cel-secret-button,.cel-preview-card.skin-editorial[data-template] .cel-secret-message{align-self:center}
+/* 11 — Giftbox with framed gift under a descending ribbon */
+.cel-preview-card.skin-giftbox[data-template]{--c-a:#ba5b92;--c-text:#452e55;background:radial-gradient(ellipse at 50% 29%,#fffefd 5%,transparent 63%),repeating-linear-gradient(90deg,#ffedf5 0,#ffedf5 37px,#fce0ef 37px,#fce0ef 68px);border:2px solid #fff}
+.cel-preview-card.skin-giftbox[data-template]::before{height:100%;width:20px;background:#f3a7c8a3;top:0;left:calc(50% - 10px);z-index:-1}
+.cel-preview-card.skin-giftbox[data-template] .cel-preview-identity{padding:4px 0;background:#fff9;box-shadow:0 6px 20px #d67caa1e;border-radius:40px}
+.cel-preview-card.skin-giftbox[data-template] .cel-preview-icon{display:none}
+.cel-preview-card.skin-giftbox[data-template] .cel-preview-art{order:1;height:260px}
+.cel-preview-card.skin-giftbox[data-template] h2{order:2}
+.cel-preview-card.skin-giftbox[data-template] .cel-preview-content{order:3}
+.cel-preview-card.skin-giftbox[data-template] .cel-preview-bottom{order:5}
+/* 12 — Scrapbook: sage wallpaper, layered Polaroids and handwritten postcard title */
+.cel-preview-card.skin-polaroid[data-template]{--c-a:#778d76;--c-text:#4d5b4b;background:repeating-linear-gradient(0deg,#e9eee4 0,#e9eee4 36px,#d9e4d6 37px,#e9eee4 38px),#e6ecdc;border:1px solid #aebba4}
+.cel-preview-card.skin-polaroid[data-template]::before{inset:15px;border:1px dashed #96a98e}
+.cel-preview-card.skin-polaroid[data-template] .cel-preview-icon{display:none}
+.cel-preview-card.skin-polaroid[data-template] .cel-preview-art{order:1;height:248px;margin-top:7px}
+.cel-preview-card.skin-polaroid[data-template] h2{order:2;font:italic 400 clamp(30px,3vw,43px)/1.15 Georgia,serif;color:#4d5a42;transform:rotate(-1.3deg)}
+.cel-preview-card.skin-polaroid[data-template] .cel-preview-message{font-family:Georgia,serif;line-height:1.9;font-size:14px}
+.cel-preview-card.skin-polaroid[data-template] .cel-preview-bottom{border-top:1px dashed #b3bfac}
+.cel-preview-card.skin-polaroid[data-template] .cel-art-svg{animation:celAlbum 9s ease-in-out infinite}
+@keyframes celAlbum{50%{transform:rotate(-3deg) translateY(-2px)}}
+/* Public page and zoom-preview inherit full composition (no stretching based on width). */
+.cel-public .cel-preview-card[data-template]{min-height:750px;padding:33px 34px 27px}
+.cel-public .cel-preview-card[data-template] .cel-preview-art{max-width:510px;height:285px}
+.cel-public .cel-preview-card[data-template] h2{font-size:clamp(36px,5vw,59px)}
+.cel-public .cel-preview-card[data-template] .cel-preview-message{font-size:16px;max-width:520px}
+.cel-modal-preview .cel-preview-card[data-template]{min-height:660px}
+.cel-modal-preview .cel-preview-card[data-template] h2{font-size:clamp(35px,4vw,52px)}
+@media(max-width:1100px){.cel-design-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:767px){
+ .cel-editor-dialog{scrollbar-gutter:auto}
+ .cel-editor-top{top:-18px;margin-bottom:12px;padding:8px 2px 13px}
+ .cel-design-gallery{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ .cel-design-choice{padding:5px 4px 8px;border-radius:11px;gap:4px}
+ .cel-design-choice.active{padding:4px 3px 7px}
+ .cel-design-choice strong{font-size:9px}
+ .cel-design-choice small{font-size:8px}
+ .cel-design-snapshot{height:87px;border-radius:8px}
+ .cel-design-snapshot .cel-art-svg{height:100%;width:100%;max-height:84px}
+ .cel-template-explain{font-size:10px}
+ .cel-preview-card[data-template]{min-height:600px;padding:19px 15px 21px}
+ .cel-preview-card[data-template] .cel-preview-art{height:224px}
+ .cel-preview-card[data-template] h2{font-size:clamp(29px,8vw,42px)}
+ .cel-preview-card[data-template] .cel-preview-message{font-size:12px}
+ /* In-editor mini preview is compact enough to leave room to actually edit. */
+ .cel-editor-preview #celPreview .cel-preview-card[data-template]{height:345px;min-height:345px;max-height:345px;overflow:auto;padding:11px}
+ .cel-editor-preview #celPreview .cel-preview-card[data-template] .cel-preview-art{height:117px;max-width:230px;flex:none}
+ .cel-editor-preview #celPreview .cel-preview-card[data-template] h2{font-size:26px}
+ .cel-editor-preview #celPreview .cel-preview-card[data-template] .cel-preview-message{font-size:10px;line-height:1.5;margin:4px auto}
+ .cel-editor-preview #celPreview .cel-preview-card[data-template] .cel-preview-icon{margin-top:5px}
+ .cel-editor-preview #celPreview .cel-preview-card[data-template] .cel-preview-identity{gap:3px}
+ .cel-editor-preview #celPreview .cel-preview-card[data-template] .cel-design-category{font-size:8px}
+ .cel-public .cel-preview-card[data-template]{min-height:620px;padding:22px 17px}
+ .cel-public .cel-preview-card[data-template] .cel-preview-art{height:240px}
+ .cel-public .cel-preview-card[data-template] h2{font-size:36px}
+ .cel-public .cel-preview-card[data-template] .cel-preview-message{font-size:13px}
+ .cel-modal-preview .cel-preview-card[data-template]{min-height:590px}
+ .cel-modal-preview .cel-preview-card[data-template] .cel-preview-art{height:210px}
+ .cel-preview-card.skin-editorial[data-template]{padding-left:21px;padding-right:21px}
+ .cel-preview-card.skin-editorial[data-template] h2{font-size:36px}
+ .cel-preview-card.skin-giftbox[data-template] .cel-preview-identity{box-shadow:none}
+}
+@media(max-width:375px){
+ .cel-design-choice small{font-size:7px}
+ .cel-design-gallery{gap:5px}
+ .cel-design-snapshot{height:77px}
+ .cel-editor-preview #celPreview .cel-preview-card[data-template]{height:310px;min-height:310px;max-height:310px}
+ .cel-editor-preview #celPreview .cel-preview-card[data-template] .cel-preview-art{height:89px}
+}
+@media(prefers-reduced-motion:reduce){
+ .cel-preview-card[data-template] .cel-art-svg,.cel-design-choice:hover .cel-art-svg{animation:none!important;transform:none!important}
+}
