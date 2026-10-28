@@ -38,17 +38,16 @@ module.exports=function registerCelebrations({app,auth,ready,wrap,c,oid,bad,clea
    if(!partnerId)return bad(res,403,'Avval juftlikni ulang');
    const partner=await c('users').findOne({_id:partnerId,partnerId:req.user._id,banned:false},{projection:{_id:1}});
    if(!partner)return bad(res,403,'Juftlik aloqasi tasdiqlanmagan');
-   const already=await c('messages').findOne({kind:'celebration',celebrationId:id,
-     from:req.user._id,to:partnerId,expiresAt:{$gt:date()}},{projection:{_id:1}});
-   if(already)return res.json({sent:true,alreadySent:true,chatMessageId:String(already._id),card:pack(item)});
+   // One greeting generates at most one chat message; duplicate taps are idempotent.
    const now=date();
-   const result=await c('messages').insertOne({
-      kind:'celebration',celebrationId:id,from:req.user._id,to:partnerId,
-      text:'',mode:'24h',createdAt:now,expiresAt:new Date(now.getTime()+24*3600000)
-   });
+   const entry={kind:'celebration',celebrationId:id,from:req.user._id,to:partnerId,
+      text:'',mode:'24h',createdAt:now,expiresAt:new Date(now.getTime()+24*3600000)};
+   const query={kind:'celebration',celebrationId:id,from:req.user._id,to:partnerId};
+   const r=await c('messages').updateOne(query,{$setOnInsert:entry},{upsert:true});
+   const sent=await c('messages').findOne(query,{projection:{_id:1}});
    await collection().updateOne({_id:id,owner:req.user._id},{$set:{sentAt:now}});
-   res.status(201).json({sent:true,alreadySent:false,chatMessageId:String(result.insertedId),
-       card:{...pack(item),sentAt:now}});
+   res.status(r.upsertedCount?201:200).json({sent:true,alreadySent:!r.upsertedCount,
+     chatMessageId:String(sent._id),card:{...pack(item),sentAt:now}});
  }));
  app.delete('/api/celebrations/:id',auth,wrap(async(req,res)=>{
    const id=oid(req.params.id);if(!id)return bad(res,404,'Tabrik topilmadi');
